@@ -90,7 +90,55 @@ export async function getVnDetail(id) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['id', '=', id],
-      fields: 'id, title, alttitle, image.url, released, olang, description, relations.title, relations.relation_official',
+      fields: 'id, title, alttitle, image.url, image.dims, image.sexual, image.violence, released, olang, description, relations.id, relations.title, relations.relation, relations.relation_official, languages, platforms, developers.name, rating, votecount, length, length_minutes, tags.name, tags.rating, tags.spoiler, staff.role, staff.name, staff.original, va.note, va.staff.name, va.staff.original, va.character.name, va.character.original, va.character.image.url, screenshots.url, screenshots.dims, screenshots.thumbnail, screenshots.thumbnail_dims',
+    })
+  })
+}
+
+/**
+ * 3.1 获取特定 Visual Novel 的 Releases 列表 (包含封面 fields: images)
+ * POST /release
+ */
+export async function getVnReleases(vnId) {
+  return request('/release', {
+    method: 'POST',
+    body: JSON.stringify({
+      filters: ['vn', '=', ['id', '=', vnId]],
+      fields: 'id, title, alttitle, released, languages.lang, platforms, official, patch, freeware, notes, uncensored, minage, images.url, images.dims, images.type, images.languages',
+      sort: 'released',
+      results: 50
+    })
+  })
+}
+
+/**
+ * 3.2 获取特定 Visual Novel 的角色列表
+ * POST /character
+ */
+export async function getVnCharacters(vnId) {
+  return request('/character', {
+    method: 'POST',
+    body: JSON.stringify({
+      filters: ['vn', '=', ['id', '=', vnId]],
+      fields: 'id, name, original, description, image.url, image.dims, image.sexual, image.violence, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday, vns.role, vns.spoiler',
+      results: 100
+    })
+  })
+}
+
+/**
+ * 3.3 获取特定 Visual Novel 的摘录列表
+ * POST /quote
+ */
+export async function getVnQuotes(vnId) {
+  return request('/quote', {
+    method: 'POST',
+    body: JSON.stringify({
+      filters: ['vn', '=', ['id', '=', vnId]],
+      fields: 'id, quote, score, character.name, character.original',
+      sort: 'score',
+      reverse: true,
+      results: 50
     })
   })
 }
@@ -119,7 +167,7 @@ export async function getUserList(params = {}) {
   const payload = {
     ...params
   }
-  // 如果未指定 user，则默认传当前已登录的 userId
+  // 如果没有指定 user，则默认传当前已登录的 userId
   if (!payload.user && userId) {
     payload.user = userId
   }
