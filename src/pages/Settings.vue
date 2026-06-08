@@ -1,14 +1,24 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 
-const apiToken = ref(localStorage.getItem('vndb_api_token') || '')
+const router = useRouter()
+const username = ref(localStorage.getItem('vndb_username') || '')
 const useSandbox = ref(JSON.parse(localStorage.getItem('vndb_use_sandbox') || 'false'))
 
+onMounted(() => {
+  // 每次进入页面重新获取最新的登录状态
+  username.value = localStorage.getItem('vndb_username') || ''
+})
+
 function saveSettings() {
-  localStorage.setItem('vndb_api_token', apiToken.value)
   localStorage.setItem('vndb_use_sandbox', JSON.stringify(useSandbox.value))
   alert('设置已保存！')
+}
+
+function goToLogin() {
+  router.push('/login')
 }
 </script>
 
@@ -24,20 +34,48 @@ function saveSettings() {
       </div>
     </div>
 
+    <!-- 账户跳转入口 (Notion-style navigation item) -->
+    <div class="rounded-xl border border-neutral-200 bg-white p-4 shadow-xs space-y-3">
+      <h2 class="text-sm font-semibold text-neutral-800 border-b border-neutral-100 pb-2">账户与同步</h2>
+      
+      <button 
+        @click="goToLogin"
+        class="w-full flex items-center justify-between rounded-lg border border-neutral-100 bg-neutral-50/50 p-3 text-left transition hover:bg-neutral-50 active:bg-neutral-100"
+      >
+        <div class="flex items-center gap-3">
+          <div class="grid h-10 w-10 place-items-center rounded-full bg-white border border-neutral-200">
+            <Icon icon="lucide:user" class="h-5 w-5 text-neutral-600" />
+          </div>
+          <div>
+            <div class="text-sm font-medium text-neutral-800">
+              {{ username ? username : '未登录' }}
+            </div>
+            <div class="text-[10px] text-neutral-400">
+              {{ username ? '已连接到 VNDB 账户' : '点击登录以同步您的收藏列表' }}
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span 
+            v-if="username" 
+            class="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-600 border border-green-100"
+          >
+            已连接
+          </span>
+          <span 
+            v-else 
+            class="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium text-neutral-500 border border-neutral-200"
+          >
+            未连接
+          </span>
+          <Icon icon="lucide:chevron-right" class="h-4 w-4 text-neutral-400" />
+        </div>
+      </button>
+    </div>
+
     <!-- 设置区块 (Notion Style Block) -->
     <div class="rounded-xl border border-neutral-200 bg-white p-4 shadow-xs space-y-4">
-      <h2 class="text-sm font-semibold text-neutral-800 border-b border-neutral-100 pb-2">API 认证配置</h2>
-
-      <div class="space-y-1.5">
-        <label class="text-xs font-medium text-neutral-500">API 访问 Token</label>
-        <input
-          v-model="apiToken"
-          type="password"
-          placeholder="请输入你的 VNDB API Token (可选)"
-          class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-900/5 placeholder-neutral-400"
-        />
-        <p class="text-[10px] text-neutral-400">留空则以访客身份访问只读 API</p>
-      </div>
+      <h2 class="text-sm font-semibold text-neutral-800 border-b border-neutral-100 pb-2">系统偏好</h2>
 
       <div class="flex items-center justify-between py-2">
         <div class="space-y-0.5">

@@ -3,6 +3,7 @@ import Home from '@/pages/Home.vue'
 import Search from '@/pages/Search.vue'
 import List from '@/pages/List.vue'
 import Settings from '@/pages/Settings.vue'
+import Login from '@/pages/Login.vue'
 import VnDetail from '@/pages/VnDetail.vue'
 import CharacterDetail from '@/pages/CharacterDetail.vue'
 import ProducerDetail from '@/pages/ProducerDetail.vue'
@@ -31,6 +32,12 @@ const routes = [
     name: 'Settings',
     component: Settings,
     meta: { showTabBar: true }
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login,
+    meta: { showTabBar: false }
   },
   {
     path: '/vn/:id',

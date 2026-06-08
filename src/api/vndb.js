@@ -94,3 +94,18 @@ export async function getVnDetail(id) {
     })
   })
 }
+
+/**
+ * 4. 获取授权信息 / 验证 Token
+ * GET /authinfo
+ */
+export async function getAuthInfo(customToken = null) {
+  const headers = {}
+  if (customToken) {
+    headers['Authorization'] = `Token ${customToken.trim()}`
+  }
+  return request('/authinfo', {
+    method: 'GET',
+    headers
+  })
+}
