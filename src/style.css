@@ -5,7 +5,7 @@
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   color: #172033;
-  background: #f5f7fb;
+  background: #ffffff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -31,44 +31,4 @@ select {
 
 #app {
   min-height: 100vh;
-}
-
-.app-shell {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-}
-
-.hero-card {
-  width: min(100%, 680px);
-  padding: 48px;
-  border-radius: 28px;
-  background: #ffffff;
-  box-shadow: 0 24px 80px rgb(23 32 51 / 12%);
-  text-align: center;
-}
-
-.eyebrow {
-  margin: 0 0 12px;
-  color: #4f46e5;
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-h1 {
-  margin: 0;
-  color: #0f172a;
-  font-size: clamp(3rem, 12vw, 6rem);
-  line-height: 0.95;
-}
-
-.description {
-  margin: 24px auto 0;
-  max-width: 460px;
-  color: #64748b;
-  font-size: 1.08rem;
-  line-height: 1.7;
 }

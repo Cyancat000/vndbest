@@ -19,7 +19,8 @@
     "@iconify/vue": "^5.0.1",
     "@tailwindcss/vite": "^4.3.0",
     "tailwindcss": "^4.3.0",
-    "vue": "^3.5.34"
+    "vue": "^3.5.34",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@capacitor/android": "^8.4.0",
