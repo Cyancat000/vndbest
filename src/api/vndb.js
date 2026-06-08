@@ -109,3 +109,37 @@ export async function getAuthInfo(customToken = null) {
     headers
   })
 }
+
+/**
+ * 5. 获取用户收藏列表
+ * POST /ulist
+ */
+export async function getUserList(params = {}) {
+  const userId = localStorage.getItem('vndb_user_id')
+  const payload = {
+    ...params
+  }
+  // 如果未指定 user，则默认传当前已登录的 userId
+  if (!payload.user && userId) {
+    payload.user = userId
+  }
+  return request('/ulist', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+}
+
+/**
+ * 6. 获取用户收藏标签列表
+ * GET /ulist_labels
+ */
+export async function getUserListLabels(userId = null) {
+  const currentUserId = userId || localStorage.getItem('vndb_user_id')
+  let path = '/ulist_labels'
+  if (currentUserId) {
+    path += `?user=${currentUserId}`
+  }
+  return request(path, {
+    method: 'GET'
+  })
+}
