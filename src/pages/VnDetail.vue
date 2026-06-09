@@ -531,7 +531,8 @@ watch(
         <VnList
           :items="vn.relations"
           :show-sort="false"
-          force-layout="compact"
+          :compact="true"
+          storage-key="vndb_vn_relations_layout"
         />
       </div>
 
@@ -641,11 +642,13 @@ watch(
             <div
               v-for="char in characters"
               :key="char.id"
-              @click="toggleCharExpansion(char.id)"
-              class="p-3 rounded-xl border border-neutral-200 bg-white flex items-start gap-3 shadow-xs hover:border-neutral-300 transition cursor-pointer"
+              class="p-3 rounded-xl border border-neutral-200 bg-white flex items-start gap-3 shadow-xs hover:border-neutral-300 transition"
             >
-              <!-- 角色立绘头像 -->
-              <div class="w-16 h-20 rounded-lg overflow-hidden flex-shrink-0 border border-neutral-200 bg-neutral-50">
+              <!-- 角色立绘头像 - 点击跳转 -->
+              <div
+                @click="router.push(`/character/${char.id}`)"
+                class="w-16 h-20 rounded-lg overflow-hidden flex-shrink-0 border border-neutral-200 bg-neutral-50 cursor-pointer hover:opacity-80 transition"
+              >
                 <img
                   v-if="char.image?.url"
                   :src="char.image.url"
@@ -659,11 +662,17 @@ watch(
 
               <!-- 角色档案属性展示 -->
               <div class="flex-1 min-w-0 space-y-1">
-                <div class="flex justify-between items-baseline gap-2">
-                  <h4 class="font-bold text-xs text-neutral-900 truncate">
-                    {{ char.name }}
-                    <span v-if="char.original" class="text-[10px] text-neutral-400 font-normal">({{ char.original }})</span>
-                  </h4>
+                <div class="flex justify-between items-start gap-2">
+                  <div
+                    @click="router.push(`/character/${char.id}`)"
+                    class="min-w-0 flex-1 cursor-pointer group"
+                  >
+                    <h4 class="font-bold text-xs text-neutral-900 truncate group-hover:text-neutral-600 transition flex items-center gap-1">
+                      {{ char.name }}
+                      <Icon icon="lucide:chevron-right" class="h-2.5 w-2.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </h4>
+                    <p v-if="char.original" class="text-[10px] text-neutral-400 font-normal truncate leading-none mt-0.5">{{ char.original }}</p>
+                  </div>
                   <span
                     class="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0"
                     :class="[
@@ -676,64 +685,69 @@ watch(
                   </span>
                 </div>
 
-                <!-- 各种身体三围与信息 (只渲染已知值) -->
-                <div class="flex flex-wrap gap-x-2 gap-y-0.5 text-[9px] text-neutral-400 font-medium">
-                  <span v-if="char.sex">{{ t('vn.characters.gender') }}: <strong class="text-neutral-700 font-semibold">{{ translateGender(char.sex) }}</strong></span>
-                  <span v-if="char.age">{{ t('vn.characters.age') }}: <strong class="text-neutral-700 font-semibold">{{ char.age }}</strong></span>
-                  <span v-if="char.blood_type">{{ t('vn.characters.blood_type') }}: <strong class="text-neutral-700 font-semibold uppercase">{{ char.blood_type }}</strong></span>
-                  <span v-if="char.height">{{ t('vn.characters.height') }}: <strong class="text-neutral-700 font-semibold">{{ char.height }}cm</strong></span>
-                  <span v-if="char.weight">{{ t('vn.characters.weight') }}: <strong class="text-neutral-700 font-semibold">{{ char.weight }}kg</strong></span>
-                  <span v-if="char.bust || char.waist || char.hips">
-                    {{ t('vn.characters.measurements') }}: <strong class="text-neutral-700 font-semibold">{{ char.bust || '?' }}/{{ char.waist || '?' }}/{{ char.hips || '?' }}</strong>
-                    <strong v-if="char.cup" class="text-purple-600 font-semibold ml-0.5">({{ t('vn.characters.cup', { cup: char.cup }) }})</strong>
-                  </span>
-                  <span v-if="char.birthday">{{ t('vn.characters.birthday') }}: <strong class="text-neutral-700 font-semibold">{{ t('vn.characters.birthday_val', { month: char.birthday[0], day: char.birthday[1] }) }}</strong></span>
-                </div>
-
-                <!-- 角色简述 -->
-                <div v-if="char.description || (char.traits && char.traits.length > 0)">
-                  <p
-                    v-if="char.description"
-                    class="text-[10px] leading-relaxed text-neutral-500 pt-1 border-t border-neutral-100 transition-all duration-300"
-                    :class="[expandedCharIds.has(char.id) ? '' : 'line-clamp-2']"
-                    v-html="parseBBCode(char.description)"
-                  ></p>
-                  
-                  <!-- 角色特征标签 (Traits) - 仅在展开时显示 -->
-                  <div
-                    v-if="expandedCharIds.has(char.id) && char.traits && char.traits.length > 0"
-                    class="mt-2 pt-2 border-t border-neutral-100 space-y-2"
-                  >
-                    <div
-                      v-for="(traits, group) in groupTraits(char.traits)"
-                      :key="group"
-                      class="space-y-1"
-                    >
-                      <h5 class="text-[8px] font-bold text-neutral-400 uppercase tracking-tighter">{{ group }}</h5>
-                      <div class="flex flex-wrap gap-1">
-                        <span
-                          v-for="trait in traits"
-                          :key="trait.name"
-                          class="px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600 text-[8px] font-medium transition-colors"
-                          :class="[trait.spoiler > 0 ? 'bg-amber-50 text-amber-700 border border-amber-100' : 'border border-transparent']"
-                        >
-                          {{ trait.name }}
-                        </span>
-                      </div>
-                    </div>
-
-                    <!-- Voiced by (CV) -->
-                    <div v-if="getCharacterVA(char.id)" class="space-y-1">
-                      <h5 class="text-[8px] font-bold text-neutral-400 uppercase tracking-tighter">Voiced by</h5>
-                      <div class="text-[10px] text-neutral-700 font-medium">
-                        {{ getCharacterVA(char.id).staff?.name }}
-                        <span v-if="getCharacterVA(char.id).staff?.original" class="text-[9px] text-neutral-400 font-normal">({{ getCharacterVA(char.id).staff.original }})</span>
-                      </div>
-                    </div>
+                <!-- 各种身体三围与信息 (点击展开/收起) -->
+                <div
+                  @click="toggleCharExpansion(char.id)"
+                  class="cursor-pointer"
+                >
+                  <div class="flex flex-wrap gap-x-2 gap-y-0.5 text-[9px] text-neutral-400 font-medium">
+                    <span v-if="char.sex">{{ t('vn.characters.gender') }}: <strong class="text-neutral-700 font-semibold">{{ translateGender(char.sex) }}</strong></span>
+                    <span v-if="char.age">{{ t('vn.characters.age') }}: <strong class="text-neutral-700 font-semibold">{{ char.age }}</strong></span>
+                    <span v-if="char.blood_type">{{ t('vn.characters.blood_type') }}: <strong class="text-neutral-700 font-semibold uppercase">{{ char.blood_type }}</strong></span>
+                    <span v-if="char.height">{{ t('vn.characters.height') }}: <strong class="text-neutral-700 font-semibold">{{ char.height }}cm</strong></span>
+                    <span v-if="char.weight">{{ t('vn.characters.weight') }}: <strong class="text-neutral-700 font-semibold">{{ char.weight }}kg</strong></span>
+                    <span v-if="char.bust || char.waist || char.hips">
+                      {{ t('vn.characters.measurements') }}: <strong class="text-neutral-700 font-semibold">{{ char.bust || '?' }}/{{ char.waist || '?' }}/{{ char.hips || '?' }}</strong>
+                      <strong v-if="char.cup" class="text-purple-600 font-semibold ml-0.5">({{ t('vn.characters.cup', { cup: char.cup }) }})</strong>
+                    </span>
+                    <span v-if="char.birthday">{{ t('vn.characters.birthday') }}: <strong class="text-neutral-700 font-semibold">{{ t('vn.characters.birthday_val', { month: char.birthday[0], day: char.birthday[1] }) }}</strong></span>
                   </div>
 
-                  <div class="flex justify-end mt-0.5">
-                    <Icon :icon="expandedCharIds.has(char.id) ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="h-3 w-3 text-neutral-300" />
+                  <!-- 角色简述 -->
+                  <div v-if="char.description || (char.traits && char.traits.length > 0)">
+                    <p
+                      v-if="char.description"
+                      class="text-[10px] leading-relaxed text-neutral-500 pt-1 border-t border-neutral-100 transition-all duration-300"
+                      :class="[expandedCharIds.has(char.id) ? '' : 'line-clamp-2']"
+                      v-html="parseBBCode(char.description)"
+                    ></p>
+                    
+                    <!-- 角色特征标签 (Traits) - 仅在展开时显示 -->
+                    <div
+                      v-if="expandedCharIds.has(char.id) && char.traits && char.traits.length > 0"
+                      class="mt-2 pt-2 border-t border-neutral-100 space-y-2"
+                    >
+                      <div
+                        v-for="(traits, group) in groupTraits(char.traits)"
+                        :key="group"
+                        class="space-y-1"
+                      >
+                        <h5 class="text-[8px] font-bold text-neutral-400 uppercase tracking-tighter">{{ group }}</h5>
+                        <div class="flex flex-wrap gap-1">
+                          <span
+                            v-for="trait in traits"
+                            :key="trait.name"
+                            class="px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600 text-[8px] font-medium transition-colors"
+                            :class="[trait.spoiler > 0 ? 'bg-amber-50 text-amber-700 border border-amber-100' : 'border border-transparent']"
+                          >
+                            {{ trait.name }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Voiced by (CV) -->
+                      <div v-if="getCharacterVA(char.id)" class="space-y-1">
+                        <h5 class="text-[8px] font-bold text-neutral-400 uppercase tracking-tighter">Voiced by</h5>
+                        <div class="text-[10px] text-neutral-700 font-medium">
+                          {{ getCharacterVA(char.id).staff?.name }}
+                          <span v-if="getCharacterVA(char.id).staff?.original" class="text-[9px] text-neutral-400 font-normal">({{ getCharacterVA(char.id).staff.original }})</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="flex justify-end mt-0.5">
+                      <Icon :icon="expandedCharIds.has(char.id) ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="h-3 w-3 text-neutral-300" />
+                    </div>
                   </div>
                 </div>
               </div>

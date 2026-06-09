@@ -127,7 +127,7 @@ export async function getVnDetail(id) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['id', '=', id],
-      fields: 'id, title, alttitle, image.url, image.dims, image.sexual, image.violence, released, olang, description, relations.id, relations.title, relations.relation, relations.relation_official, languages, platforms, developers.name, rating, votecount, length, length_minutes, tags.name, tags.rating, tags.spoiler, staff.role, staff.name, staff.original, va.note, va.staff.name, va.staff.original, va.character.id, va.character.name, va.character.original, va.character.image.url, screenshots.url, screenshots.dims, screenshots.thumbnail, screenshots.thumbnail_dims',
+      fields: 'id, title, alttitle, image.url, image.dims, image.sexual, image.violence, released, olang, description, relations.id, relations.title, relations.alttitle, relations.relation, relations.relation_official, relations.image.url, relations.image.dims, relations.rating, relations.released, relations.olang, languages, platforms, developers.name, rating, votecount, length, length_minutes, tags.name, tags.rating, tags.spoiler, staff.role, staff.name, staff.original, va.note, va.staff.name, va.staff.original, va.character.id, va.character.name, va.character.original, va.character.image.url, screenshots.url, screenshots.dims, screenshots.thumbnail, screenshots.thumbnail_dims',
     })
   })
 }
@@ -176,6 +176,20 @@ export async function getVnQuotes(vnId) {
       sort: 'score',
       reverse: true,
       results: 50
+    })
+  })
+}
+
+/**
+ * 3.4 获取特定角色的详细信息
+ * POST /character
+ */
+export async function getCharacterDetail(id) {
+  return request('/character', {
+    method: 'POST',
+    body: JSON.stringify({
+      filters: ['id', '=', id],
+      fields: 'id, name, original, description, image.url, image.dims, image.sexual, image.violence, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday, vns.role, vns.spoiler, vns.id, vns.title, vns.alttitle, vns.image.url, vns.image.dims, vns.rating, vns.released, vns.olang, traits.name, traits.spoiler, traits.group_name',
     })
   })
 }

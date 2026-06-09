@@ -47,6 +47,11 @@ const props = defineProps({
   customSortOptions: {
     type: Array,
     default: null
+  },
+  // 卡片模式下是否使用紧凑高度
+  compact: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -109,6 +114,19 @@ function getReleased(item) { return item.vn?.released || item.released || '' }
 function getOlang(item) { return item.vn?.olang || item.olang || '' }
 function getRating(item) { return item.vn?.rating || item.rating || null }
 function getUserVote(item) { return item.vote || null }
+function getBadge(item) {
+  return item.role || item.relation || null
+}
+
+const translateBadge = (val) => {
+  if (!val) return null
+  // 尝试翻译 role 或 relation
+  return t(`metadata.role.${val.toLowerCase()}`, val) !== val.toLowerCase()
+    ? t(`metadata.role.${val.toLowerCase()}`)
+    : (t(`metadata.relation.${val.toLowerCase()}`, val) !== val.toLowerCase()
+        ? t(`metadata.relation.${val.toLowerCase()}`)
+        : val)
+}
 
 // 触底加载逻辑
 const sentinel = ref(null)
@@ -218,10 +236,14 @@ function toggleReverse() {
         <div
           v-for="item in items"
           :key="item.id"
-          class="flex items-start gap-4 p-4 rounded-xl border border-neutral-200 bg-white shadow-xs hover:border-neutral-300 transition cursor-pointer"
+          class="flex items-start gap-3 rounded-xl border border-neutral-200 bg-white shadow-xs hover:border-neutral-300 transition cursor-pointer"
+          :class="[compact ? 'p-2.5' : 'p-4']"
           @click="handleItemClick(item)"
         >
-          <div class="h-28 w-21 rounded-lg bg-neutral-50 overflow-hidden border border-neutral-200 shrink-0">
+          <div
+            class="rounded-lg bg-neutral-50 overflow-hidden border border-neutral-200 shrink-0"
+            :class="[compact ? 'h-20 w-15' : 'h-28 w-21']"
+          >
             <img
               v-if="getImage(item)?.thumbnail || getImage(item)?.url"
               :src="getImage(item).thumbnail || getImage(item).url"
@@ -234,10 +256,28 @@ function toggleReverse() {
             </div>
           </div>
 
-          <div class="min-w-0 flex-1 flex flex-col justify-between h-28 py-0.5">
+          <div
+            class="min-w-0 flex-1 flex flex-col justify-between py-0.5"
+            :class="[compact ? 'h-20' : 'h-28']"
+          >
             <div class="space-y-0.5">
               <div class="flex items-start justify-between gap-2">
-                <span class="text-sm font-semibold text-neutral-900 block truncate">{{ getTitle(item) }}</span>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2 overflow-hidden">
+                    <span class="text-sm font-semibold text-neutral-900 truncate">{{ getTitle(item) }}</span>
+                    <span
+                      v-if="getBadge(item)"
+                      class="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0"
+                      :class="[
+                        getBadge(item) === 'main'
+                          ? 'bg-red-50 text-red-600 border border-red-100'
+                          : 'bg-neutral-100 text-neutral-500 border border-neutral-200/50'
+                      ]"
+                    >
+                      {{ translateBadge(getBadge(item)) }}
+                    </span>
+                  </div>
+                </div>
                 <span v-if="item.lastmod" class="text-[10px] text-neutral-400 shrink-0 mt-0.5">{{ formatDate(item.lastmod) }}</span>
               </div>
               <span v-if="getAltTitle(item)" class="text-[10px] text-neutral-400 block truncate leading-none">
@@ -316,8 +356,20 @@ function toggleReverse() {
                 {{ formatRating(getUserVote(item) || getRating(item)) }}
               </div>
             </div>
-            <div class="p-3">
+            <div class="p-3 space-y-1.5">
               <span class="text-xs font-semibold text-neutral-900 block line-clamp-2 leading-tight">{{ getTitle(item) }}</span>
+              <div v-if="getBadge(item)" class="flex">
+                <span
+                  class="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0"
+                  :class="[
+                    getBadge(item) === 'main'
+                      ? 'bg-red-50 text-red-600 border border-red-100'
+                      : 'bg-neutral-100 text-neutral-500 border border-neutral-200/50'
+                  ]"
+                >
+                  {{ translateBadge(getBadge(item)) }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -345,8 +397,20 @@ function toggleReverse() {
                 {{ formatRating(getUserVote(item) || getRating(item)) }}
               </div>
             </div>
-            <div class="p-3">
+            <div class="p-3 space-y-1.5">
               <span class="text-xs font-semibold text-neutral-900 block line-clamp-2 leading-tight">{{ getTitle(item) }}</span>
+              <div v-if="getBadge(item)" class="flex">
+                <span
+                  class="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0"
+                  :class="[
+                    getBadge(item) === 'main'
+                      ? 'bg-red-50 text-red-600 border border-red-100'
+                      : 'bg-neutral-100 text-neutral-500 border border-neutral-200/50'
+                  ]"
+                >
+                  {{ translateBadge(getBadge(item)) }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -361,7 +425,20 @@ function toggleReverse() {
           @click="handleItemClick(item)"
         >
           <div class="flex flex-col gap-0.5 min-w-0 flex-1">
-            <span class="text-sm font-medium text-neutral-900 truncate">{{ getTitle(item) }}</span>
+            <div class="flex items-center gap-2 overflow-hidden">
+              <span class="text-sm font-medium text-neutral-900 truncate">{{ getTitle(item) }}</span>
+              <span
+                v-if="getBadge(item)"
+                class="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0 scale-90 origin-left"
+                :class="[
+                  getBadge(item) === 'main'
+                    ? 'bg-red-50 text-red-600 border border-red-100'
+                    : 'bg-neutral-100 text-neutral-500 border border-neutral-200/50'
+                ]"
+              >
+                {{ translateBadge(getBadge(item)) }}
+              </span>
+            </div>
             <span v-if="getAltTitle(item)" class="text-[11px] text-neutral-400 truncate">{{ getAltTitle(item) }}</span>
           </div>
           <div v-if="getRating(item) || getUserVote(item)" class="flex items-center gap-1 shrink-0">
