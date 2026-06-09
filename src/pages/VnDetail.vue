@@ -36,7 +36,38 @@ const lightboxImageIndex = ref(0) // 记录当前查看的图片索引
 const lightboxImagesList = ref([]) // 大图画廊的数据列表（可以是截图，也可以是封面等）
 const scrollContainer = ref(null) // 滚动容器的 DOM 引用
 
+// 控制简介展开/收起
+const isDescriptionExpanded = ref(false)
+
+// 控制角色详情展开/收起 (存储展开的角色 ID)
+const expandedCharIds = ref(new Set())
+
+const toggleCharExpansion = (id) => {
+  if (expandedCharIds.value.has(id)) {
+    expandedCharIds.value.delete(id)
+  } else {
+    expandedCharIds.value.add(id)
+  }
+}
+
+// 获取角色的声优信息
+const getCharacterVA = (charId) => {
+  if (!vn.value || !vn.value.va) return null
+  return vn.value.va.find(v => v.character?.id === charId)
+}
+
 // 根据当前选择的剧透级别过滤出来的标签列表
+const groupTraits = (traits) => {
+  if (!traits) return {}
+  const filtered = traits.filter(t => t.spoiler <= spoilerLevel.value)
+  return filtered.reduce((acc, trait) => {
+    const group = trait.group_name || 'Other'
+    if (!acc[group]) acc[group] = []
+    acc[group].push(trait)
+    return acc
+  }, {})
+}
+
 const filteredTags = computed(() => {
   if (!vn.value || !vn.value.tags) return []
   return vn.value.tags.filter(tag => tag.spoiler <= spoilerLevel.value)
@@ -473,10 +504,25 @@ watch(
       <!-- 2. 简介 (固定在选项卡上方) -->
       <div class="space-y-1.5" v-if="vn.description">
         <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">{{ t('vn.description') }}</h3>
-        <div 
-          class="rounded-lg border-l-3 border-neutral-300 bg-neutral-50 px-4 py-3 text-xs leading-relaxed text-neutral-600 whitespace-pre-wrap bbcode-container"
-          v-html="parseBBCode(vn.description)"
-        ></div>
+        <div class="relative">
+          <div
+            class="rounded-lg border-l-3 border-neutral-300 bg-neutral-50 px-4 py-3 text-xs leading-relaxed text-neutral-600 whitespace-pre-wrap bbcode-container transition-all duration-300"
+            :class="[!isDescriptionExpanded ? 'max-h-32 overflow-hidden' : '']"
+            v-html="parseBBCode(vn.description)"
+          ></div>
+          <!-- 渐变蒙层，仅在收起且内容较长时显示 (这里简单处理，始终显示按钮) -->
+          <div
+            v-if="!isDescriptionExpanded"
+            class="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-neutral-50 to-transparent pointer-events-none"
+          ></div>
+          <button
+            @click="isDescriptionExpanded = !isDescriptionExpanded"
+            class="mt-1 text-[10px] font-bold text-neutral-400 hover:text-neutral-600 flex items-center gap-0.5 transition-colors"
+          >
+            <Icon :icon="isDescriptionExpanded ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="h-3 w-3" />
+            {{ isDescriptionExpanded ? '收起全文' : '展开全文' }}
+          </button>
+        </div>
       </div>
 
       <!-- 3. 相关作品 (固定在选项卡上方) -->
@@ -500,7 +546,6 @@ watch(
               { id: 'tags', name: t('vn.tabs.tags') },
               { id: 'covers', name: t('vn.tabs.covers') },
               { id: 'screenshots', name: t('vn.tabs.screenshots') },
-              { id: 'reviews', name: t('vn.tabs.reviews') },
               { id: 'quotes', name: t('vn.tabs.quotes') },
             ]"
             :key="tab.id"
@@ -593,18 +638,19 @@ watch(
             {{ t('vn.characters.empty') }}
           </div>
           <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div 
-              v-for="char in characters" 
+            <div
+              v-for="char in characters"
               :key="char.id"
-              class="p-3 rounded-xl border border-neutral-200 bg-white flex items-start gap-3 shadow-xs hover:border-neutral-300 transition"
+              @click="toggleCharExpansion(char.id)"
+              class="p-3 rounded-xl border border-neutral-200 bg-white flex items-start gap-3 shadow-xs hover:border-neutral-300 transition cursor-pointer"
             >
               <!-- 角色立绘头像 -->
               <div class="w-16 h-20 rounded-lg overflow-hidden flex-shrink-0 border border-neutral-200 bg-neutral-50">
-                <img 
-                  v-if="char.image?.url" 
-                  :src="char.image.url" 
-                  class="w-full h-full object-cover object-top" 
-                  loading="lazy" 
+                <img
+                  v-if="char.image?.url"
+                  :src="char.image.url"
+                  class="w-full h-full object-cover object-top"
+                  loading="lazy"
                 />
                 <div v-else class="w-full h-full flex items-center justify-center">
                   <Icon icon="lucide:user" class="h-6 w-6 text-neutral-300" />
@@ -618,11 +664,11 @@ watch(
                     {{ char.name }}
                     <span v-if="char.original" class="text-[10px] text-neutral-400 font-normal">({{ char.original }})</span>
                   </h4>
-                  <span 
+                  <span
                     class="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0"
                     :class="[
-                      char.vns?.find(v => v.id === vn?.id || v.id === vn?.id)?.role === 'main' 
-                        ? 'bg-red-50 text-red-600 border border-red-100' 
+                      char.vns?.find(v => v.id === vn?.id || v.id === vn?.id)?.role === 'main'
+                        ? 'bg-red-50 text-red-600 border border-red-100'
                         : 'bg-neutral-100 text-neutral-500'
                     ]"
                   >
@@ -645,7 +691,51 @@ watch(
                 </div>
 
                 <!-- 角色简述 -->
-                <p v-if="char.description" class="text-[10px] leading-relaxed text-neutral-500 line-clamp-2 pt-1 border-t border-neutral-100" v-html="parseBBCode(char.description)"></p>
+                <div v-if="char.description || (char.traits && char.traits.length > 0)">
+                  <p
+                    v-if="char.description"
+                    class="text-[10px] leading-relaxed text-neutral-500 pt-1 border-t border-neutral-100 transition-all duration-300"
+                    :class="[expandedCharIds.has(char.id) ? '' : 'line-clamp-2']"
+                    v-html="parseBBCode(char.description)"
+                  ></p>
+                  
+                  <!-- 角色特征标签 (Traits) - 仅在展开时显示 -->
+                  <div
+                    v-if="expandedCharIds.has(char.id) && char.traits && char.traits.length > 0"
+                    class="mt-2 pt-2 border-t border-neutral-100 space-y-2"
+                  >
+                    <div
+                      v-for="(traits, group) in groupTraits(char.traits)"
+                      :key="group"
+                      class="space-y-1"
+                    >
+                      <h5 class="text-[8px] font-bold text-neutral-400 uppercase tracking-tighter">{{ group }}</h5>
+                      <div class="flex flex-wrap gap-1">
+                        <span
+                          v-for="trait in traits"
+                          :key="trait.name"
+                          class="px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600 text-[8px] font-medium transition-colors"
+                          :class="[trait.spoiler > 0 ? 'bg-amber-50 text-amber-700 border border-amber-100' : 'border border-transparent']"
+                        >
+                          {{ trait.name }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Voiced by (CV) -->
+                    <div v-if="getCharacterVA(char.id)" class="space-y-1">
+                      <h5 class="text-[8px] font-bold text-neutral-400 uppercase tracking-tighter">Voiced by</h5>
+                      <div class="text-[10px] text-neutral-700 font-medium">
+                        {{ getCharacterVA(char.id).staff?.name }}
+                        <span v-if="getCharacterVA(char.id).staff?.original" class="text-[9px] text-neutral-400 font-normal">({{ getCharacterVA(char.id).staff.original }})</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex justify-end mt-0.5">
+                    <Icon :icon="expandedCharIds.has(char.id) ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="h-3 w-3 text-neutral-300" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -832,16 +922,6 @@ watch(
           </div>
         </div>
 
-        <!-- 8. 评论 Tab -->
-        <div v-else-if="activeTab === 'reviews'" class="space-y-3">
-          <div class="p-6 rounded-xl border border-dashed border-neutral-200 text-center space-y-2">
-            <Icon icon="lucide:file-text" class="h-8 w-8 text-neutral-300 mx-auto" />
-            <h4 class="text-xs font-semibold text-neutral-800">{{ t('vn.tabs.reviews') }}</h4>
-            <p class="text-[10px] text-neutral-400 max-w-xs mx-auto">
-              VNDB API 目前仅提供 has_review 等布尔过滤状态指示，暂未开放直接通过 API 拉取详细评论列表的接口。
-            </p>
-          </div>
-        </div>
       </div>
     </div>
 

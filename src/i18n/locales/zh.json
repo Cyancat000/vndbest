@@ -187,7 +187,7 @@
       "unknown": "未知"
     },
     "role": {
-      "main": "主角",
+      "main": "视点角色",
       "primary": "主要角色",
       "side": "配角",
       "appears": "客串/出场"

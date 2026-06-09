@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import BaseSelect from '@/components/BaseSelect.vue'
 
 const router = useRouter()
 const { t, locale } = useI18n()
@@ -10,6 +11,11 @@ const { t, locale } = useI18n()
 const username = ref(localStorage.getItem('vndb_username') || '')
 const useSandbox = ref(JSON.parse(localStorage.getItem('vndb_use_sandbox') || 'false'))
 const currentLang = ref(locale.value)
+
+const languageOptions = [
+  { value: 'zh', label: '简体中文' },
+  { value: 'en', label: 'English' }
+]
 
 onMounted(() => {
   // 每次进入页面重新获取最新的登录状态
@@ -92,13 +98,10 @@ function goToLogin() {
         <div class="space-y-0.5">
           <label class="text-sm font-medium text-neutral-800">{{ t('settings.language') }}</label>
         </div>
-        <select
+        <BaseSelect
           v-model="currentLang"
-          class="rounded-lg border border-neutral-200 bg-neutral-50 p-1 text-sm focus:border-neutral-900 focus:outline-hidden"
-        >
-          <option value="zh">简体中文</option>
-          <option value="en">English</option>
-        </select>
+          :options="languageOptions"
+        />
       </div>
 
       <div class="flex items-center justify-between py-2">

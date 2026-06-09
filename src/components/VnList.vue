@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import BaseSelect from './BaseSelect.vue'
 
 const props = defineProps({
   items: {
@@ -134,9 +135,6 @@ onUnmounted(() => {
 })
 
 // 自定义排序下拉菜单逻辑
-const isSortMenuOpen = ref(false)
-const sortMenuRef = ref(null)
-
 const defaultSortOptions = [
   { value: 'lastmod', label: 'list.sort.lastmod' },
   { value: 'added', label: 'list.sort.added' },
@@ -148,37 +146,13 @@ const defaultSortOptions = [
 
 const sortOptions = computed(() => props.customSortOptions || defaultSortOptions)
 
-const currentSortLabel = computed(() => {
-  const option = sortOptions.value.find(opt => opt.value === props.sortBy)
-  return option ? t(option.label) : ''
-})
-
-function toggleSortMenu() {
-  isSortMenuOpen.value = !isSortMenuOpen.value
-}
-
 function handleSortSelect(value) {
   emit('sortChange', value)
-  isSortMenuOpen.value = false
 }
 
 function toggleReverse() {
   emit('reverseChange', !props.reverse)
 }
-
-function handleClickOutside(event) {
-  if (sortMenuRef.value && !sortMenuRef.value.contains(event.target)) {
-    isSortMenuOpen.value = false
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('mousedown', handleClickOutside)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('mousedown', handleClickOutside)
-})
 </script>
 
 <template>
@@ -187,32 +161,16 @@ onUnmounted(() => {
     <div v-if="!forceLayout || showSort" class="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3 px-1">
       <!-- 左侧：排序 -->
       <div v-if="showSort" class="flex items-center gap-1">
-        <div class="relative" ref="sortMenuRef">
-          <button
-            @click="toggleSortMenu"
-            class="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-neutral-100 transition text-xs font-medium text-neutral-600 hover:text-neutral-900 cursor-pointer"
-          >
+        <BaseSelect
+          :model-value="sortBy"
+          :options="sortOptions"
+          :label-renderer="(l) => t(l)"
+          @update:model-value="handleSortSelect"
+        >
+          <template #prefix>
             <Icon icon="lucide:arrow-down-narrow-wide" class="h-3.5 w-3.5 text-neutral-400" />
-            <span>{{ currentSortLabel }}</span>
-            <Icon icon="lucide:chevron-down" class="h-3 w-3 text-neutral-400 transition-transform duration-200" :class="{ 'rotate-180': isSortMenuOpen }" />
-          </button>
-
-          <div
-            v-if="isSortMenuOpen"
-            class="absolute left-0 mt-1 w-36 z-50 rounded-lg border border-neutral-200 bg-white p-1 shadow-lg ring-1 ring-black/5 animate-in fade-in zoom-in duration-100"
-          >
-            <button
-              v-for="opt in sortOptions"
-              :key="opt.value"
-              @click="handleSortSelect(opt.value)"
-              class="flex w-full items-center justify-between px-2.5 py-1.5 text-left text-xs font-medium rounded-md transition cursor-pointer"
-              :class="sortBy === opt.value ? 'bg-neutral-100 text-neutral-900' : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'"
-            >
-              <span>{{ t(opt.label) }}</span>
-              <Icon v-if="sortBy === opt.value" icon="lucide:check" class="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </div>
+          </template>
+        </BaseSelect>
 
         <button
           @click="toggleReverse"
