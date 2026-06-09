@@ -105,12 +105,14 @@ export async function getLatestVn(params = {}) {
  * 2.2 通用 VN 列表查询 (根据 filters)
  * POST /vn
  */
-export async function getVnList(filters, params = {}) {
+export async function getVnList(filters = [], params = {}) {
   const payload = {
-    filters,
     fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail}, released, olang, rating',
     results: 20,
     ...params
+  }
+  if (filters && Array.isArray(filters) && filters.length > 0) {
+    payload.filters = filters
   }
   return request('/vn', {
     method: 'POST',
@@ -127,7 +129,7 @@ export async function getVnDetail(id) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['id', '=', id],
-      fields: 'id, title, alttitle, titles{lang,title,latin}, image.url, image.dims, image.sexual, image.violence, released, olang, description, relations.id, relations.title, relations.alttitle, relations.titles{lang,title,latin}, relations.relation, relations.relation_official, relations.image.url, relations.image.dims, relations.rating, relations.released, relations.olang, languages, platforms, developers.name, rating, votecount, length, length_minutes, tags.name, tags.rating, tags.spoiler, staff.role, staff.name, staff.original, va.note, va.staff.name, va.staff.original, va.character.id, va.character.name, va.character.original, va.character.image.url, screenshots.url, screenshots.dims, screenshots.thumbnail, screenshots.thumbnail_dims',
+      fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,dims,sexual,violence,thumbnail,thumbnail_dims}, released, olang, description, relations{id,title,alttitle,relation,relation_official,image{url,dims,thumbnail},rating,released,olang}, languages, platforms, developers{name}, rating, votecount, length, length_minutes, tags{name,rating,spoiler}, staff{role,name,original}, va{note,staff{name,original},character{id,name,original,image{url}}}, screenshots{url,dims,thumbnail,thumbnail_dims}',
     })
   })
 }
@@ -141,7 +143,7 @@ export async function getVnReleases(vnId) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['vn', '=', ['id', '=', vnId]],
-      fields: 'id, title, alttitle, released, languages.lang, platforms, official, patch, freeware, notes, uncensored, minage, images.url, images.dims, images.type, images.languages',
+      fields: 'id, title, alttitle, released, languages{lang}, platforms, official, patch, freeware, notes, uncensored, minage, images{url,dims,type,languages}',
       sort: 'released',
       results: 50
     })
@@ -152,12 +154,14 @@ export async function getVnReleases(vnId) {
  * 3.1.1 通用 Release 列表查询
  * POST /release
  */
-export async function getReleaseList(filters, params = {}) {
+export async function getReleaseList(filters = [], params = {}) {
   const payload = {
-    filters,
-    fields: 'id, title, alttitle, released, languages.lang, platforms, official, patch, freeware, notes, uncensored, minage, images.url, images.dims, images.type, images.languages',
+    fields: 'id, title, alttitle, released, languages{lang}, platforms, official, patch, freeware, notes, uncensored, minage, images{url,dims,type,languages}',
     results: 20,
     ...params
+  }
+  if (filters && Array.isArray(filters) && filters.length > 0) {
+    payload.filters = filters
   }
   return request('/release', {
     method: 'POST',
@@ -174,7 +178,7 @@ export async function getVnCharacters(vnId) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['vn', '=', ['id', '=', vnId]],
-      fields: 'id, name, original, description, image.url, image.dims, image.sexual, image.violence, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday, vns.role, vns.spoiler, traits.name, traits.spoiler, traits.group_name',
+      fields: 'id, name, original, description, image{url,dims,sexual,violence}, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday, vns{role,spoiler}, traits{name,spoiler,group_name}',
       results: 100
     })
   })
@@ -189,7 +193,7 @@ export async function getVnQuotes(vnId) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['vn', '=', ['id', '=', vnId]],
-      fields: 'id, quote, score, character.name, character.original',
+      fields: 'id, quote, score, character{name,original}',
       sort: 'score',
       reverse: true,
       results: 50
@@ -206,8 +210,44 @@ export async function getCharacterDetail(id) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['id', '=', id],
-      fields: 'id, name, original, description, image.url, image.dims, image.sexual, image.violence, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday, vns.role, vns.spoiler, vns.id, vns.title, vns.alttitle, vns.titles{lang,title,latin}, vns.image.url, vns.image.dims, vns.rating, vns.released, vns.olang, traits.name, traits.spoiler, traits.group_name',
+      fields: 'id, name, original, description, image{url,dims,sexual,violence}, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday, vns{id,role,spoiler,title,alttitle,image{url,dims,thumbnail},rating,released,olang}, traits{name,spoiler,group_name}',
     })
+  })
+}
+
+/**
+ * 3.5 搜索 Characters
+ * POST /character
+ */
+export async function searchCharacters(query, params = {}) {
+  const payload = {
+    filters: ['search', '=', query],
+    fields: 'id, name, original, description, image{url,dims}, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday',
+    results: 20,
+    ...params
+  }
+  return request('/character', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+}
+
+/**
+ * 3.6 通用 Character 列表查询
+ * POST /character
+ */
+export async function getCharacterList(filters = [], params = {}) {
+  const payload = {
+    fields: 'id, name, original, description, image{url,dims}, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday',
+    results: 20,
+    ...params
+  }
+  if (filters && Array.isArray(filters) && filters.length > 0) {
+    payload.filters = filters
+  }
+  return request('/character', {
+    method: 'POST',
+    body: JSON.stringify(payload)
   })
 }
 
@@ -303,12 +343,14 @@ export async function getProducerDetail(id) {
  * 7.2 通用 Producer 列表查询
  * POST /producer
  */
-export async function getProducerList(filters, params = {}) {
+export async function getProducerList(filters = [], params = {}) {
   const payload = {
-    filters,
     fields: 'id, name, original, aliases, lang, type, description',
     results: 20,
     ...params
+  }
+  if (filters && Array.isArray(filters) && filters.length > 0) {
+    payload.filters = filters
   }
   return request('/producer', {
     method: 'POST',
@@ -353,7 +395,7 @@ export async function getStaffDetail(id) {
  */
 export async function getStaffList(filters = [], params = {}) {
   // 确保包含 ismain 过滤以避免重复人物，除非显式提供 filters
-  const finalFilters = filters.length > 0 ? filters : ['ismain', '=', 1]
+  const finalFilters = (filters && Array.isArray(filters) && filters.length > 0) ? filters : ['ismain', '=', 1]
   const payload = {
     filters: finalFilters,
     fields: 'id, name, original, lang, description, ismain',
@@ -377,6 +419,78 @@ export async function getVnListByStaff(staffId, params = {}) {
     ...params
   }
   return request('/vn', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+}
+
+/**
+ * 9. 搜索 Tags
+ * POST /tag
+ */
+export async function searchTags(query, params = {}) {
+  const payload = {
+    filters: ['search', '=', query],
+    fields: 'id, name, description, category, vn_count',
+    results: 20,
+    ...params
+  }
+  return request('/tag', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+}
+
+/**
+ * 9.1 通用 Tag 列表查询
+ * POST /tag
+ */
+export async function getTagList(filters = [], params = {}) {
+  const payload = {
+    fields: 'id, name, description, category, vn_count',
+    results: 20,
+    ...params
+  }
+  if (filters && Array.isArray(filters) && filters.length > 0) {
+    payload.filters = filters
+  }
+  return request('/tag', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+}
+
+/**
+ * 10. 搜索 Traits
+ * POST /trait
+ */
+export async function searchTraits(query, params = {}) {
+  const payload = {
+    filters: ['search', '=', query],
+    fields: 'id, name, description, group_id, group_name, char_count',
+    results: 20,
+    ...params
+  }
+  return request('/trait', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+}
+
+/**
+ * 10.1 通用 Trait 列表查询
+ * POST /trait
+ */
+export async function getTraitList(filters = [], params = {}) {
+  const payload = {
+    fields: 'id, name, description, group_id, group_name, char_count',
+    results: 20,
+    ...params
+  }
+  if (filters && Array.isArray(filters) && filters.length > 0) {
+    payload.filters = filters
+  }
+  return request('/trait', {
     method: 'POST',
     body: JSON.stringify(payload)
   })
