@@ -267,3 +267,51 @@ export async function getUserListLabels(userId = null) {
     method: 'GET'
   })
 }
+
+/**
+ * 7. 搜索 Producers (会社)
+ * POST /producer
+ */
+export async function searchProducers(query, params = {}) {
+  const payload = {
+    filters: ['search', '=', query],
+    fields: 'id, name, original, aliases, lang, type, description',
+    results: 20,
+    ...params
+  }
+  return request('/producer', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+}
+
+/**
+ * 7.1 获取特定 Producer 的详细信息
+ * POST /producer
+ */
+export async function getProducerDetail(id) {
+  return request('/producer', {
+    method: 'POST',
+    body: JSON.stringify({
+      filters: ['id', '=', id],
+      fields: 'id, name, original, aliases, lang, type, description, extlinks{url,label,name}',
+    })
+  })
+}
+
+/**
+ * 7.2 通用 Producer 列表查询
+ * POST /producer
+ */
+export async function getProducerList(filters, params = {}) {
+  const payload = {
+    filters,
+    fields: 'id, name, original, aliases, lang, type, description',
+    results: 20,
+    ...params
+  }
+  return request('/producer', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+}
