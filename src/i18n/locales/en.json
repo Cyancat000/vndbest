@@ -1,0 +1,215 @@
+{
+  "common": {
+    "save": "Save",
+    "settings": "Settings",
+    "login": "Login",
+    "logout": "Logout",
+    "connected": "Connected",
+    "not_connected": "Not Connected",
+    "loading": "Loading...",
+    "error": "Error"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Configure VNDBest client settings",
+    "account_sync": "Account & Sync",
+    "not_logged_in": "Not Logged In",
+    "logged_in_desc": "Connected to VNDB account",
+    "login_sync_desc": "Click to login and sync your collection",
+    "system_preferences": "System Preferences",
+    "use_sandbox": "Use Sandbox Endpoint",
+    "sandbox_desc": "Enable to request test API, avoiding pollution of production data",
+    "language": "Language",
+    "save_settings": "Save Settings",
+    "settings_saved": "Settings saved!"
+  },
+  "nav": {
+    "home": "Home",
+    "search": "Search",
+    "list": "List",
+    "settings": "Settings"
+  },
+  "home": {
+    "title": "Dashboard",
+    "subtitle": "Welcome to VNDBest",
+    "stats_title": "VNDB Platform Overview",
+    "vn": "Visual Novels",
+    "releases": "Releases",
+    "producers": "Producers",
+    "staff": "Staff",
+    "quick_explore": "Quick Explore",
+    "search_vn": "Search Visual Novels",
+    "my_list": "My Collection"
+  },
+  "search": {
+    "title": "Search",
+    "description": "Find Visual Novels information",
+    "placeholder": "Enter title to search, press Enter...",
+    "no_results": "No matching Visual Novels found",
+    "no_alttitle": "No alternative title"
+  },
+  "list": {
+    "title": "List",
+    "description": "Manage your Visual Novels collection",
+    "refresh": "Refresh list",
+    "not_connected_title": "Not Connected",
+    "not_connected_desc": "You need to log in to your VNDB account to load and manage your personal collection.",
+    "go_to_login": "Go to Login",
+    "all": "All",
+    "list_view": "List View",
+    "grid_view": "Grid View",
+    "load_more": "Load More",
+    "empty_title": "List is Empty",
+    "empty_desc": "No visual novels found under this label. You can add them from search or detail pages.",
+    "error_fetching": "Failed to fetch data, please try again later"
+  },
+  "login": {
+    "title": "VNDB Account",
+    "description": "Manage your VNDB API credentials",
+    "guest_title": "Not Logged In",
+    "guest_desc": "Currently browsing as guest (read-only)",
+    "token_label": "API Access Token",
+    "token_placeholder": "Enter your VNDB API Token",
+    "token_help_1": "How to get: Login to VNDB.org, go to \"My Profile\" -> \"Applications\" tab.",
+    "token_help_2": "Ensure 'listread' and 'listwrite' permissions are enabled for full functionality.",
+    "token_empty": "Please enter API Token",
+    "verifying": "Verifying...",
+    "verify_and_login": "Verify & Login",
+    "login_success": "Login successful! Redirecting...",
+    "logged_in_as": "Logged in (ID: {id})",
+    "logout": "Logout",
+    "logout_success": "Logged out",
+    "login_failed": "Login failed: {error}"
+  },
+  "vn": {
+    "details": "VN Details",
+    "character_details": "Character Details",
+    "producer_details": "Producer Details",
+    "not_found": "Visual Novel details not found",
+    "id": "ID",
+    "developer": "Developer",
+    "released": "Released",
+    "olang": "Original Lang",
+    "languages": "Languages",
+    "platforms": "Platforms",
+    "length": "Length",
+    "rating": "Rating",
+    "votes": "{count} votes",
+    "description": "Description",
+    "relations": "Relations",
+    "official": "Official",
+    "tabs": {
+      "releases": "Releases",
+      "characters": "Characters",
+      "staff": "Staff",
+      "tags": "Tags",
+      "covers": "Covers",
+      "screenshots": "Screenshots",
+      "reviews": "Reviews",
+      "quotes": "Quotes"
+    },
+    "releases": {
+      "loading": "Loading releases...",
+      "empty": "No releases found",
+      "official": "Official",
+      "unofficial": "Unofficial/Fan",
+      "date": "Release Date",
+      "lang": "Lang",
+      "platform": "Platform",
+      "age": "Age Rating"
+    },
+    "covers": {
+      "loading": "Organizing covers...",
+      "empty": "No covers found"
+    },
+    "characters": {
+      "loading": "Loading characters...",
+      "empty": "No characters found",
+      "gender": "Gender",
+      "age": "Age",
+      "blood_type": "Blood",
+      "height": "Height",
+      "weight": "Weight",
+      "measurements": "Measurements",
+      "cup": "{cup} Cup",
+      "birthday": "Birthday",
+      "birthday_val": "{month}/{day}"
+    },
+    "staff": {
+      "title": "Staff",
+      "va_title": "Voice Actors",
+      "empty": "No staff information",
+      "va_empty": "No voice actor information"
+    },
+    "tags": {
+      "spoiler_filter": "Max Spoiler Level",
+      "spoiler_0": "None",
+      "spoiler_1": "Minor",
+      "spoiler_2": "Major",
+      "empty": "No tags found for this spoiler level. Try increasing it."
+    },
+    "screenshots": {
+      "empty": "No screenshots found"
+    },
+    "quotes": {
+      "loading": "Loading quotes...",
+      "empty": "No quotes found",
+      "narrator": "Narrator/Unknown",
+      "score": "Score"
+    },
+    "spoiler_alert": {
+      "title": "Spoiler Alert",
+      "desc": "Enabling this may show major spoilers that could affect your experience. Are you sure?",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    }
+  },
+  "metadata": {
+    "gender": {
+      "m": "Male",
+      "f": "Female",
+      "b": "Both",
+      "n": "None",
+      "unknown": "Unknown"
+    },
+    "role": {
+      "main": "Main",
+      "primary": "Primary",
+      "side": "Side",
+      "appears": "Appears"
+    },
+    "relation": {
+      "seq": "Sequel",
+      "preq": "Prequel",
+      "alt": "Alternative",
+      "shares-char": "Shares Char",
+      "side": "Side Story",
+      "parent": "Main Story",
+      "character": "Character-related",
+      "fan": "Fan Disc",
+      "translated": "Translation",
+      "collab": "Collab"
+    },
+    "staff_role": {
+      "scenario": "Scenario",
+      "art": "Art",
+      "music": "Music",
+      "director": "Director",
+      "vocals": "Vocals",
+      "translator": "Translator",
+      "editor": "Editor",
+      "publisher": "Publisher",
+      "developer": "Developer",
+      "songs": "Songs",
+      "staff": "Staff"
+    },
+    "length": {
+      "1": "Very Short (< 2h)",
+      "2": "Short (2 - 10h)",
+      "3": "Medium (10 - 30h)",
+      "4": "Long (30 - 50h)",
+      "5": "Very Long (> 50h)",
+      "unknown": "Unknown"
+    }
+  }
+}

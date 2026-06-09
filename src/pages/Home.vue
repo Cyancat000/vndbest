@@ -1,10 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { getStats } from '@/api/vndb'
 
 const router = useRouter()
+const { t } = useI18n()
 const stats = ref(null)
 const loading = ref(true)
 
@@ -26,8 +28,8 @@ onMounted(async () => {
         <Icon icon="lucide:home" class="h-5 w-5 text-neutral-800" />
       </div>
       <div>
-        <h1 class="text-2xl font-bold tracking-tight text-neutral-900">Dashboard</h1>
-        <p class="text-xs text-neutral-500">欢迎使用 VNDBest 客户端</p>
+        <h1 class="text-2xl font-bold tracking-tight text-neutral-900">{{ t('home.title') }}</h1>
+        <p class="text-xs text-neutral-500">{{ t('home.subtitle') }}</p>
       </div>
     </div>
 
@@ -35,7 +37,7 @@ onMounted(async () => {
     <div class="rounded-xl border border-neutral-200 bg-white p-4 shadow-xs">
       <h2 class="text-sm font-semibold text-neutral-800 mb-3 flex items-center gap-2">
         <Icon icon="lucide:info" class="h-4 w-4 text-neutral-500" />
-        VNDB 平台数据概览
+        {{ t('home.stats_title') }}
       </h2>
       
       <div v-if="loading" class="grid grid-cols-2 gap-3">
@@ -44,19 +46,19 @@ onMounted(async () => {
       
       <div v-else-if="stats" class="grid grid-cols-2 gap-3">
         <div class="rounded-lg border border-neutral-100 bg-neutral-50/50 p-3">
-          <div class="text-xs text-neutral-500">Visual Novels</div>
+          <div class="text-xs text-neutral-500">{{ t('home.vn') }}</div>
           <div class="text-lg font-bold text-neutral-950 mt-0.5">{{ stats.vn?.toLocaleString() || '0' }}</div>
         </div>
         <div class="rounded-lg border border-neutral-100 bg-neutral-50/50 p-3">
-          <div class="text-xs text-neutral-500">Releases</div>
+          <div class="text-xs text-neutral-500">{{ t('home.releases') }}</div>
           <div class="text-lg font-bold text-neutral-950 mt-0.5">{{ stats.releases?.toLocaleString() || '0' }}</div>
         </div>
         <div class="rounded-lg border border-neutral-100 bg-neutral-50/50 p-3">
-          <div class="text-xs text-neutral-500">Producers</div>
+          <div class="text-xs text-neutral-500">{{ t('home.producers') }}</div>
           <div class="text-lg font-bold text-neutral-950 mt-0.5">{{ stats.producers?.toLocaleString() || '0' }}</div>
         </div>
         <div class="rounded-lg border border-neutral-100 bg-neutral-50/50 p-3">
-          <div class="text-xs text-neutral-500">Staff</div>
+          <div class="text-xs text-neutral-500">{{ t('home.staff') }}</div>
           <div class="text-lg font-bold text-neutral-950 mt-0.5">{{ stats.staff?.toLocaleString() || '0' }}</div>
         </div>
       </div>
@@ -64,26 +66,26 @@ onMounted(async () => {
 
     <!-- 快捷入口 (Notion Style Cards) -->
     <div class="space-y-2.5">
-      <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">快速探索</h3>
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">{{ t('home.quick_explore') }}</h3>
       <div class="grid gap-2">
-        <button 
+        <button
           @click="router.push('/search')"
           class="flex items-center justify-between rounded-lg border border-neutral-200 bg-white p-3.5 text-left transition hover:bg-neutral-50 active:bg-neutral-100 shadow-xs w-full"
         >
           <div class="flex items-center gap-3">
             <Icon icon="lucide:search" class="h-4 w-4 text-neutral-600" />
-            <span class="text-sm font-medium text-neutral-800">搜索 Visual Novels</span>
+            <span class="text-sm font-medium text-neutral-800">{{ t('home.search_vn') }}</span>
           </div>
           <Icon icon="lucide:chevron-right" class="h-4 w-4 text-neutral-400" />
         </button>
 
-        <button 
+        <button
           @click="router.push('/list')"
           class="flex items-center justify-between rounded-lg border border-neutral-200 bg-white p-3.5 text-left transition hover:bg-neutral-50 active:bg-neutral-100 shadow-xs w-full"
         >
           <div class="flex items-center gap-3">
             <Icon icon="lucide:file-text" class="h-4 w-4 text-neutral-600" />
-            <span class="text-sm font-medium text-neutral-800">我的收藏列表</span>
+            <span class="text-sm font-medium text-neutral-800">{{ t('home.my_list') }}</span>
           </div>
           <Icon icon="lucide:chevron-right" class="h-4 w-4 text-neutral-400" />
         </button>

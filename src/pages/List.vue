@@ -1,10 +1,12 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { getUserList, getUserListLabels } from '@/api/vndb'
 
 const router = useRouter()
+const { t } = useI18n()
 
 // 登录状态
 const isLoggedIn = ref(false)
@@ -128,7 +130,7 @@ async function fetchList(reset = false) {
     }
   } catch (e) {
     console.error('获取收藏列表失败:', e)
-    errorMsg.value = e.message || '获取数据失败，请稍后重试'
+    errorMsg.value = e.message || t('list.error_fetching')
   } finally {
     isLoading.value = false
   }
@@ -190,18 +192,18 @@ function formatDate(timestamp) {
           <Icon icon="lucide:file-text" class="h-5 w-5 text-neutral-800" />
         </div>
         <div>
-          <h1 class="text-2xl font-bold tracking-tight text-neutral-900">List</h1>
-          <p class="text-xs text-neutral-500">管理你的 Visual Novels 收藏清单</p>
+          <h1 class="text-2xl font-bold tracking-tight text-neutral-900">{{ t('list.title') }}</h1>
+          <p class="text-xs text-neutral-500">{{ t('list.description') }}</p>
         </div>
       </div>
       
       <!-- 刷新按钮 -->
-      <button 
+      <button
         v-if="isLoggedIn"
         @click="fetchList(true)"
         :disabled="isLoading"
         class="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 bg-white transition hover:bg-neutral-50 active:bg-neutral-100 disabled:opacity-50"
-        title="刷新列表"
+        :title="t('list.refresh')"
       >
         <Icon icon="lucide:refresh-cw" class="h-4 w-4 text-neutral-600" :class="{ 'animate-spin': isLoading }" />
       </button>
@@ -213,9 +215,9 @@ function formatDate(timestamp) {
         <Icon icon="lucide:user" class="h-6 w-6 text-neutral-400" />
       </div>
       <div class="space-y-1">
-        <h3 class="text-sm font-semibold text-neutral-800">未连接账户</h3>
+        <h3 class="text-sm font-semibold text-neutral-800">{{ t('list.not_connected_title') }}</h3>
         <p class="text-xs text-neutral-400 max-w-sm mx-auto">
-          你需要先登录你的 VNDB 账户，以加载 and 管理你的个人收藏清单。
+          {{ t('list.not_connected_desc') }}
         </p>
       </div>
       <button
@@ -223,7 +225,7 @@ function formatDate(timestamp) {
         class="inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-neutral-800 active:bg-neutral-950"
       >
         <Icon icon="lucide:settings" class="h-4 w-4" />
-        去设置登录 Token
+        {{ t('list.go_to_login') }}
       </button>
     </div>
 
@@ -235,11 +237,11 @@ function formatDate(timestamp) {
           <button
             @click="activeLabelId = null"
             class="whitespace-nowrap pb-3 text-sm font-medium transition-all duration-200 border-b-2 shrink-0 flex items-center gap-1.5 focus:outline-none cursor-pointer"
-            :class="activeLabelId === null 
-              ? 'border-neutral-900 text-neutral-900 font-semibold' 
+            :class="activeLabelId === null
+              ? 'border-neutral-900 text-neutral-900 font-semibold'
               : 'border-transparent text-neutral-500 hover:text-neutral-800'"
           >
-            全部
+            {{ t('list.all') }}
           </button>
           <button
             v-for="lbl in labels"
@@ -267,7 +269,7 @@ function formatDate(timestamp) {
             @click="toggleLayout('list')"
             class="p-1 rounded transition hover:bg-neutral-100 active:bg-neutral-200 cursor-pointer"
             :class="layoutMode === 'list' ? 'text-neutral-900 bg-neutral-100' : 'text-neutral-400'"
-            title="列表布局"
+            :title="t('list.list_view')"
           >
             <Icon icon="lucide:menu" class="h-4 w-4" />
           </button>
@@ -275,7 +277,7 @@ function formatDate(timestamp) {
             @click="toggleLayout('waterfall')"
             class="p-1 rounded transition hover:bg-neutral-100 active:bg-neutral-200 cursor-pointer"
             :class="layoutMode === 'waterfall' ? 'text-neutral-900 bg-neutral-100' : 'text-neutral-400'"
-            title="瀑布流布局"
+            :title="t('list.grid_view')"
           >
             <Icon icon="lucide:layout-grid" class="h-4 w-4" />
           </button>
@@ -284,18 +286,18 @@ function formatDate(timestamp) {
 
       <!-- 1. 列表布局 (layoutMode === 'list') -->
       <div v-if="items.length > 0 && layoutMode === 'list'" class="grid grid-cols-1 gap-3.5">
-        <div 
-          v-for="item in items" 
-          :key="item.id" 
+        <div
+          v-for="item in items"
+          :key="item.id"
           class="flex items-start gap-4 p-4 rounded-xl border border-neutral-200 bg-white shadow-xs hover:border-neutral-300 transition cursor-pointer"
           @click="router.push(`/vn/${item.id}`)"
         >
           <!-- 封面图：调大至 h-28 w-21，比例更协调 -->
           <div class="h-28 w-21 rounded-lg bg-neutral-50 overflow-hidden border border-neutral-200 shrink-0">
-            <img 
-              v-if="item.vn.image?.thumbnail || item.vn.image?.url" 
-              :src="item.vn.image.thumbnail || item.vn.image.url" 
-              alt="cover" 
+            <img
+              v-if="item.vn.image?.thumbnail || item.vn.image?.url"
+              :src="item.vn.image.thumbnail || item.vn.image.url"
+              alt="cover"
               class="h-full w-full object-cover"
               loading="lazy"
             />
@@ -321,8 +323,8 @@ function formatDate(timestamp) {
             <!-- 用户收藏清单的标签：单开一行，换样式为 Notion 关系属性块风格，不换行且超出滑动 -->
             <div class="overflow-x-auto pb-1 -mb-1 scroll-smooth no-scrollbar">
               <div class="flex gap-1.5 shrink-0 whitespace-nowrap">
-                <div 
-                  v-for="lbl in item.labels" 
+                <div
+                  v-for="lbl in item.labels"
                   :key="lbl.id"
                   class="inline-flex items-center gap-1 text-[10px] text-neutral-600 bg-neutral-100/80 px-2 py-0.5 rounded-md border border-neutral-200/50"
                 >
@@ -336,8 +338,8 @@ function formatDate(timestamp) {
             <div class="overflow-x-auto pb-1 -mb-1 scroll-smooth no-scrollbar">
               <div class="flex gap-1.5 items-center shrink-0 whitespace-nowrap">
                 <!-- 用户评分（缩减为橙色星星胶囊） -->
-                <span 
-                  v-if="item.vote" 
+                <span
+                  v-if="item.vote"
                   class="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-medium border bg-amber-50 text-amber-700 border-amber-100"
                 >
                   <Icon icon="lucide:star" class="h-3 w-3 fill-amber-500 stroke-amber-500" />
@@ -366,7 +368,7 @@ function formatDate(timestamp) {
             class="text-xs font-semibold text-neutral-600 hover:text-neutral-900 transition flex items-center gap-1 disabled:opacity-50 py-2 px-4 border border-neutral-200 rounded-lg bg-white cursor-pointer"
           >
             <Icon icon="lucide:more-horizontal" class="h-4 w-4" />
-            {{ isLoading ? '加载中...' : '加载更多' }}
+            {{ isLoading ? t('common.loading') : t('list.load_more') }}
           </button>
         </div>
       </div>
@@ -377,17 +379,17 @@ function formatDate(timestamp) {
         <div class="grid grid-cols-2 gap-3.5 items-start">
           <!-- 左列 -->
           <div class="flex flex-col gap-3.5">
-            <div 
-              v-for="item in waterfallColumns.leftCol" 
+            <div
+              v-for="item in waterfallColumns.leftCol"
               :key="item.id"
               class="rounded-xl border border-neutral-200 bg-white overflow-hidden shadow-xs hover:border-neutral-300 transition cursor-pointer"
               @click="router.push(`/vn/${item.id}`)"
             >
               <!-- 封面高度自适应 -->
-              <img 
-                v-if="item.vn.image?.url" 
-                :src="item.vn.image.url" 
-                alt="cover" 
+              <img
+                v-if="item.vn.image?.url"
+                :src="item.vn.image.url"
+                alt="cover"
                 class="w-full h-auto object-cover max-h-72 border-b border-neutral-100"
                 loading="lazy"
               />
@@ -403,17 +405,17 @@ function formatDate(timestamp) {
 
           <!-- 右列 -->
           <div class="flex flex-col gap-3.5">
-            <div 
-              v-for="item in waterfallColumns.rightCol" 
+            <div
+              v-for="item in waterfallColumns.rightCol"
               :key="item.id"
               class="rounded-xl border border-neutral-200 bg-white overflow-hidden shadow-xs hover:border-neutral-300 transition cursor-pointer"
               @click="router.push(`/vn/${item.id}`)"
             >
               <!-- 封面高度自适应 -->
-              <img 
-                v-if="item.vn.image?.url" 
-                :src="item.vn.image.url" 
-                alt="cover" 
+              <img
+                v-if="item.vn.image?.url"
+                :src="item.vn.image.url"
+                alt="cover"
                 class="w-full h-auto object-cover max-h-72 border-b border-neutral-100"
                 loading="lazy"
               />
@@ -436,7 +438,7 @@ function formatDate(timestamp) {
             class="text-xs font-semibold text-neutral-600 hover:text-neutral-900 transition flex items-center gap-1 disabled:opacity-50 py-2 px-4 border border-neutral-200 rounded-lg bg-white cursor-pointer"
           >
             <Icon icon="lucide:more-horizontal" class="h-4 w-4" />
-            {{ isLoading ? '加载中...' : '加载更多' }}
+            {{ isLoading ? t('common.loading') : t('list.load_more') }}
           </button>
         </div>
       </div>
@@ -447,17 +449,17 @@ function formatDate(timestamp) {
           <Icon icon="lucide:file" class="h-5 w-5 text-neutral-400" />
         </div>
         <div class="space-y-1">
-          <h3 class="text-sm font-semibold text-neutral-800">列表为空</h3>
+          <h3 class="text-sm font-semibold text-neutral-800">{{ t('list.empty_title') }}</h3>
           <p class="text-xs text-neutral-400 max-w-xs mx-auto">
-            在此标签下没有找到任何视觉小说。你可以在搜索或详情页中将其添加到你的收藏清单。
+            {{ t('list.empty_desc') }}
           </p>
         </div>
       </div>
 
       <!-- 加载中占位 -->
       <div v-if="isLoading && items.length === 0" class="space-y-3">
-        <div 
-          v-for="n in 5" 
+        <div
+          v-for="n in 5"
           :key="n"
           class="h-32 w-full bg-neutral-100 rounded-xl animate-pulse"
         ></div>

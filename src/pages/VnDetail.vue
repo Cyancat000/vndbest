@@ -1,11 +1,13 @@
 <script setup>
 import { ref, watch, computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { getVnDetail, getVnReleases, getVnCharacters, getVnQuotes } from '@/api/vndb'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 const vn = ref(null)
 const releases = ref([])
@@ -247,78 +249,34 @@ const formatLength = (vnData) => {
   if (vnData.length_minutes) {
     const hours = Math.floor(vnData.length_minutes / 60)
     const mins = vnData.length_minutes % 60
-    return hours > 0 ? `${hours}小时 ${mins}分钟` : `${mins}分钟`
+    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
   }
   if (vnData.length) {
-    const lengthLabels = {
-      1: '非常短 (< 2小时)',
-      2: '短 (2 - 10小时)',
-      3: '中等 (10 - 30小时)',
-      4: '长 (30 - 50小时)',
-      5: '非常长 (> 50小时)'
-    }
-    return lengthLabels[vnData.length] || '未知时长'
+    return t(`metadata.length.${vnData.length}`) || t('metadata.length.unknown')
   }
-  return '未知'
+  return t('metadata.length.unknown')
 }
 
 // 翻译关系说明
 const translateRelation = (relationType) => {
-  const map = {
-    'seq': '后作/续作',
-    'preq': '前作',
-    'alt': '替换版本/分支',
-    'shares-char': '共享角色',
-    'side': '外传/番外',
-    'parent': '主篇',
-    'character': '角色关联',
-    'fan': 'FD (Fan Disc)',
-    'translated': '翻译版本',
-    'collab': '联名/联动'
-  }
-  return map[relationType] || relationType
+  return t(`metadata.relation.${relationType}`) || relationType
 }
 
 // 翻译角色性别
 const translateGender = (sex) => {
-  if (!sex || sex.length === 0) return '未知'
+  if (!sex || sex.length === 0) return t('metadata.gender.unknown')
   const primarySex = sex[0]
-  const map = {
-    'm': '男',
-    'f': '女',
-    'b': '双性',
-    'n': '无性'
-  }
-  return map[primarySex] || primarySex
+  return t(`metadata.gender.${primarySex}`) || primarySex
 }
 
 // 翻译演职人员角色
 const translateStaffRole = (role) => {
-  const map = {
-    'scenario': '剧本',
-    'art': '原画/美术',
-    'music': '音乐/音效',
-    'director': '监督/导演',
-    'vocals': '歌手',
-    'translator': '翻译',
-    'editor': '校对/编辑',
-    'publisher': '发行商',
-    'developer': '开发商',
-    'songs': '作词/作曲',
-    'staff': '演职人员/协力'
-  }
-  return map[role.toLowerCase()] || role
+  return t(`metadata.staff_role.${role.toLowerCase()}`) || role
 }
 
 // 翻译角色类型关系
 const translateCharRole = (role) => {
-  const map = {
-    'main': '主角',
-    'primary': '主要角色',
-    'side': '配角',
-    'appears': '客串/出场'
-  }
-  return map[role.toLowerCase()] || role
+  return t(`metadata.role.${role.toLowerCase()}`) || role
 }
 
 // 加载主要详情及其他关联选项卡内容
@@ -339,11 +297,11 @@ const loadVnDetail = async (id) => {
       loadQuotes(id)
     } else {
       vn.value = null
-      error.value = '找不到该 Visual Novel 详情信息'
+      error.value = t('vn.not_found')
     }
   } catch (err) {
     console.error('获取VN详情失败:', err)
-    error.value = err.message || '获取VN详情失败'
+    error.value = err.message || t('vn.not_found')
   } finally {
     loading.value = false
   }
@@ -421,7 +379,7 @@ watch(
       >
         <Icon icon="lucide:chevron-left" class="h-4 w-4 text-neutral-600" />
       </button>
-      <span class="text-xs font-semibold text-neutral-500">Visual Novel Details</span>
+      <span class="text-xs font-semibold text-neutral-500">{{ t('vn.details') }}</span>
       <div class="w-8"></div>
     </div>
 
@@ -439,7 +397,7 @@ watch(
 
     <!-- 错误处理 -->
     <div v-else-if="error || !vn" class="text-center py-12 text-sm text-neutral-400">
-      {{ error || '找不到该 Visual Novel 详情信息' }}
+      {{ error || t('vn.not_found') }}
     </div>
 
     <!-- 详情内容 (Notion Style Layout) -->
@@ -473,38 +431,38 @@ watch(
           </div>
 
           <div class="grid grid-cols-[80px_1fr] items-center gap-y-1.5 text-xs text-neutral-600">
-            <span class="text-neutral-400">ID</span>
+            <span class="text-neutral-400">{{ t('vn.id') }}</span>
             <span class="font-mono text-neutral-800">{{ vn.id }}</span>
 
-            <span class="text-neutral-400">开发商</span>
+            <span class="text-neutral-400">{{ t('vn.developer') }}</span>
             <span class="text-neutral-800 truncate">
-              {{ vn.developers?.map(d => d.name).join(', ') || '未知' }}
+              {{ vn.developers?.map(d => d.name).join(', ') || t('metadata.gender.unknown') }}
             </span>
 
-            <span class="text-neutral-400">首发日期</span>
-            <span class="text-neutral-800">{{ vn.released || '未知' }}</span>
+            <span class="text-neutral-400">{{ t('vn.released') }}</span>
+            <span class="text-neutral-800">{{ vn.released || t('metadata.gender.unknown') }}</span>
 
-            <span class="text-neutral-400">原始语言</span>
-            <span class="uppercase text-neutral-800">{{ vn.olang || '未知' }}</span>
+            <span class="text-neutral-400">{{ t('vn.olang') }}</span>
+            <span class="uppercase text-neutral-800">{{ vn.olang || t('metadata.gender.unknown') }}</span>
 
-            <span class="text-neutral-400">支持语言</span>
+            <span class="text-neutral-400">{{ t('vn.languages') }}</span>
             <span class="text-neutral-800 truncate">
-              {{ vn.languages?.join(', ').toUpperCase() || '未知' }}
+              {{ vn.languages?.join(', ').toUpperCase() || t('metadata.gender.unknown') }}
             </span>
 
-            <span class="text-neutral-400">支持平台</span>
+            <span class="text-neutral-400">{{ t('vn.platforms') }}</span>
             <span class="text-neutral-800 truncate">
-              {{ vn.platforms?.join(', ').toUpperCase() || '未知' }}
+              {{ vn.platforms?.join(', ').toUpperCase() || t('metadata.gender.unknown') }}
             </span>
 
-            <span class="text-neutral-400">游戏时长</span>
+            <span class="text-neutral-400">{{ t('vn.length') }}</span>
             <span class="text-neutral-800">{{ formatLength(vn) }}</span>
             
             <template v-if="vn.rating">
-              <span class="text-neutral-400">评分</span>
+              <span class="text-neutral-400">{{ t('vn.rating') }}</span>
               <span class="text-neutral-800 font-semibold flex items-center gap-1">
                 <Icon icon="lucide:star" class="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
-                {{ vn.rating }} ({{ vn.votecount }}票)
+                {{ vn.rating }} ({{ t('vn.votes', { count: vn.votecount }) }})
               </span>
             </template>
           </div>
@@ -513,7 +471,7 @@ watch(
 
       <!-- 2. 简介 (固定在选项卡上方) -->
       <div class="space-y-1.5" v-if="vn.description">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">简介</h3>
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">{{ t('vn.description') }}</h3>
         <div 
           class="rounded-lg border-l-3 border-neutral-300 bg-neutral-50 px-4 py-3 text-xs leading-relaxed text-neutral-600 whitespace-pre-wrap bbcode-container"
           v-html="parseBBCode(vn.description)"
@@ -522,7 +480,7 @@ watch(
 
       <!-- 3. 相关作品 (固定在选项卡上方) -->
       <div class="space-y-1.5" v-if="vn.relations && vn.relations.length > 0">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">相关作品</h3>
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">{{ t('vn.relations') }}</h3>
         <div class="divide-y divide-neutral-100 rounded-xl border border-neutral-200 bg-white overflow-hidden shadow-xs">
           <div 
             v-for="rel in vn.relations" 
@@ -542,7 +500,7 @@ watch(
                 v-if="rel.relation_official"
                 class="text-[9px] text-green-600 bg-green-50 border border-green-200 px-1 py-0.2 rounded-sm"
               >
-                官方
+                {{ t('vn.official') }}
               </span>
             </div>
           </div>
@@ -554,14 +512,14 @@ watch(
         <nav class="flex space-x-5 -mb-px overflow-x-auto" aria-label="Tabs">
           <button
             v-for="tab in [
-              { id: 'releases', name: '版本' },
-              { id: 'characters', name: '角色' },
-              { id: 'staff', name: '阵容' },
-              { id: 'tags', name: '标签' },
-              { id: 'covers', name: '封面' },
-              { id: 'screenshots', name: '截图' },
-              { id: 'reviews', name: '评论' },
-              { id: 'quotes', name: '摘录' },
+              { id: 'releases', name: t('vn.tabs.releases') },
+              { id: 'characters', name: t('vn.tabs.characters') },
+              { id: 'staff', name: t('vn.tabs.staff') },
+              { id: 'tags', name: t('vn.tabs.tags') },
+              { id: 'covers', name: t('vn.tabs.covers') },
+              { id: 'screenshots', name: t('vn.tabs.screenshots') },
+              { id: 'reviews', name: t('vn.tabs.reviews') },
+              { id: 'quotes', name: t('vn.tabs.quotes') },
             ]"
             :key="tab.id"
             @click="activeTab = tab.id"
@@ -582,10 +540,10 @@ watch(
         <!-- 1. 版本发行 Tab -->
         <div v-if="activeTab === 'releases'" class="space-y-3">
           <div v-if="releasesLoading" class="text-center py-6 text-xs text-neutral-400 animate-pulse">
-            正在加载版本发行数据...
+            {{ t('vn.releases.loading') }}
           </div>
           <div v-else-if="releases.length === 0" class="text-center py-6 text-xs text-neutral-400">
-            暂无发售版本信息
+            {{ t('vn.releases.empty') }}
           </div>
           <div v-else class="space-y-3">
             <div 
@@ -602,15 +560,15 @@ watch(
                   class="text-[9px] px-1.5 py-0.5 rounded flex-shrink-0"
                   :class="rel.official ? 'bg-neutral-900 text-white' : 'bg-neutral-100 text-neutral-500'"
                 >
-                  {{ rel.official ? '官方版' : '非官方/同人' }}
+                  {{ rel.official ? t('vn.releases.official') : t('vn.releases.unofficial') }}
                 </span>
               </div>
               
               <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[10px] text-neutral-500 pt-1 border-t border-neutral-100">
-                <div>发售日期: <span class="text-neutral-700">{{ rel.released || '未知' }}</span></div>
-                <div>语言: <span class="text-neutral-700 uppercase">{{ rel.languages?.map(l => l.lang).join(', ') || '未知' }}</span></div>
-                <div>平台: <span class="text-neutral-700 uppercase">{{ rel.platforms?.join(', ') || '未知' }}</span></div>
-                <div v-if="rel.minage">年龄分级: <span class="text-red-500 font-semibold">{{ rel.minage }}+</span></div>
+                <div>{{ t('vn.releases.date') }}: <span class="text-neutral-700">{{ rel.released || t('metadata.gender.unknown') }}</span></div>
+                <div>{{ t('vn.releases.lang') }}: <span class="text-neutral-700 uppercase">{{ rel.languages?.map(l => l.lang).join(', ') || t('metadata.gender.unknown') }}</span></div>
+                <div>{{ t('vn.releases.platform') }}: <span class="text-neutral-700 uppercase">{{ rel.platforms?.join(', ') || t('metadata.gender.unknown') }}</span></div>
+                <div v-if="rel.minage">{{ t('vn.releases.age') }}: <span class="text-red-500 font-semibold">{{ rel.minage }}+</span></div>
               </div>
               
               <div v-if="rel.notes" class="text-[10px] text-neutral-400 bg-neutral-50 p-1.5 rounded whitespace-pre-wrap leading-normal" v-html="parseBBCode(rel.notes)"></div>
@@ -621,10 +579,10 @@ watch(
         <!-- 2. 封面画册 Tab (从各种 Release 汇总正面、背面、数字大图) -->
         <div v-else-if="activeTab === 'covers'" class="space-y-3">
           <div v-if="releasesLoading" class="text-center py-6 text-xs text-neutral-400 animate-pulse">
-            正在整理封面图片...
+            {{ t('vn.covers.loading') }}
           </div>
           <div v-else-if="allCovers.length === 0" class="text-center py-6 text-xs text-neutral-400">
-            暂无相关封面图片数据
+            {{ t('vn.covers.empty') }}
           </div>
           <div v-else class="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <div 
@@ -647,10 +605,10 @@ watch(
         <!-- 3. 关联角色 Tab (展示更饱满的角色背景、属性三围，采用 Notion 网格卡片) -->
         <div v-else-if="activeTab === 'characters'" class="space-y-3">
           <div v-if="charactersLoading" class="text-center py-6 text-xs text-neutral-400 animate-pulse">
-            正在载入关联角色...
+            {{ t('vn.characters.loading') }}
           </div>
           <div v-else-if="characters.length === 0" class="text-center py-6 text-xs text-neutral-400">
-            暂无角色关联数据
+            {{ t('vn.characters.empty') }}
           </div>
           <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div 
@@ -692,16 +650,16 @@ watch(
 
                 <!-- 各种身体三围与信息 (只渲染已知值) -->
                 <div class="flex flex-wrap gap-x-2 gap-y-0.5 text-[9px] text-neutral-400 font-medium">
-                  <span v-if="char.sex">性别: <strong class="text-neutral-700 font-semibold">{{ translateGender(char.sex) }}</strong></span>
-                  <span v-if="char.age">年龄: <strong class="text-neutral-700 font-semibold">{{ char.age }}</strong></span>
-                  <span v-if="char.blood_type">血型: <strong class="text-neutral-700 font-semibold uppercase">{{ char.blood_type }}</strong></span>
-                  <span v-if="char.height">身高: <strong class="text-neutral-700 font-semibold">{{ char.height }}cm</strong></span>
-                  <span v-if="char.weight">体重: <strong class="text-neutral-700 font-semibold">{{ char.weight }}kg</strong></span>
+                  <span v-if="char.sex">{{ t('vn.characters.gender') }}: <strong class="text-neutral-700 font-semibold">{{ translateGender(char.sex) }}</strong></span>
+                  <span v-if="char.age">{{ t('vn.characters.age') }}: <strong class="text-neutral-700 font-semibold">{{ char.age }}</strong></span>
+                  <span v-if="char.blood_type">{{ t('vn.characters.blood_type') }}: <strong class="text-neutral-700 font-semibold uppercase">{{ char.blood_type }}</strong></span>
+                  <span v-if="char.height">{{ t('vn.characters.height') }}: <strong class="text-neutral-700 font-semibold">{{ char.height }}cm</strong></span>
+                  <span v-if="char.weight">{{ t('vn.characters.weight') }}: <strong class="text-neutral-700 font-semibold">{{ char.weight }}kg</strong></span>
                   <span v-if="char.bust || char.waist || char.hips">
-                    三围: <strong class="text-neutral-700 font-semibold">{{ char.bust || '?' }}/{{ char.waist || '?' }}/{{ char.hips || '?' }}</strong>
-                    <strong v-if="char.cup" class="text-purple-600 font-semibold ml-0.5">({{ char.cup }} Cup)</strong>
+                    {{ t('vn.characters.measurements') }}: <strong class="text-neutral-700 font-semibold">{{ char.bust || '?' }}/{{ char.waist || '?' }}/{{ char.hips || '?' }}</strong>
+                    <strong v-if="char.cup" class="text-purple-600 font-semibold ml-0.5">({{ t('vn.characters.cup', { cup: char.cup }) }})</strong>
                   </span>
-                  <span v-if="char.birthday">生日: <strong class="text-neutral-700 font-semibold">{{ char.birthday[0] }}月{{ char.birthday[1] }}日</strong></span>
+                  <span v-if="char.birthday">{{ t('vn.characters.birthday') }}: <strong class="text-neutral-700 font-semibold">{{ t('vn.characters.birthday_val', { month: char.birthday[0], day: char.birthday[1] }) }}</strong></span>
                 </div>
 
                 <!-- 角色简述 -->
@@ -715,9 +673,9 @@ watch(
         <div v-else-if="activeTab === 'staff'" class="space-y-5">
           <!-- 演职人员 (Staff) -->
           <div class="space-y-2">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">制作阵容 (Staff)</h3>
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">{{ t('vn.staff.title') }}</h3>
             <div v-if="!vn.staff || vn.staff.length === 0" class="text-xs text-neutral-400 py-3 text-center">
-              暂无制作阵容信息
+              {{ t('vn.staff.empty') }}
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div 
@@ -738,9 +696,9 @@ watch(
 
           <!-- 声优 (Voice Actors) -->
           <div class="space-y-2">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">声优配音 (Voice Actors)</h3>
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">{{ t('vn.staff.va_title') }}</h3>
             <div v-if="!vn.va || vn.va.length === 0" class="text-xs text-neutral-400 py-3 text-center">
-              暂无声优信息
+              {{ t('vn.staff.va_empty') }}
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div 
@@ -783,14 +741,14 @@ watch(
           <div class="flex flex-col gap-2 p-3 rounded-lg border border-neutral-200 bg-neutral-50">
             <span class="text-xs text-neutral-600 font-medium flex items-center gap-1.5">
               <Icon icon="lucide:info" class="h-4 w-4 text-neutral-400" />
-              最大剧透过滤等级
+              {{ t('vn.tags.spoiler_filter') }}
             </span>
             <div class="grid grid-cols-3 gap-1 rounded-lg bg-neutral-200 p-0.5 text-center">
-              <button 
+              <button
                 v-for="level in [
-                  { val: 0, label: '无剧透' },
-                  { val: 1, label: '轻度剧透' },
-                  { val: 2, label: '严重剧透' }
+                  { val: 0, label: t('vn.tags.spoiler_0') },
+                  { val: 1, label: t('vn.tags.spoiler_1') },
+                  { val: 2, label: t('vn.tags.spoiler_2') }
                 ]"
                 :key="level.val"
                 @click="handleSelectSpoiler(level.val)"
@@ -807,7 +765,7 @@ watch(
           </div>
 
           <div v-if="filteredTags.length === 0" class="text-xs text-neutral-400 py-6 text-center">
-            当前剧透等级下暂无标签信息，可尝试提高剧透过滤等级
+            {{ t('vn.tags.empty') }}
           </div>
           <div v-else class="flex flex-wrap gap-2">
             <div 
@@ -837,7 +795,7 @@ watch(
         <!-- 6. 截图 Tab -->
         <div v-else-if="activeTab === 'screenshots'" class="space-y-2">
           <div v-if="!vn.screenshots || vn.screenshots.length === 0" class="text-xs text-neutral-400 py-6 text-center">
-            暂无截图画面
+            {{ t('vn.screenshots.empty') }}
           </div>
           <div v-else class="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <div 
@@ -858,10 +816,10 @@ watch(
         <!-- 7. 精选摘录 Tab (Quotes) -->
         <div v-else-if="activeTab === 'quotes'" class="space-y-3">
           <div v-if="quotesLoading" class="text-center py-6 text-xs text-neutral-400 animate-pulse">
-            正在载入名台词摘录...
+            {{ t('vn.quotes.loading') }}
           </div>
           <div v-else-if="quotes.length === 0" class="text-center py-6 text-xs text-neutral-400">
-            暂无经典台词摘录数据
+            {{ t('vn.quotes.empty') }}
           </div>
           <div v-else class="space-y-3">
             <div 
@@ -882,10 +840,10 @@ watch(
                 <span v-if="q.character" class="font-semibold text-neutral-800">
                   —— {{ q.character.name }} <span v-if="q.character.original" class="font-normal text-neutral-400">({{ q.character.original }})</span>
                 </span>
-                <span v-else class="font-semibold text-neutral-400">—— 旁白/未知</span>
+                <span v-else class="font-semibold text-neutral-400">—— {{ t('vn.quotes.narrator') }}</span>
 
                 <span class="flex items-center gap-1">
-                  评分得分: <strong class="text-neutral-700">{{ q.score }}</strong>
+                  {{ t('vn.quotes.score') }}: <strong class="text-neutral-700">{{ q.score }}</strong>
                 </span>
               </div>
             </div>
@@ -896,7 +854,7 @@ watch(
         <div v-else-if="activeTab === 'reviews'" class="space-y-3">
           <div class="p-6 rounded-xl border border-dashed border-neutral-200 text-center space-y-2">
             <Icon icon="lucide:file-text" class="h-8 w-8 text-neutral-300 mx-auto" />
-            <h4 class="text-xs font-semibold text-neutral-800">暂无评论数据</h4>
+            <h4 class="text-xs font-semibold text-neutral-800">{{ t('vn.tabs.reviews') }}</h4>
             <p class="text-[10px] text-neutral-400 max-w-xs mx-auto">
               VNDB API 目前仅提供 has_review 等布尔过滤状态指示，暂未开放直接通过 API 拉取详细评论列表的接口。
             </p>
@@ -919,23 +877,23 @@ watch(
       >
         <div class="flex items-center gap-2 text-red-600">
           <Icon icon="lucide:info" class="h-4 w-4" />
-          <h3 class="text-xs font-bold uppercase tracking-wider">防雷警告</h3>
+          <h3 class="text-xs font-bold uppercase tracking-wider">{{ t('vn.spoiler_alert.title') }}</h3>
         </div>
         <p class="text-[11px] leading-relaxed text-neutral-600">
-          开启此选项可能会展示可能影响游戏体验的严重剧透内容，是否确认开启？
+          {{ t('vn.spoiler_alert.desc') }}
         </p>
         <div class="flex gap-2 justify-end text-xs">
-          <button 
-            @click="showSpoilerConfirm = false" 
+          <button
+            @click="showSpoilerConfirm = false"
             class="h-7 px-2.5 rounded-lg border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 active:bg-neutral-100"
           >
-            取消
+            {{ t('vn.spoiler_alert.cancel') }}
           </button>
-          <button 
-            @click="confirmSpoilerLevel" 
+          <button
+            @click="confirmSpoilerLevel"
             class="h-7 px-2.5 rounded-lg border border-transparent bg-neutral-900 text-white hover:bg-neutral-800 active:bg-neutral-700"
           >
-            确认
+            {{ t('vn.spoiler_alert.confirm') }}
           </button>
         </div>
       </div>

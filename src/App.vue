@@ -1,17 +1,19 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
-const tabs = [
-  { name: 'Home', path: '/', icon: 'lucide:home' },
-  { name: 'Search', path: '/search', icon: 'lucide:search' },
-  { name: 'List', path: '/list', icon: 'lucide:file-text' },
-  { name: 'Settings', path: '/settings', icon: 'lucide:settings' }
-]
+const tabs = computed(() => [
+  { name: t('nav.home'), path: '/', icon: 'lucide:home' },
+  { name: t('nav.search'), path: '/search', icon: 'lucide:search' },
+  { name: t('nav.list'), path: '/list', icon: 'lucide:file-text' },
+  { name: t('nav.settings'), path: '/settings', icon: 'lucide:settings' }
+])
 
 const showTabBar = computed(() => route.meta.showTabBar !== false)
 const activePath = computed(() => route.path)

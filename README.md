@@ -13,7 +13,8 @@ npm run dev
 
 ```bash
 npm run build
-npx cap sync
+npx cap sync android
+npx cap sync ios
 ```
 
 ## 打开原生工程

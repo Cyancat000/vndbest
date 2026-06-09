@@ -1,0 +1,215 @@
+{
+  "common": {
+    "save": "保存",
+    "settings": "设置",
+    "login": "登录",
+    "logout": "退出登录",
+    "connected": "已连接",
+    "not_connected": "未连接",
+    "loading": "加载中...",
+    "error": "错误"
+  },
+  "settings": {
+    "title": "设置",
+    "description": "配置 VNDBest 客户端设置",
+    "account_sync": "账户与同步",
+    "not_logged_in": "未登录",
+    "logged_in_desc": "已连接到 VNDB 账户",
+    "login_sync_desc": "点击登录以同步您的收藏列表",
+    "system_preferences": "系统偏好",
+    "use_sandbox": "使用 Sandbox 沙盒端点",
+    "sandbox_desc": "启用后将请求测试 API，避免污染正式环境数据",
+    "language": "语言",
+    "save_settings": "保存设置",
+    "settings_saved": "设置已保存！"
+  },
+  "nav": {
+    "home": "主页",
+    "search": "搜索",
+    "list": "列表",
+    "settings": "设置"
+  },
+  "home": {
+    "title": "仪表盘",
+    "subtitle": "欢迎使用 VNDBest 客户端",
+    "stats_title": "VNDB 平台数据概览",
+    "vn": "Visual Novels",
+    "releases": "Releases",
+    "producers": "Producers",
+    "staff": "Staff",
+    "quick_explore": "快速探索",
+    "search_vn": "搜索 Visual Novels",
+    "my_list": "我的收藏列表"
+  },
+  "search": {
+    "title": "搜索",
+    "description": "查找 Visual Novels 游戏信息",
+    "placeholder": "输入游戏名称搜索，按回车确认...",
+    "no_results": "没有找到匹配的 Visual Novels 结果",
+    "no_alttitle": "无副标题"
+  },
+  "list": {
+    "title": "列表",
+    "description": "管理你的 Visual Novels 收藏清单",
+    "refresh": "刷新列表",
+    "not_connected_title": "未连接账户",
+    "not_connected_desc": "你需要先登录你的 VNDB 账户，以加载和管理你的个人收藏清单。",
+    "go_to_login": "去设置登录 Token",
+    "all": "全部",
+    "list_view": "列表布局",
+    "grid_view": "瀑布流布局",
+    "load_more": "加载更多",
+    "empty_title": "列表为空",
+    "empty_desc": "在此标签下没有找到任何视觉小说。你可以在搜索或详情页中将其添加到你的收藏清单。",
+    "error_fetching": "获取数据失败，请稍后重试"
+  },
+  "login": {
+    "title": "VNDB 账户",
+    "description": "管理您的 VNDB API 凭证",
+    "guest_title": "未登录账户",
+    "guest_desc": "目前以访客身份进行只读访问",
+    "token_label": "API 访问 Token",
+    "token_placeholder": "请输入您的 VNDB API Token",
+    "token_help_1": "Token 获取路径：在 VNDB.org 登录后，打开 \"My Profile\" 里的 \"Applications\" 标签页即可生成。",
+    "token_help_2": "请确保 Token 勾选了 listread 和 listwrite 权限以完整体验同步功能。",
+    "token_empty": "请输入 API Token",
+    "verifying": "验证中...",
+    "verify_and_login": "验证并登录",
+    "login_success": "登录成功！正在跳转...",
+    "logged_in_as": "已登录 (ID: {id})",
+    "logout": "退出登录",
+    "logout_success": "已退出登录",
+    "login_failed": "登录失败: {error}"
+  },
+  "vn": {
+    "details": "游戏详情",
+    "character_details": "角色详情",
+    "producer_details": "开发商详情",
+    "not_found": "找不到该 Visual Novel 详情信息",
+    "id": "ID",
+    "developer": "开发商",
+    "released": "首发日期",
+    "olang": "原始语言",
+    "languages": "支持语言",
+    "platforms": "支持平台",
+    "length": "游戏时长",
+    "rating": "评分",
+    "votes": "{count}票",
+    "description": "简介",
+    "relations": "相关作品",
+    "official": "官方",
+    "tabs": {
+      "releases": "版本",
+      "characters": "角色",
+      "staff": "阵容",
+      "tags": "标签",
+      "covers": "封面",
+      "screenshots": "截图",
+      "reviews": "评论",
+      "quotes": "摘录"
+    },
+    "releases": {
+      "loading": "正在加载版本发行数据...",
+      "empty": "暂无发售版本信息",
+      "official": "官方版",
+      "unofficial": "非官方/同人",
+      "date": "发售日期",
+      "lang": "语言",
+      "platform": "平台",
+      "age": "年龄分级"
+    },
+    "covers": {
+      "loading": "正在整理封面图片...",
+      "empty": "暂无相关封面图片数据"
+    },
+    "characters": {
+      "loading": "正在载入关联角色...",
+      "empty": "暂无角色关联数据",
+      "gender": "性别",
+      "age": "年龄",
+      "blood_type": "血型",
+      "height": "身高",
+      "weight": "体重",
+      "measurements": "三围",
+      "cup": "{cup} Cup",
+      "birthday": "生日",
+      "birthday_val": "{month}月{day}日"
+    },
+    "staff": {
+      "title": "制作阵容 (Staff)",
+      "va_title": "声优配音 (Voice Actors)",
+      "empty": "暂无制作阵容信息",
+      "va_empty": "暂无声优信息"
+    },
+    "tags": {
+      "spoiler_filter": "最大剧透过滤等级",
+      "spoiler_0": "无剧透",
+      "spoiler_1": "轻度剧透",
+      "spoiler_2": "严重剧透",
+      "empty": "当前剧透等级下暂无标签信息，可尝试提高剧透过滤等级"
+    },
+    "screenshots": {
+      "empty": "暂无截图画面"
+    },
+    "quotes": {
+      "loading": "正在载入名台词摘录...",
+      "empty": "暂无经典台词摘录数据",
+      "narrator": "旁白/未知",
+      "score": "评分得分"
+    },
+    "spoiler_alert": {
+      "title": "防雷警告",
+      "desc": "开启此选项可能会展示可能影响游戏体验的严重剧透内容，是否确认开启？",
+      "cancel": "取消",
+      "confirm": "确认"
+    }
+  },
+  "metadata": {
+    "gender": {
+      "m": "男",
+      "f": "女",
+      "b": "双性",
+      "n": "无性",
+      "unknown": "未知"
+    },
+    "role": {
+      "main": "主角",
+      "primary": "主要角色",
+      "side": "配角",
+      "appears": "客串/出场"
+    },
+    "relation": {
+      "seq": "后作/续作",
+      "preq": "前作",
+      "alt": "替换版本/分支",
+      "shares-char": "共享角色",
+      "side": "外传/番外",
+      "parent": "主篇",
+      "character": "角色关联",
+      "fan": "FD (Fan Disc)",
+      "translated": "翻译版本",
+      "collab": "联名/联动"
+    },
+    "staff_role": {
+      "scenario": "剧本",
+      "art": "原画/美术",
+      "music": "音乐/音效",
+      "director": "监督/导演",
+      "vocals": "歌手",
+      "translator": "翻译",
+      "editor": "校对/编辑",
+      "publisher": "发行商",
+      "developer": "开发商",
+      "songs": "作词/作曲",
+      "staff": "演职人员/协力"
+    },
+    "length": {
+      "1": "非常短 (< 2小时)",
+      "2": "短 (2 - 10小时)",
+      "3": "中等 (10 - 30小时)",
+      "4": "长 (30 - 50小时)",
+      "5": "非常长 (> 50小时)",
+      "unknown": "未知时长"
+    }
+  }
+}

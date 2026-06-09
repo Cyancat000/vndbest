@@ -1,10 +1,12 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { searchVn } from '@/api/vndb'
 
 const router = useRouter()
+const { t } = useI18n()
 const query = ref('')
 const loading = ref(false)
 const results = ref([])
@@ -30,8 +32,8 @@ async function handleSearch() {
         <Icon icon="lucide:search" class="h-5 w-5 text-neutral-800" />
       </div>
       <div>
-        <h1 class="text-2xl font-bold tracking-tight text-neutral-900">Search</h1>
-        <p class="text-xs text-neutral-500">查找 Visual Novels 游戏信息</p>
+        <h1 class="text-2xl font-bold tracking-tight text-neutral-900">{{ t('search.title') }}</h1>
+        <p class="text-xs text-neutral-500">{{ t('search.description') }}</p>
       </div>
     </div>
 
@@ -41,7 +43,7 @@ async function handleSearch() {
       <input
         v-model="query"
         type="search"
-        placeholder="输入游戏名称搜索，按回车确认..."
+        :placeholder="t('search.placeholder')"
         class="w-full rounded-lg border border-neutral-200 bg-white pl-9 pr-4 py-2.5 text-sm outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-900/5 placeholder-neutral-400"
         @keyup.enter="handleSearch"
       />
@@ -54,22 +56,22 @@ async function handleSearch() {
       </div>
       
       <div v-else-if="results.length > 0" class="space-y-2">
-        <div 
-          v-for="item in results" 
+        <div
+          v-for="item in results"
           :key="item.id"
           @click="router.push(`/vn/${item.id}`)"
           class="flex items-center justify-between rounded-lg border border-neutral-200 bg-white p-4 shadow-xs hover:bg-neutral-50 active:bg-neutral-100 transition cursor-pointer"
         >
           <div class="min-w-0 pr-4">
             <div class="text-sm font-semibold text-neutral-900 truncate">{{ item.title }}</div>
-            <div class="text-xs text-neutral-500 mt-0.5 truncate">{{ item.alttitle || '无副标题' }}</div>
+            <div class="text-xs text-neutral-500 mt-0.5 truncate">{{ item.alttitle || t('search.no_alttitle') }}</div>
           </div>
           <Icon icon="lucide:chevron-right" class="h-4 w-4 flex-shrink-0 text-neutral-400" />
         </div>
       </div>
 
       <div v-else-if="query && !loading" class="text-center py-12 text-sm text-neutral-400">
-        没有找到匹配的 Visual Novels 结果
+        {{ t('search.no_results') }}
       </div>
     </div>
   </div>
