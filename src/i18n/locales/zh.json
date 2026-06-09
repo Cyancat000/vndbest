@@ -26,7 +26,7 @@
   },
   "nav": {
     "home": "主页",
-    "search": "搜索",
+    "library": "库",
     "list": "列表",
     "settings": "设置"
   },
@@ -41,6 +41,17 @@
     "quick_explore": "快速探索",
     "search_vn": "搜索 Visual Novels",
     "my_list": "我的收藏列表"
+  },
+  "library": {
+    "title": "库",
+    "description": "探索 VNDB 数据库",
+    "vn": "作品",
+    "releases": "版本",
+    "producers": "会社",
+    "staff": "人物",
+    "characters": "角色",
+    "tags": "标签",
+    "traits": "特征"
   },
   "search": {
     "title": "搜索",

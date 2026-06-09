@@ -1,12 +1,19 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import Home from '@/pages/Home.vue'
-import Search from '@/pages/Search.vue'
+import Library from '@/pages/Library.vue'
 import List from '@/pages/List.vue'
 import Settings from '@/pages/Settings.vue'
 import Login from '@/pages/Login.vue'
 import VnDetail from '@/pages/VnDetail.vue'
 import CharacterDetail from '@/pages/CharacterDetail.vue'
 import ProducerDetail from '@/pages/ProducerDetail.vue'
+import VnSearch from '@/pages/VnSearch.vue'
+import ReleaseSearch from '@/pages/ReleaseSearch.vue'
+import ProducerSearch from '@/pages/ProducerSearch.vue'
+import StaffSearch from '@/pages/StaffSearch.vue'
+import CharacterSearch from '@/pages/CharacterSearch.vue'
+import TagSearch from '@/pages/TagSearch.vue'
+import TraitSearch from '@/pages/TraitSearch.vue'
 
 const routes = [
   {
@@ -16,9 +23,9 @@ const routes = [
     meta: { showTabBar: true }
   },
   {
-    path: '/search',
-    name: 'Search',
-    component: Search,
+    path: '/library',
+    name: 'Library',
+    component: Library,
     meta: { showTabBar: true }
   },
   {
@@ -56,6 +63,48 @@ const routes = [
     name: 'ProducerDetail',
     component: ProducerDetail,
     meta: { showTabBar: false }
+  },
+  {
+    path: '/browse/vn',
+    name: 'VnSearch',
+    component: VnSearch,
+    meta: { showTabBar: true }
+  },
+  {
+    path: '/browse/releases',
+    name: 'ReleaseSearch',
+    component: ReleaseSearch,
+    meta: { showTabBar: true }
+  },
+  {
+    path: '/browse/producers',
+    name: 'ProducerSearch',
+    component: ProducerSearch,
+    meta: { showTabBar: true }
+  },
+  {
+    path: '/browse/staff',
+    name: 'StaffSearch',
+    component: StaffSearch,
+    meta: { showTabBar: true }
+  },
+  {
+    path: '/browse/characters',
+    name: 'CharacterSearch',
+    component: CharacterSearch,
+    meta: { showTabBar: true }
+  },
+  {
+    path: '/browse/tags',
+    name: 'TagSearch',
+    component: TagSearch,
+    meta: { showTabBar: true }
+  },
+  {
+    path: '/browse/traits',
+    name: 'TraitSearch',
+    component: TraitSearch,
+    meta: { showTabBar: true }
   }
 ]
 
