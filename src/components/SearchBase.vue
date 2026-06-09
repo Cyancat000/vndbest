@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router'
@@ -16,12 +16,41 @@ const props = defineProps({
   icon: {
     type: String,
     required: true
+  },
+  modelValue: {
+    type: String,
+    default: ''
+  },
+  loading: {
+    type: Boolean,
+    default: false
   }
 })
 
+const emit = defineEmits(['update:modelValue', 'search', 'clear'])
+
 const { t } = useI18n()
 const router = useRouter()
-const query = ref('')
+const localQuery = ref(props.modelValue)
+
+watch(() => props.modelValue, (newVal) => {
+  localQuery.value = newVal
+})
+
+const handleInput = (e) => {
+  localQuery.value = e.target.value
+  emit('update:modelValue', e.target.value)
+}
+
+const handleSearch = () => {
+  emit('search', localQuery.value)
+}
+
+const handleClear = () => {
+  localQuery.value = ''
+  emit('update:modelValue', '')
+  emit('clear')
+}
 
 const goBack = () => router.back()
 </script>
@@ -32,7 +61,7 @@ const goBack = () => router.back()
     <div class="flex items-center gap-4">
       <button 
         @click="goBack"
-        class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs active:scale-95 transition-transform"
+        class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs active:scale-95 transition-transform cursor-pointer"
       >
         <Icon icon="lucide:chevron-left" class="h-5 w-5 text-neutral-800" />
       </button>
@@ -44,21 +73,49 @@ const goBack = () => router.back()
 
     <!-- Search Input -->
     <div class="relative">
-      <Icon icon="lucide:search" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+      <Icon 
+        v-if="!loading"
+        icon="lucide:search" 
+        class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" 
+      />
+      <Icon 
+        v-else
+        icon="eos-icons:loading" 
+        class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" 
+      />
       <input
-        v-model="query"
+        :value="localQuery"
+        @input="handleInput"
+        @keydown.enter="handleSearch"
         type="search"
         :placeholder="`搜索${title}...`"
-        class="w-full rounded-lg border border-neutral-200 bg-white pl-9 pr-4 py-2.5 text-sm outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-900/5 placeholder-neutral-400"
+        class="w-full rounded-lg border border-neutral-200 bg-white pl-9 pr-10 py-2.5 text-sm outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-900/5 placeholder-neutral-400"
       />
+      <button 
+        v-if="localQuery"
+        @click="handleClear"
+        class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600 cursor-pointer"
+      >
+        <Icon icon="lucide:x" class="h-3.5 w-3.5" />
+      </button>
     </div>
 
-    <!-- Placeholder for list -->
-    <div class="flex flex-col items-center justify-center py-20 text-neutral-400 space-y-4">
-      <div class="p-4 rounded-full bg-neutral-50">
-        <Icon :icon="icon" class="h-8 w-8" />
+    <!-- Filters Slot -->
+    <div class="relative z-20">
+      <slot name="filters"></slot>
+    </div>
+
+    <!-- Results Slot -->
+    <div class="min-h-[200px] relative z-10">
+      <slot></slot>
+      
+      <!-- Default Empty State (if no slot content and not searching) -->
+      <div v-if="!$slots.default && !localQuery" class="flex flex-col items-center justify-center py-20 text-neutral-400 space-y-4">
+        <div class="p-4 rounded-full bg-neutral-50">
+          <Icon :icon="icon" class="h-8 w-8" />
+        </div>
+        <p class="text-sm">输入关键词开始搜索</p>
       </div>
-      <p class="text-sm">列表功能开发中...</p>
     </div>
   </div>
 </template>

@@ -149,6 +149,23 @@ export async function getVnReleases(vnId) {
 }
 
 /**
+ * 3.1.1 通用 Release 列表查询
+ * POST /release
+ */
+export async function getReleaseList(filters, params = {}) {
+  const payload = {
+    filters,
+    fields: 'id, title, alttitle, released, languages.lang, platforms, official, patch, freeware, notes, uncensored, minage, images.url, images.dims, images.type, images.languages',
+    results: 20,
+    ...params
+  }
+  return request('/release', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+}
+
+/**
  * 3.2 获取特定 Visual Novel 的角色列表
  * POST /character
  */

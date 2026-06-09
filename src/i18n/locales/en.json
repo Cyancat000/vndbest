@@ -130,6 +130,7 @@
     "length": "Length",
     "rating": "Rating",
     "votes": "{count} votes",
+    "votes_count": "Vote Count",
     "description": "Description",
     "relations": "Relations",
     "official": "Official",

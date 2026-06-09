@@ -141,6 +141,7 @@
     "length": "游戏时长",
     "rating": "评分",
     "votes": "{count}票",
+    "votes_count": "投票数",
     "description": "简介",
     "relations": "相关作品",
     "official": "官方",
@@ -234,6 +235,8 @@
       "character": "角色关联",
       "fan": "FD (Fan Disc)",
       "translated": "翻译版本",
+      "ser": "同系列",
+      "set": "同世界观",
       "collab": "联名/联动"
     },
     "staff_role": {
