@@ -7,7 +7,8 @@
     "connected": "已连接",
     "not_connected": "未连接",
     "loading": "加载中...",
-    "error": "错误"
+    "error": "错误",
+    "sort_by": "排序方式"
   },
   "settings": {
     "title": "设置",
@@ -46,7 +47,8 @@
     "description": "查找 Visual Novels 游戏信息",
     "placeholder": "输入游戏名称搜索，按回车确认...",
     "no_results": "没有找到匹配的 Visual Novels 结果",
-    "no_alttitle": "无副标题"
+    "no_alttitle": "无副标题",
+    "relevance": "相关度"
   },
   "list": {
     "title": "列表",
@@ -58,10 +60,22 @@
     "all": "全部",
     "list_view": "列表布局",
     "grid_view": "瀑布流布局",
+    "compact_view": "纯文本布局",
     "load_more": "加载更多",
+    "all_loaded": "已加载全部",
     "empty_title": "列表为空",
     "empty_desc": "在此标签下没有找到任何视觉小说。你可以在搜索或详情页中将其添加到你的收藏清单。",
-    "error_fetching": "获取数据失败，请稍后重试"
+    "error_fetching": "获取数据失败，请稍后重试",
+    "ascending": "升序",
+    "descending": "降序",
+    "sort": {
+      "lastmod": "最近修改",
+      "added": "加入时间",
+      "started": "开始时间",
+      "finished": "完成时间",
+      "vote": "评分",
+      "title": "标题"
+    }
   },
   "login": {
     "title": "VNDB 账户",

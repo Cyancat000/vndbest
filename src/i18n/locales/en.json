@@ -7,7 +7,8 @@
     "connected": "Connected",
     "not_connected": "Not Connected",
     "loading": "Loading...",
-    "error": "Error"
+    "error": "Error",
+    "sort_by": "Sort by"
   },
   "settings": {
     "title": "Settings",
@@ -46,7 +47,8 @@
     "description": "Find Visual Novels information",
     "placeholder": "Enter title to search, press Enter...",
     "no_results": "No matching Visual Novels found",
-    "no_alttitle": "No alternative title"
+    "no_alttitle": "No alternative title",
+    "relevance": "Relevance"
   },
   "list": {
     "title": "List",
@@ -58,10 +60,22 @@
     "all": "All",
     "list_view": "List View",
     "grid_view": "Grid View",
+    "compact_view": "Compact View",
     "load_more": "Load More",
+    "all_loaded": "All Loaded",
     "empty_title": "List is Empty",
     "empty_desc": "No visual novels found under this label. You can add them from search or detail pages.",
-    "error_fetching": "Failed to fetch data, please try again later"
+    "error_fetching": "Failed to fetch data, please try again later",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "sort": {
+      "lastmod": "Last Modified",
+      "added": "Date Added",
+      "started": "Date Started",
+      "finished": "Date Finished",
+      "vote": "Rating",
+      "title": "Title"
+    }
   },
   "login": {
     "title": "VNDB Account",

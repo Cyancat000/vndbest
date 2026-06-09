@@ -1,20 +1,98 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import { getVnList } from '@/api/vndb'
+import VnList from '@/components/VnList.vue'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
-const producerId = route.params.id
 
+const producerId = ref(route.params.id)
 const producer = ref({
-  id: producerId,
-  name: t('common.loading'),
+  id: '',
+  name: '',
   original: '',
-  description: 'TODO: API implementation'
+  description: ''
 })
+
+const items = ref([])
+const isLoading = ref(true)
+const hasMore = ref(false)
+const page = ref(1)
+const resultsPerPage = 20
+
+// 排序状态
+const sortBy = ref('released')
+const reverse = ref(true)
+
+async function fetchProducerInfo() {
+  // VNDB API 好像没有直接获取 producer 详情的独立接口，通常是通过 /vn POST 带 filter ['developer', '=', id] 顺便获取
+  // 或者尝试 /producer 接口（Kana API 文档中是否有此接口需要确认，这里先按通用逻辑处理）
+  // 暂时我们只加载该开发商的 VN 列表
+}
+
+async function fetchList(reset = true) {
+  if (reset) {
+    page.value = 1
+    items.value = []
+  }
+  
+  isLoading.value = true
+  try {
+    const filters = ['developer', '=', ['id', '=', producerId.value]]
+    const res = await getVnList(filters, {
+      page: page.value,
+      results: resultsPerPage,
+      sort: sortBy.value,
+      reverse: reverse.value
+    })
+    
+    if (res && res.results) {
+      if (reset) {
+        items.value = res.results
+      } else {
+        items.value = [...items.value, ...res.results]
+      }
+      hasMore.value = res.more || false
+      
+      // 如果还没获取到 producer 名字，从结果里尝试提取 (如果结果里有 developers 字段)
+      // 但 getVnList 默认 fields 没带 developers，为了效率这里暂不处理
+    }
+  } catch (err) {
+    console.error('获取开发商VN列表失败:', err)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function loadMore() {
+  if (isLoading.value || !hasMore.value) return
+  page.value += 1
+  await fetchList(false)
+}
+
+function handleSortChange(s) {
+  sortBy.value = s
+  fetchList(true)
+}
+
+function handleReverseChange(r) {
+  reverse.value = r
+  fetchList(true)
+}
+
+onMounted(() => {
+  fetchList(true)
+})
+
+const sortOptions = [
+  { value: 'released', label: 'vn.released' },
+  { value: 'rating', label: 'vn.rating' },
+  { value: 'title', label: 'list.sort.title' }
+]
 </script>
 
 <template>
@@ -36,23 +114,26 @@ const producer = ref({
           <Icon icon="lucide:home" class="h-6 w-6 text-neutral-400" />
         </div>
         <div>
-          <h1 class="text-xl font-bold tracking-tight text-neutral-900">{{ producer.name }}</h1>
-          <p class="text-xs text-neutral-400" v-if="producer.original">{{ producer.original }}</p>
+          <h1 class="text-xl font-bold tracking-tight text-neutral-900">{{ producerId }}</h1>
+          <p class="text-xs text-neutral-400">{{ t('home.producers') }}</p>
         </div>
       </div>
 
-      <div class="rounded-xl border border-neutral-200 bg-white p-3 shadow-xs space-y-2">
-        <div class="grid grid-cols-[80px_1fr] items-center gap-2 text-xs">
-          <span class="text-neutral-400">{{ t('vn.id') }}</span>
-          <span class="font-mono text-neutral-800">{{ producer.id }}</span>
-        </div>
-      </div>
-
-      <div class="space-y-2">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">{{ t('vn.description') }}</h3>
-        <div class="rounded-lg border-l-3 border-neutral-300 bg-neutral-50 px-4 py-3 text-xs leading-relaxed text-neutral-600">
-          {{ producer.description }}
-        </div>
+      <!-- 开发商作品列表 -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">{{ t('home.vn') }}</h3>
+        <VnList
+          :items="items"
+          :is-loading="isLoading"
+          :has-more="hasMore"
+          :sort-by="sortBy"
+          :reverse="reverse"
+          :custom-sort-options="sortOptions"
+          storage-key="vndb_producer_layout"
+          @load-more="loadMore"
+          @sort-change="handleSortChange"
+          @reverse-change="handleReverseChange"
+        />
       </div>
     </div>
   </div>

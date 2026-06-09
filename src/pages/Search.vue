@@ -1,28 +1,96 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { searchVn } from '@/api/vndb'
+import VnList from '@/components/VnList.vue'
 
 const router = useRouter()
 const { t } = useI18n()
 const query = ref('')
-const loading = ref(false)
-const results = ref([])
 
-async function handleSearch() {
+const results = ref([])
+const isLoading = ref(false)
+const hasMore = ref(false)
+const page = ref(1)
+const resultsPerPage = 20
+
+// 排序状态
+const sortBy = ref('search')
+const reverse = ref(false)
+
+async function handleSearch(reset = true) {
   if (!query.value.trim()) return
-  loading.value = true
+  
+  if (reset) {
+    page.value = 1
+    results.value = []
+  }
+  
+  isLoading.value = true
   try {
-    const data = await searchVn(query.value)
-    results.value = data.results || []
+    const data = await searchVn(query.value, {
+      results: resultsPerPage,
+      page: page.value,
+      sort: sortBy.value === 'search' ? null : sortBy.value,
+      reverse: reverse.value
+    })
+    
+    if (data && data.results) {
+      if (reset) {
+        results.value = data.results
+      } else {
+        results.value = [...results.value, ...data.results]
+      }
+      hasMore.value = data.more || false
+    } else {
+      hasMore.value = false
+    }
   } catch (err) {
     console.error('搜索失败:', err)
   } finally {
-    loading.value = false
+    isLoading.value = false
   }
 }
+
+async function loadMore() {
+  if (isLoading.value || !hasMore.value) return
+  page.value += 1
+  await handleSearch(false)
+}
+
+function handleSortChange(s) {
+  sortBy.value = s
+  handleSearch(true)
+}
+
+function handleReverseChange(r) {
+  reverse.value = r
+  handleSearch(true)
+}
+
+// 监听查询变化
+watch(query, (newVal) => {
+  if (!newVal.trim()) {
+    results.value = []
+    hasMore.value = false
+  }
+})
+
+const sortOptions = [
+  { value: 'search', label: 'common.connected' }, // 这里的 label 需要修正
+  { value: 'released', label: 'vn.released' },
+  { value: 'rating', label: 'vn.rating' },
+  { value: 'title', label: 'list.sort.title' }
+]
+// 修正一下 label 的语义，在 Search 场景下
+const searchSortOptions = [
+  { value: 'search', label: '相关度' },
+  { value: 'released', label: t('vn.released') },
+  { value: 'rating', label: t('vn.rating') },
+  { value: 'title', label: t('list.sort.title') }
+]
 </script>
 
 <template>
@@ -45,34 +113,32 @@ async function handleSearch() {
         type="search"
         :placeholder="t('search.placeholder')"
         class="w-full rounded-lg border border-neutral-200 bg-white pl-9 pr-4 py-2.5 text-sm outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-900/5 placeholder-neutral-400"
-        @keyup.enter="handleSearch"
+        @keyup.enter="handleSearch(true)"
       />
     </div>
 
-    <!-- 骨架屏 / 结果列表 -->
-    <div class="space-y-2">
-      <div v-if="loading" class="space-y-2">
-        <div v-for="i in 3" :key="i" class="animate-pulse flex items-center justify-between rounded-lg border border-neutral-150 bg-neutral-50/50 p-4 h-16"></div>
-      </div>
-      
-      <div v-else-if="results.length > 0" class="space-y-2">
-        <div
-          v-for="item in results"
-          :key="item.id"
-          @click="router.push(`/vn/${item.id}`)"
-          class="flex items-center justify-between rounded-lg border border-neutral-200 bg-white p-4 shadow-xs hover:bg-neutral-50 active:bg-neutral-100 transition cursor-pointer"
-        >
-          <div class="min-w-0 pr-4">
-            <div class="text-sm font-semibold text-neutral-900 truncate">{{ item.title }}</div>
-            <div class="text-xs text-neutral-500 mt-0.5 truncate">{{ item.alttitle || t('search.no_alttitle') }}</div>
-          </div>
-          <Icon icon="lucide:chevron-right" class="h-4 w-4 flex-shrink-0 text-neutral-400" />
-        </div>
-      </div>
+    <!-- 使用统一的 VnList 组件 -->
+    <VnList
+      v-if="results.length > 0 || isLoading"
+      :items="results"
+      :is-loading="isLoading"
+      :has-more="hasMore"
+      :sort-by="sortBy"
+      :reverse="reverse"
+      :custom-sort-options="[
+        { value: 'search', label: 'search.relevance' },
+        { value: 'released', label: 'vn.released' },
+        { value: 'rating', label: 'vn.rating' },
+        { value: 'title', label: 'list.sort.title' }
+      ]"
+      storage-key="vndb_search_layout"
+      @load-more="loadMore"
+      @sort-change="handleSortChange"
+      @reverse-change="handleReverseChange"
+    />
 
-      <div v-else-if="query && !loading" class="text-center py-12 text-sm text-neutral-400">
-        {{ t('search.no_results') }}
-      </div>
+    <div v-if="query && !isLoading && results.length === 0" class="text-center py-12 text-sm text-neutral-400">
+      {{ t('search.no_results') }}
     </div>
   </div>
 </template>

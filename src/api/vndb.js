@@ -31,7 +31,7 @@ function getHeaders() {
 /**
  * 通用请求发送函数
  */
-async function request(path, options = {}) {
+export async function request(path, options = {}) {
   const url = `${getEndpoint()}${path}`
   const response = await fetch(url, {
     ...options,
@@ -69,15 +69,52 @@ export async function getStats() {
  * 2. 搜索 Visual Novels
  * POST /vn
  */
-export async function searchVn(query) {
-  // 根据文档，使用 POST /vn 并且使用 filters 对标题等进行过滤
+export async function searchVn(query, params = {}) {
+  const payload = {
+    filters: ['search', '=', query],
+    fields: 'id, title, alttitle, image{url,thumbnail}, released, olang, rating',
+    results: 20,
+    ...params
+  }
   return request('/vn', {
     method: 'POST',
-    body: JSON.stringify({
-      filters: ['search', '=', query],
-      fields: 'id, title, alttitle, image.url, released, olang, description, relations.title, relations.relation_official',
-      results: 10
-    })
+    body: JSON.stringify(payload)
+  })
+}
+
+/**
+ * 2.1 获取最新的 Visual Novels
+ * POST /vn
+ */
+export async function getLatestVn(params = {}) {
+  const payload = {
+    filters: ['released', '>=', '2020-01-01'],
+    fields: 'id, title, alttitle, image{url,thumbnail}, released, olang, rating',
+    sort: 'released',
+    reverse: true,
+    results: 10,
+    ...params
+  }
+  return request('/vn', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+}
+
+/**
+ * 2.2 通用 VN 列表查询 (根据 filters)
+ * POST /vn
+ */
+export async function getVnList(filters, params = {}) {
+  const payload = {
+    filters,
+    fields: 'id, title, alttitle, image{url,thumbnail}, released, olang, rating',
+    results: 20,
+    ...params
+  }
+  return request('/vn', {
+    method: 'POST',
+    body: JSON.stringify(payload)
   })
 }
 
@@ -127,7 +164,7 @@ export async function getVnCharacters(vnId) {
 }
 
 /**
- * 3.3 获取特定 Visual Novel 的摘录列表
+ * 3.3 获取特定 Visual Novel 的 摘录列表
  * POST /quote
  */
 export async function getVnQuotes(vnId) {

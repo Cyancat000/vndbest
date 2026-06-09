@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { getVnDetail, getVnReleases, getVnCharacters, getVnQuotes } from '@/api/vndb'
+import VnList from '@/components/VnList.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -371,7 +372,6 @@ watch(
 
 <template>
   <div class="space-y-4 pb-8">
-    <div class="space-y-4 pb-8">
     <!-- 头部导航 -->
     <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
       <button 
@@ -482,30 +482,11 @@ watch(
       <!-- 3. 相关作品 (固定在选项卡上方) -->
       <div class="space-y-1.5" v-if="vn.relations && vn.relations.length > 0">
         <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">{{ t('vn.relations') }}</h3>
-        <div class="divide-y divide-neutral-100 rounded-xl border border-neutral-200 bg-white overflow-hidden shadow-xs">
-          <div 
-            v-for="rel in vn.relations" 
-            :key="rel.id"
-            @click="router.push(`/vn/${rel.id}`)"
-            class="flex items-center justify-between p-3 text-xs hover:bg-neutral-50 active:bg-neutral-100 transition cursor-pointer"
-          >
-            <div class="flex flex-col min-w-0 pr-4">
-              <span class="font-medium text-neutral-800 truncate">{{ rel.title }}</span>
-              <span v-if="rel.alttitle" class="text-[10px] text-neutral-400 truncate">{{ rel.alttitle }}</span>
-            </div>
-            <div class="flex items-center gap-2 flex-shrink-0">
-              <span class="text-[10px] text-neutral-500 font-medium bg-neutral-100 px-2 py-0.5 rounded-full">
-                {{ translateRelation(rel.relation) }}
-              </span>
-              <span 
-                v-if="rel.relation_official"
-                class="text-[9px] text-green-600 bg-green-50 border border-green-200 px-1 py-0.2 rounded-sm"
-              >
-                {{ t('vn.official') }}
-              </span>
-            </div>
-          </div>
-        </div>
+        <VnList
+          :items="vn.relations"
+          :show-sort="false"
+          force-layout="compact"
+        />
       </div>
 
       <!-- 选项卡导航 (Notion Tab Style) -->
@@ -640,12 +621,12 @@ watch(
                   <span 
                     class="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0"
                     :class="[
-                      char.vns?.find(v => v.id === vn?.id)?.role === 'main' 
+                      char.vns?.find(v => v.id === vn?.id || v.id === vn?.id)?.role === 'main' 
                         ? 'bg-red-50 text-red-600 border border-red-100' 
                         : 'bg-neutral-100 text-neutral-500'
                     ]"
                   >
-                    {{ translateCharRole(char.vns?.find(v => v.id === vn?.id)?.role || 'appears') }}
+                    {{ translateCharRole(char.vns?.find(v => v.id === vn?.id || v.id === vn?.id)?.role || 'appears') }}
                   </span>
                 </div>
 
@@ -863,119 +844,106 @@ watch(
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Teleport: 剧透防雷提示框 (Notion Style Alert Modal - 精简版) -->
-  <Teleport to="body">
-    <div 
-      v-if="showSpoilerConfirm"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 animate-fade-in"
-      @click="showSpoilerConfirm = false"
-    >
+    <!-- Teleport: 剧透防雷提示框 -->
+    <Teleport to="body">
       <div 
-        class="w-full max-w-xs rounded-xl border border-neutral-200 bg-white p-5 shadow-xl space-y-4"
-        @click.stop
-      >
-        <div class="flex items-center gap-2 text-red-600">
-          <Icon icon="lucide:info" class="h-4 w-4" />
-          <h3 class="text-xs font-bold uppercase tracking-wider">{{ t('vn.spoiler_alert.title') }}</h3>
-        </div>
-        <p class="text-[11px] leading-relaxed text-neutral-600">
-          {{ t('vn.spoiler_alert.desc') }}
-        </p>
-        <div class="flex gap-2 justify-end text-xs">
-          <button
-            @click="showSpoilerConfirm = false"
-            class="h-7 px-2.5 rounded-lg border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 active:bg-neutral-100"
-          >
-            {{ t('vn.spoiler_alert.cancel') }}
-          </button>
-          <button
-            @click="confirmSpoilerLevel"
-            class="h-7 px-2.5 rounded-lg border border-transparent bg-neutral-900 text-white hover:bg-neutral-800 active:bg-neutral-700"
-          >
-            {{ t('vn.spoiler_alert.confirm') }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </Teleport>
-
-    <!-- Teleport: 大图查看器 (Lightbox Overlay - 支持大图及封面大图横向滑屏) -->
-  <Teleport to="body">
-    <div 
-      v-if="showImageLightbox"
-      class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 select-none"
-      @click="closeLightbox"
-      @touchstart="handleTouchStart"
-      @touchmove="handleTouchMove"
-      @touchend="handleTouchEnd"
-    >
-      <!-- 关闭按钮 -->
-      <button 
-        @click.stop="closeLightbox" 
-        class="absolute top-4 right-4 z-50 inline-flex h-10 w-10 items-center justify-center rounded-full bg-neutral-800/80 text-white hover:bg-neutral-700 hover:scale-105 active:scale-95 transition cursor-pointer"
-        aria-label="关闭"
-      >
-        <Icon icon="lucide:x" class="h-5 w-5" />
-      </button>
-
-      <!-- 左侧切换按钮 -->
-      <button 
-        v-if="lightboxImagesList.length > 1"
-        @click.stop="prevImage"
-        class="absolute left-4 z-40 hidden sm:inline-flex h-12 w-12 items-center justify-center rounded-full bg-neutral-800/60 text-white hover:bg-neutral-700 transition cursor-pointer"
-      >
-        <Icon icon="lucide:chevron-left" class="h-6 w-6" />
-      </button>
-
-      <!-- 右侧切换按钮 -->
-      <button 
-        v-if="lightboxImagesList.length > 1"
-        @click.stop="nextImage"
-        class="absolute right-4 z-40 hidden sm:inline-flex h-12 w-12 items-center justify-center rounded-full bg-neutral-800/60 text-white hover:bg-neutral-700 transition cursor-pointer"
-      >
-        <Icon icon="lucide:chevron-right" class="h-6 w-6" />
-      </button>
-
-      <!-- 严格单张滑动的左右滚动图片容器 -->
-      <div 
-        ref="scrollContainer"
-        @scroll="handleScroll"
-        class="flex w-full h-[80vh] overflow-x-hidden snap-x snap-mandatory scroll-smooth no-scrollbar"
-        @click.stop
+        v-if="showSpoilerConfirm"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 animate-fade-in"
+        @click="showSpoilerConfirm = false"
       >
         <div 
-          v-for="(img, idx) in lightboxImagesList" 
-          :key="idx" 
-          class="flex-shrink-0 w-full h-full flex flex-col items-center justify-center snap-center p-6 space-y-2"
+          class="w-full max-w-xs rounded-xl border border-neutral-200 bg-white p-5 shadow-xl space-y-4"
+          @click.stop
         >
-          <img 
-            :src="img.url" 
-            class="max-w-full max-h-[72vh] object-contain rounded-lg border border-neutral-800 shadow-2xl pointer-events-none" 
-          />
-          <div v-if="img.title" class="text-center max-w-lg px-4 text-xs text-neutral-300 truncate">
-            {{ img.title }}
+          <div class="flex items-center gap-2 text-red-600">
+            <Icon icon="lucide:info" class="h-4 w-4" />
+            <h3 class="text-xs font-bold uppercase tracking-wider">{{ t('vn.spoiler_alert.title') }}</h3>
+          </div>
+          <p class="text-[11px] leading-relaxed text-neutral-600">
+            {{ t('vn.spoiler_alert.desc') }}
+          </p>
+          <div class="flex gap-2 justify-end text-xs">
+            <button
+              @click="showSpoilerConfirm = false"
+              class="h-7 px-2.5 rounded-lg border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 active:bg-neutral-100"
+            >
+              {{ t('vn.spoiler_alert.cancel') }}
+            </button>
+            <button
+              @click="confirmSpoilerLevel"
+              class="h-7 px-2.5 rounded-lg border border-transparent bg-neutral-900 text-white hover:bg-neutral-800 active:bg-neutral-700"
+            >
+              {{ t('vn.spoiler_alert.confirm') }}
+            </button>
           </div>
         </div>
       </div>
-      
-      <!-- 页码与大图关闭提示 -->
-      <div class="absolute bottom-6 text-[11px] text-neutral-500 text-center">
-        <div>{{ lightboxImageIndex + 1 }} / {{ lightboxImagesList.length }}</div>
+    </Teleport>
+
+    <!-- Teleport: 大图查看器 -->
+    <Teleport to="body">
+      <div 
+        v-if="showImageLightbox"
+        class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 select-none"
+        @click="closeLightbox"
+        @touchstart="handleTouchStart"
+        @touchmove="handleTouchMove"
+        @touchend="handleTouchEnd"
+      >
+        <button 
+          @click.stop="closeLightbox" 
+          class="absolute top-4 right-4 z-50 inline-flex h-10 w-10 items-center justify-center rounded-full bg-neutral-800/80 text-white hover:bg-neutral-700 hover:scale-105 active:scale-95 transition cursor-pointer"
+        >
+          <Icon icon="lucide:x" class="h-5 w-5" />
+        </button>
+
+        <button 
+          v-if="lightboxImagesList.length > 1"
+          @click.stop="prevImage"
+          class="absolute left-4 z-40 hidden sm:inline-flex h-12 w-12 items-center justify-center rounded-full bg-neutral-800/60 text-white hover:bg-neutral-700 transition"
+        >
+          <Icon icon="lucide:chevron-left" class="h-6 w-6" />
+        </button>
+
+        <button 
+          v-if="lightboxImagesList.length > 1"
+          @click.stop="nextImage"
+          class="absolute right-4 z-40 hidden sm:inline-flex h-12 w-12 items-center justify-center rounded-full bg-neutral-800/60 text-white hover:bg-neutral-700 transition"
+        >
+          <Icon icon="lucide:chevron-right" class="h-6 w-6" />
+        </button>
+
+        <div 
+          ref="scrollContainer"
+          @scroll="handleScroll"
+          class="flex w-full h-[80vh] overflow-x-hidden snap-x snap-mandatory scroll-smooth no-scrollbar"
+          @click.stop
+        >
+          <div 
+            v-for="(img, idx) in lightboxImagesList" 
+            :key="idx" 
+            class="flex-shrink-0 w-full h-full flex flex-col items-center justify-center snap-center p-6 space-y-2"
+          >
+            <img 
+              :src="img.url" 
+              class="max-w-full max-h-[72vh] object-contain rounded-lg border border-neutral-800 shadow-2xl pointer-events-none" 
+            />
+            <div v-if="img.title" class="text-center max-w-lg px-4 text-xs text-neutral-300 truncate">
+              {{ img.title }}
+            </div>
+          </div>
+        </div>
+        
+        <div class="absolute bottom-6 text-[11px] text-neutral-500 text-center">
+          <div>{{ lightboxImageIndex + 1 }} / {{ lightboxImagesList.length }}</div>
+        </div>
       </div>
-    </div>
-  </Teleport>
+    </Teleport>
   </div>
 </template>
 
 <style scoped>
-/* 隐藏滚动条 */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
