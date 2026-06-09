@@ -72,7 +72,7 @@ export async function getStats() {
 export async function searchVn(query, params = {}) {
   const payload = {
     filters: ['search', '=', query],
-    fields: 'id, title, alttitle, image{url,thumbnail}, released, olang, rating',
+    fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail}, released, olang, rating',
     results: 20,
     ...params
   }
@@ -89,7 +89,7 @@ export async function searchVn(query, params = {}) {
 export async function getLatestVn(params = {}) {
   const payload = {
     filters: ['released', '>=', '2020-01-01'],
-    fields: 'id, title, alttitle, image{url,thumbnail}, released, olang, rating',
+    fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail}, released, olang, rating',
     sort: 'released',
     reverse: true,
     results: 10,
@@ -108,7 +108,7 @@ export async function getLatestVn(params = {}) {
 export async function getVnList(filters, params = {}) {
   const payload = {
     filters,
-    fields: 'id, title, alttitle, image{url,thumbnail}, released, olang, rating',
+    fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail}, released, olang, rating',
     results: 20,
     ...params
   }
@@ -127,7 +127,7 @@ export async function getVnDetail(id) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['id', '=', id],
-      fields: 'id, title, alttitle, image.url, image.dims, image.sexual, image.violence, released, olang, description, relations.id, relations.title, relations.alttitle, relations.relation, relations.relation_official, relations.image.url, relations.image.dims, relations.rating, relations.released, relations.olang, languages, platforms, developers.name, rating, votecount, length, length_minutes, tags.name, tags.rating, tags.spoiler, staff.role, staff.name, staff.original, va.note, va.staff.name, va.staff.original, va.character.id, va.character.name, va.character.original, va.character.image.url, screenshots.url, screenshots.dims, screenshots.thumbnail, screenshots.thumbnail_dims',
+      fields: 'id, title, alttitle, titles{lang,title,latin}, image.url, image.dims, image.sexual, image.violence, released, olang, description, relations.id, relations.title, relations.alttitle, relations.titles{lang,title,latin}, relations.relation, relations.relation_official, relations.image.url, relations.image.dims, relations.rating, relations.released, relations.olang, languages, platforms, developers.name, rating, votecount, length, length_minutes, tags.name, tags.rating, tags.spoiler, staff.role, staff.name, staff.original, va.note, va.staff.name, va.staff.original, va.character.id, va.character.name, va.character.original, va.character.image.url, screenshots.url, screenshots.dims, screenshots.thumbnail, screenshots.thumbnail_dims',
     })
   })
 }
@@ -189,7 +189,7 @@ export async function getCharacterDetail(id) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['id', '=', id],
-      fields: 'id, name, original, description, image.url, image.dims, image.sexual, image.violence, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday, vns.role, vns.spoiler, vns.id, vns.title, vns.alttitle, vns.image.url, vns.image.dims, vns.rating, vns.released, vns.olang, traits.name, traits.spoiler, traits.group_name',
+      fields: 'id, name, original, description, image.url, image.dims, image.sexual, image.violence, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday, vns.role, vns.spoiler, vns.id, vns.title, vns.alttitle, vns.titles{lang,title,latin}, vns.image.url, vns.image.dims, vns.rating, vns.released, vns.olang, traits.name, traits.spoiler, traits.group_name',
     })
   })
 }
@@ -221,6 +221,14 @@ export async function getUserList(params = {}) {
   // 如果没有指定 user，则默认传当前已登录的 userId
   if (!payload.user && userId) {
     payload.user = userId
+  }
+  if (payload.fields) {
+    // 确保包含需要的字段
+    if (!payload.fields.includes('vn.titles')) {
+      payload.fields += ', vn.titles{lang,title,latin}'
+    }
+  } else {
+    payload.fields = 'id, added, voted, lastmod, vote, started, finished, notes, labels{id,label}, vn{id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail}, released, olang, rating}'
   }
   return request('/ulist', {
     method: 'POST',

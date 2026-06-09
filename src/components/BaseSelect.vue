@@ -105,7 +105,7 @@ onUnmounted(() => {
     <div
       v-if="isOpen"
       ref="menuRef"
-      class="absolute w-36 z-50 rounded-lg border border-neutral-200 bg-white p-1 shadow-lg ring-1 ring-black/5 animate-in fade-in zoom-in duration-100"
+      class="absolute min-w-[140px] w-max max-w-[220px] z-50 rounded-lg border border-neutral-200 bg-white p-1 shadow-lg ring-1 ring-black/5 animate-in fade-in zoom-in duration-100 max-h-[40vh] overflow-y-auto"
       :class="menuPosition"
     >
       <button
@@ -121,3 +121,8 @@ onUnmounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>

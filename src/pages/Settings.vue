@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
@@ -12,15 +12,60 @@ const username = ref(localStorage.getItem('vndb_username') || '')
 const useSandbox = ref(JSON.parse(localStorage.getItem('vndb_use_sandbox') || 'false'))
 const currentLang = ref(locale.value)
 
+// 语言优先级列表
+const titleLangPriority = ref(JSON.parse(localStorage.getItem('vndb_title_lang_priority') || '["zh-Hans", "zh-Hant", "ja", "en"]'))
+
 const languageOptions = [
   { value: 'zh', label: '简体中文' },
   { value: 'en', label: 'English' }
 ]
 
+// 可选的标题语言
+const availableTitleLangs = [
+  'ja', 'en', 'zh-Hans', 'zh-Hant', 'zh', 'ko', 'ru', 'fr', 'de', 'it', 'es', 'pt-br', 'vi'
+]
+
+const availableTitleLangOptions = computed(() => {
+  return availableTitleLangs.map(lang => ({
+    value: lang,
+    label: `settings.lang_names.${lang}`
+  }))
+})
+
 onMounted(() => {
   // 每次进入页面重新获取最新的登录状态
   username.value = localStorage.getItem('vndb_username') || ''
 })
+
+function moveLanguage(index, direction) {
+  const newIndex = index + direction
+  if (newIndex < 0 || newIndex >= titleLangPriority.value.length) return
+  
+  const temp = titleLangPriority.value[index]
+  titleLangPriority.value[index] = titleLangPriority.value[newIndex]
+  titleLangPriority.value[newIndex] = temp
+  savePriority()
+}
+
+function removeLanguage(index) {
+  titleLangPriority.value.splice(index, 1)
+  savePriority()
+}
+
+const showAddLang = ref(false)
+const selectedNewLang = ref('en')
+
+function addLanguage() {
+  if (!titleLangPriority.value.includes(selectedNewLang.value)) {
+    titleLangPriority.value.push(selectedNewLang.value)
+    savePriority()
+  }
+  showAddLang.value = false
+}
+
+function savePriority() {
+  localStorage.setItem('vndb_title_lang_priority', JSON.stringify(titleLangPriority.value))
+}
 
 // 监听语言变化并保存
 watch(currentLang, (newLang) => {
@@ -30,6 +75,7 @@ watch(currentLang, (newLang) => {
 
 function saveSettings() {
   localStorage.setItem('vndb_use_sandbox', JSON.stringify(useSandbox.value))
+  savePriority()
   alert(t('settings.settings_saved'))
 }
 
@@ -122,6 +168,78 @@ function goToLogin() {
       >
         {{ t('settings.save_settings') }}
       </button>
+    </div>
+
+    <!-- 语言优先级设置 -->
+    <div class="rounded-xl border border-neutral-200 bg-white p-4 shadow-xs space-y-4">
+      <div class="flex items-center justify-between border-b border-neutral-100 pb-2">
+        <div class="space-y-0.5">
+          <h2 class="text-sm font-semibold text-neutral-800">{{ t('settings.vn_title_priority') }}</h2>
+          <p class="text-[10px] text-neutral-400">{{ t('settings.vn_title_priority_desc') }}</p>
+        </div>
+        <button
+          @click="showAddLang = !showAddLang"
+          class="p-1 rounded-md hover:bg-neutral-100 text-neutral-600 transition"
+        >
+          <Icon :icon="showAddLang ? 'lucide:x' : 'lucide:plus'" class="h-4 w-4" />
+        </button>
+      </div>
+
+      <!-- 添加语言选择器 -->
+      <div v-if="showAddLang" class="flex items-center gap-2 bg-neutral-50 p-2 rounded-lg border border-neutral-100">
+        <div class="flex-1">
+          <BaseSelect
+            v-model="selectedNewLang"
+            :options="availableTitleLangOptions"
+            :label-renderer="(l) => t(l)"
+            class="w-full"
+          />
+        </div>
+        <button
+          @click="addLanguage"
+          class="px-3 py-1 bg-neutral-900 text-white text-xs font-medium rounded-md hover:bg-neutral-800"
+        >
+          {{ t('settings.add_language') }}
+        </button>
+      </div>
+
+      <div class="space-y-2">
+        <div
+          v-for="(lang, index) in titleLangPriority"
+          :key="lang"
+          class="flex items-center justify-between p-3 rounded-lg border border-neutral-100 bg-neutral-50/50"
+        >
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-bold text-neutral-300 w-4">{{ index + 1 }}</span>
+            <div class="flex flex-col">
+              <span class="text-sm font-medium text-neutral-800">{{ t(`settings.lang_names.${lang}`) }}</span>
+              <span class="text-[10px] text-neutral-400 uppercase">{{ lang }}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1">
+            <button
+              @click="moveLanguage(index, -1)"
+              :disabled="index === 0"
+              class="p-1.5 rounded-md hover:bg-white hover:shadow-sm text-neutral-400 hover:text-neutral-700 disabled:opacity-30 disabled:hover:bg-transparent"
+            >
+              <Icon icon="lucide:chevron-up" class="h-4 w-4" />
+            </button>
+            <button
+              @click="moveLanguage(index, 1)"
+              :disabled="index === titleLangPriority.length - 1"
+              class="p-1.5 rounded-md hover:bg-white hover:shadow-sm text-neutral-400 hover:text-neutral-700 disabled:opacity-30 disabled:hover:bg-transparent"
+            >
+              <Icon icon="lucide:chevron-down" class="h-4 w-4" />
+            </button>
+            <button
+              @click="removeLanguage(index)"
+              class="p-1.5 rounded-md hover:bg-red-50 text-neutral-400 hover:text-red-500"
+            >
+              <Icon icon="lucide:x" class="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

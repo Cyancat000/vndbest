@@ -390,6 +390,27 @@ const loadQuotes = async (id) => {
   }
 }
 
+// 统一标题处理逻辑 (与 VnList.vue 保持一致)
+function getTitle(v) {
+  if (!v) return ''
+  if (v.titles && v.titles.length > 0) {
+    const priority = JSON.parse(localStorage.getItem('vndb_title_lang_priority') || '["zh-Hans", "zh-Hant", "ja", "en"]')
+    for (const lang of priority) {
+      const match = v.titles.find(t => t.lang === lang)
+      if (match) return match.title
+    }
+  }
+  return v.title || v.alttitle || ''
+}
+
+function getAltTitle(v) {
+  if (!v) return ''
+  const mainTitle = getTitle(v)
+  if (v.alttitle && v.alttitle !== mainTitle) return v.alttitle
+  if (v.title && v.title !== mainTitle) return v.title
+  return ''
+}
+
 watch(
   () => route.params.id,
   (newId) => {
@@ -458,8 +479,8 @@ watch(
         <!-- 基本属性信息 -->
         <div class="flex-1 space-y-3 w-full">
           <div>
-            <h1 class="text-lg font-bold tracking-tight text-neutral-900 leading-snug">{{ vn.title }}</h1>
-            <p v-if="vn.alttitle" class="text-xs text-neutral-400 font-medium mt-0.5">{{ vn.alttitle }}</p>
+            <h1 class="text-lg font-bold tracking-tight text-neutral-900 leading-snug">{{ getTitle(vn) }}</h1>
+            <p v-if="getAltTitle(vn)" class="text-xs text-neutral-400 font-medium mt-0.5">{{ getAltTitle(vn) }}</p>
           </div>
 
           <div class="grid grid-cols-[80px_1fr] items-center gap-y-1.5 text-xs text-neutral-600">

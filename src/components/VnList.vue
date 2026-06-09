@@ -123,8 +123,38 @@ function handleItemClick(item) {
 }
 
 // 统一属性获取
-function getTitle(item) { return item.vn?.title || item.title || '' }
-function getAltTitle(item) { return item.vn?.alttitle || item.alttitle || '' }
+function getTitle(item) {
+  const vn = item.vn || item
+  if (!vn) return ''
+
+  // 1. 如果有 titles 数组，根据优先级查找
+  if (vn.titles && vn.titles.length > 0) {
+    const priority = JSON.parse(localStorage.getItem('vndb_title_lang_priority') || '["zh-Hans", "zh-Hant", "ja", "en"]')
+    for (const lang of priority) {
+      const match = vn.titles.find(t => t.lang === lang)
+      if (match) {
+        return match.title
+      }
+    }
+  }
+
+  // 2. 兜底逻辑
+  return vn.title || vn.alttitle || ''
+}
+
+function getAltTitle(item) {
+  const vn = item.vn || item
+  if (!vn) return ''
+
+  const mainTitle = getTitle(item)
+  
+  // 如果显示的是 alttitle 或 latin，则尝试寻找原始标题作为副标题
+  if (vn.alttitle && vn.alttitle !== mainTitle) return vn.alttitle
+  if (vn.title && vn.title !== mainTitle) return vn.title
+  
+  return ''
+}
+
 function getImage(item) { return item.vn?.image || item.image || null }
 function getReleased(item) { return item.vn?.released || item.released || '' }
 function getOlang(item) { return item.vn?.olang || item.olang || '' }
