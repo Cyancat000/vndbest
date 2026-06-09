@@ -371,6 +371,7 @@ watch(
 
 <template>
   <div class="space-y-4 pb-8">
+    <div class="space-y-4 pb-8">
     <!-- 头部导航 -->
     <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
       <button 
@@ -900,7 +901,7 @@ watch(
     </div>
   </Teleport>
 
-  <!-- Teleport: 大图查看器 (Lightbox Overlay - 支持大图及封面大图横向滑屏) -->
+    <!-- Teleport: 大图查看器 (Lightbox Overlay - 支持大图及封面大图横向滑屏) -->
   <Teleport to="body">
     <div 
       v-if="showImageLightbox"
@@ -965,6 +966,7 @@ watch(
       </div>
     </div>
   </Teleport>
+  </div>
 </template>
 
 <style scoped>
