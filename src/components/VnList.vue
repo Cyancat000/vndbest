@@ -469,7 +469,7 @@ function toggleReverse() {
     <div ref="sentinel" class="py-6 flex justify-center">
       <template v-if="showFooterStatus">
         <div v-if="isLoading" class="flex items-center gap-2 text-xs text-neutral-400">
-          <Icon icon="lucide:refresh-cw" class="h-4 w-4 animate-spin" />
+          <Icon icon="eos-icons:loading" class="h-4 w-4" />
           <span>{{ t('common.loading') }}</span>
         </div>
         <div v-else-if="!hasMore && items.length > 0" class="text-[10px] text-neutral-300 font-medium">

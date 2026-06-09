@@ -164,7 +164,7 @@ function goToLogin() {
         class="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 bg-white transition hover:bg-neutral-50 active:bg-neutral-100 disabled:opacity-50"
         :title="t('list.refresh')"
       >
-        <Icon icon="lucide:refresh-cw" class="h-4 w-4 text-neutral-600" :class="{ 'animate-spin': isLoading }" />
+        <Icon :icon="isLoading ? 'eos-icons:loading' : 'lucide:refresh-cw'" class="h-4 w-4 text-neutral-600" />
       </button>
     </div>
 
