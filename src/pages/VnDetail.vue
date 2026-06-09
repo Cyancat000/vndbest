@@ -506,15 +506,16 @@ watch(
         <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">{{ t('vn.description') }}</h3>
         <div class="relative">
           <div
-            class="rounded-lg border-l-3 border-neutral-300 bg-neutral-50 px-4 py-3 text-xs leading-relaxed text-neutral-600 whitespace-pre-wrap bbcode-container transition-all duration-300"
-            :class="[!isDescriptionExpanded ? 'max-h-32 overflow-hidden' : '']"
-            v-html="parseBBCode(vn.description)"
-          ></div>
-          <!-- 渐变蒙层，仅在收起且内容较长时显示 (这里简单处理，始终显示按钮) -->
-          <div
-            v-if="!isDescriptionExpanded"
-            class="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-neutral-50 to-transparent pointer-events-none"
-          ></div>
+            class="relative border-l-3 border-neutral-300 bg-neutral-50 px-4 py-3 text-xs leading-relaxed text-neutral-600 whitespace-pre-wrap bbcode-container transition-all duration-300"
+            :class="[isDescriptionExpanded ? 'rounded-lg' : 'max-h-32 overflow-hidden rounded-t-lg rounded-b-none']"
+          >
+            <div v-html="parseBBCode(vn.description)"></div>
+            <!-- 渐变蒙层，移至简介卡片内部以适配圆角裁剪 -->
+            <div
+              v-if="!isDescriptionExpanded"
+              class="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-neutral-50 to-transparent pointer-events-none"
+            ></div>
+          </div>
           <button
             @click="isDescriptionExpanded = !isDescriptionExpanded"
             class="mt-1 text-[10px] font-bold text-neutral-400 hover:text-neutral-600 flex items-center gap-0.5 transition-colors"
@@ -532,13 +533,15 @@ watch(
           :items="vn.relations"
           :show-sort="false"
           :compact="true"
+          :show-footer-status="false"
+          default-layout="text"
           storage-key="vndb_vn_relations_layout"
         />
       </div>
 
       <!-- 选项卡导航 (Notion Tab Style) -->
       <div class="border-b border-neutral-200 pt-2">
-        <nav class="flex space-x-5 -mb-px overflow-x-auto" aria-label="Tabs">
+        <nav class="flex space-x-5 -mb-px overflow-x-auto no-scrollbar" aria-label="Tabs">
           <button
             v-for="tab in [
               { id: 'releases', name: t('vn.tabs.releases') },

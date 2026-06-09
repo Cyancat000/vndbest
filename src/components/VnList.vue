@@ -38,6 +38,11 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
+  // 默认布局：'list', 'waterfall', 'compact'；'text' 作为纯文本布局的语义化别名
+  defaultLayout: {
+    type: String,
+    default: 'list'
+  },
   // 强制使用的布局 (如果提供，将隐藏切换按钮并始终使用此布局)
   forceLayout: {
     type: String,
@@ -52,6 +57,11 @@ const props = defineProps({
   compact: {
     type: Boolean,
     default: false
+  },
+  // 是否显示底部加载/已加载全部状态
+  showFooterStatus: {
+    type: Boolean,
+    default: true
   }
 })
 
@@ -60,15 +70,21 @@ const emit = defineEmits(['loadMore', 'sortChange', 'reverseChange'])
 const router = useRouter()
 const { t } = useI18n()
 
-// 布局状态：'list', 'waterfall', 'compact'
-const savedLayout = localStorage.getItem(props.storageKey) || 'list'
-const layoutMode = ref(props.forceLayout || savedLayout)
+// 布局状态：'list', 'waterfall', 'compact'；'text' 会规范化为 'compact'
+const normalizeLayout = (layout) => {
+  if (layout === 'text') return 'compact'
+  return ['list', 'waterfall', 'compact'].includes(layout) ? layout : 'list'
+}
+
+const savedLayout = localStorage.getItem(props.storageKey)
+const layoutMode = ref(normalizeLayout(props.forceLayout || savedLayout || props.defaultLayout))
 
 // 切换布局模式并保存偏好
 function toggleLayout(mode) {
   if (props.forceLayout) return
-  layoutMode.value = mode
-  localStorage.setItem(props.storageKey, mode)
+  const normalizedMode = normalizeLayout(mode)
+  layoutMode.value = normalizedMode
+  localStorage.setItem(props.storageKey, normalizedMode)
 }
 
 // 瀑布流双列分配
@@ -451,13 +467,15 @@ function toggleReverse() {
 
     <!-- 触底加载哨兵 & 状态 -->
     <div ref="sentinel" class="py-6 flex justify-center">
-      <div v-if="isLoading" class="flex items-center gap-2 text-xs text-neutral-400">
-        <Icon icon="lucide:refresh-cw" class="h-4 w-4 animate-spin" />
-        <span>{{ t('common.loading') }}</span>
-      </div>
-      <div v-else-if="!hasMore && items.length > 0" class="text-[10px] text-neutral-300 font-medium">
-        —— {{ t('list.all_loaded', '已加载全部') }} ——
-      </div>
+      <template v-if="showFooterStatus">
+        <div v-if="isLoading" class="flex items-center gap-2 text-xs text-neutral-400">
+          <Icon icon="lucide:refresh-cw" class="h-4 w-4 animate-spin" />
+          <span>{{ t('common.loading') }}</span>
+        </div>
+        <div v-else-if="!hasMore && items.length > 0" class="text-[10px] text-neutral-300 font-medium">
+          —— {{ t('list.all_loaded', '已加载全部') }} ——
+        </div>
+      </template>
     </div>
 
     <!-- 空状态 -->
