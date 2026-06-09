@@ -193,10 +193,10 @@
       "appears": "客串/出场"
     },
     "relation": {
-      "seq": "后作/续作",
+      "seq": "续作",
       "preq": "前作",
       "alt": "替换版本/分支",
-      "shares-char": "共享角色",
+      "char": "共享角色",
       "side": "外传/番外",
       "parent": "主篇",
       "character": "角色关联",
@@ -207,6 +207,7 @@
     "staff_role": {
       "scenario": "剧本",
       "art": "原画/美术",
+      "chardesign": "角色设计",
       "music": "音乐/音效",
       "director": "监督/导演",
       "vocals": "歌手",
