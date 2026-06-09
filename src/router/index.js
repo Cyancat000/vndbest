@@ -11,6 +11,7 @@ import VnSearch from '@/pages/VnSearch.vue'
 import ReleaseSearch from '@/pages/ReleaseSearch.vue'
 import ProducerSearch from '@/pages/ProducerSearch.vue'
 import StaffSearch from '@/pages/StaffSearch.vue'
+import StaffDetail from '@/pages/StaffDetail.vue'
 import CharacterSearch from '@/pages/CharacterSearch.vue'
 import TagSearch from '@/pages/TagSearch.vue'
 import TraitSearch from '@/pages/TraitSearch.vue'
@@ -87,6 +88,12 @@ const routes = [
     name: 'StaffSearch',
     component: StaffSearch,
     meta: { showTabBar: true }
+  },
+  {
+    path: '/staff/:id',
+    name: 'StaffDetail',
+    component: StaffDetail,
+    meta: { showTabBar: false }
   },
   {
     path: '/browse/characters',

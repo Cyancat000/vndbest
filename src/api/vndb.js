@@ -315,3 +315,69 @@ export async function getProducerList(filters, params = {}) {
     body: JSON.stringify(payload)
   })
 }
+
+/**
+ * 8. 搜索 Staff (人物)
+ * POST /staff
+ */
+export async function searchStaff(query, params = {}) {
+  const payload = {
+    filters: ['and', ['search', '=', query], ['ismain', '=', 1]],
+    fields: 'id, name, original, lang, description, ismain',
+    results: 20,
+    ...params
+  }
+  return request('/staff', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+}
+
+/**
+ * 8.1 获取特定 Staff 的详细信息
+ * POST /staff
+ */
+export async function getStaffDetail(id) {
+  return request('/staff', {
+    method: 'POST',
+    body: JSON.stringify({
+      filters: ['id', '=', id],
+      fields: 'id, name, original, lang, description, ismain, aliases{name,latin,ismain}, extlinks{url,label,name}',
+    })
+  })
+}
+
+/**
+ * 8.2 通用 Staff 列表查询
+ * POST /staff
+ */
+export async function getStaffList(filters = [], params = {}) {
+  // 确保包含 ismain 过滤以避免重复人物，除非显式提供 filters
+  const finalFilters = filters.length > 0 ? filters : ['ismain', '=', 1]
+  const payload = {
+    filters: finalFilters,
+    fields: 'id, name, original, lang, description, ismain',
+    results: 20,
+    ...params
+  }
+  return request('/staff', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+}
+
+/**
+ * 8.3 通用 VN 列表查询 (根据 Staff 过滤)
+ */
+export async function getVnListByStaff(staffId, params = {}) {
+  const payload = {
+    filters: ['staff', '=', ['id', '=', staffId]],
+    fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail}, released, olang, rating',
+    results: 20,
+    ...params
+  }
+  return request('/vn', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+}
