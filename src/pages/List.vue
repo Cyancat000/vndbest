@@ -17,7 +17,7 @@ const username = ref('')
 const items = ref([])
 const labels = ref([])
 const activeLabelId = ref(null) // null 表示全部
-const isLoading = ref(false)
+const isLoading = ref(true) // 默认为 true，防止初次进入闪烁空状态
 const isLoadingLabels = ref(false)
 const errorMsg = ref('')
 
@@ -41,6 +41,7 @@ onMounted(async () => {
     await fetchList(true)
   } else {
     isLoggedIn.value = false
+    isLoading.value = false // 未登录则停止加载状态
   }
 })
 

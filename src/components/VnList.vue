@@ -495,8 +495,21 @@ function toggleReverse() {
       </div>
     </div>
 
+    <!-- 加载中状态 (列表为空时) -->
+    <div v-if="items.length === 0 && isLoading" class="rounded-xl border border-neutral-200 bg-white p-12 text-center shadow-xs space-y-3">
+      <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-neutral-50 border border-neutral-100">
+        <Icon icon="eos-icons:loading" class="h-5 w-5 text-neutral-400" />
+      </div>
+      <div class="space-y-1">
+        <h3 class="text-sm font-semibold text-neutral-800">{{ t('common.loading') }}</h3>
+        <p class="text-xs text-neutral-400 max-w-xs mx-auto">
+          {{ t('list.fetching_data', '正在努力加载内容...') }}
+        </p>
+      </div>
+    </div>
+
     <!-- 触底加载哨兵 & 状态 -->
-    <div ref="sentinel" class="py-6 flex justify-center">
+    <div ref="sentinel" class="py-6 flex justify-center" v-show="items.length > 0">
       <template v-if="showFooterStatus">
         <div v-if="isLoading" class="flex items-center gap-2 text-xs text-neutral-400">
           <Icon icon="eos-icons:loading" class="h-4 w-4" />
