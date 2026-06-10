@@ -121,6 +121,31 @@ export async function getVnList(filters = [], params = {}) {
 }
 
 /**
+ * 2.3 获取随机 Visual Novels
+ * POST /vn
+ */
+export async function getRandomVn(params = {}) {
+  // 使用 ID 范围来模拟随机，避免 offset 限制导致的 400 错误
+  // VNDB 的 VN ID 大约到 v50000+，我们随机生成一个 ID
+  const maxId = params.maxId || 45000
+  const randomId = Math.floor(Math.random() * maxId) + 1
+  const payload = {
+    filters: ['id', '>=', `v${randomId}`],
+    fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail}, released, olang, rating',
+    sort: 'id',
+    results: 1,
+    ...params
+  }
+  // 移除自定义参数
+  delete payload.maxId
+  delete payload.maxOffset
+  return request('/vn', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+}
+
+/**
  * 3. 获取特定 Visual Novel 的详细信息
  * POST /vn
  */
