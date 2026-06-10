@@ -52,22 +52,22 @@ const langOptions = [
 
 const platformOptions = [
   { value: 'all', label: 'list.all' },
-  { value: 'win', label: 'Windows' },
-  { value: 'swi', label: 'Nintendo Switch' },
-  { value: 'ps5', label: 'PlayStation 5' },
-  { value: 'ps4', label: 'PlayStation 4' },
-  { value: 'ps3', label: 'PlayStation 3' },
-  { value: 'psv', label: 'PlayStation Vita' },
-  { value: 'psp', label: 'PlayStation Portable' },
-  { value: 'and', label: 'Android' },
-  { value: 'ios', label: 'iOS' },
-  { value: 'mac', label: 'macOS' },
-  { value: 'lin', label: 'Linux' },
-  { value: 'nds', label: 'Nintendo DS' },
-  { value: '3ds', label: 'Nintendo 3DS' },
-  { value: 'gba', label: 'Game Boy Advance' },
-  { value: 'sfc', label: 'Super Famicom' },
-  { value: 'nes', label: 'Famicom' }
+  { value: 'win', label: 'metadata.platform.win' },
+  { value: 'swi', label: 'metadata.platform.swi' },
+  { value: 'ps5', label: 'metadata.platform.ps5' },
+  { value: 'ps4', label: 'metadata.platform.ps4' },
+  { value: 'ps3', label: 'metadata.platform.ps3' },
+  { value: 'psv', label: 'metadata.platform.psv' },
+  { value: 'psp', label: 'metadata.platform.psp' },
+  { value: 'and', label: 'metadata.platform.and' },
+  { value: 'ios', label: 'metadata.platform.ios' },
+  { value: 'mac', label: 'metadata.platform.mac' },
+  { value: 'lin', label: 'metadata.platform.lin' },
+  { value: 'nds', label: 'metadata.platform.nds' },
+  { value: '3ds', label: 'metadata.platform.3ds' },
+  { value: 'gba', label: 'metadata.platform.gba' },
+  { value: 'sfc', label: 'metadata.platform.sfc' },
+  { value: 'nes', label: 'metadata.platform.nes' }
 ]
 
 async function fetchData(isLoadMore = false) {
@@ -198,7 +198,7 @@ onMounted(() => {
         <BaseSelect
           v-model="selectedPlatform"
           :options="platformOptions"
-          :label-renderer="(l) => l.startsWith('list.') ? t(l) : l"
+          :label-renderer="(l) => t(l, l)"
           class="!bg-neutral-50 rounded-lg border border-neutral-100"
         >
           <template #prefix>

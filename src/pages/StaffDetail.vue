@@ -127,8 +127,8 @@ const sortOptions = [
             <p v-if="staff.original" class="text-sm text-neutral-500 font-medium">{{ staff.original }}</p>
           </div>
           <div v-if="staff.lang" class="shrink-0">
-            <span class="text-xs font-bold text-neutral-400 uppercase tracking-tighter bg-neutral-50 px-2 py-1 rounded border border-neutral-100">
-              {{ staff.lang }}
+            <span class="text-xs font-bold text-neutral-400 tracking-tighter bg-neutral-50 px-2 py-1 rounded border border-neutral-100">
+              {{ t(`metadata.lang.${staff.lang}`, staff.lang) }}
             </span>
           </div>
         </div>

@@ -150,8 +150,8 @@ watch(sentinel, (el) => {
               <h3 class="font-bold text-sm text-neutral-900 truncate">
                 {{ item.name }}
               </h3>
-              <span v-if="item.lang" class="shrink-0 inline-flex items-center rounded-md bg-neutral-50 px-1.5 py-0.5 text-[9px] font-bold text-neutral-400 border border-neutral-100 uppercase">
-                {{ item.lang }}
+              <span v-if="item.lang" class="shrink-0 inline-flex items-center rounded-md bg-neutral-50 px-1.5 py-0.5 text-[9px] font-bold text-neutral-400 border border-neutral-100">
+                {{ t(`metadata.lang.${item.lang}`, item.lang) }}
               </span>
             </div>
             <div class="flex items-center gap-2 mt-0.5">

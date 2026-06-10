@@ -349,8 +349,8 @@ onUnmounted(() => {
                 <span
                   v-for="lang in item.languages"
                   :key="lang.lang"
-                  class="text-[9px] px-1 rounded bg-neutral-100 text-neutral-600 uppercase"
-                >{{ lang.lang }}</span>
+                  class="text-[9px] px-1 rounded bg-neutral-100 text-neutral-600"
+                >{{ t(`metadata.lang.${lang.lang}`, lang.lang) }}</span>
                 <span
                   v-if="item.patch"
                   class="text-[9px] px-1 rounded bg-amber-50 text-amber-600 border border-amber-100"
@@ -389,6 +389,7 @@ onUnmounted(() => {
                     v-for="plat in (isCompact ? item.platforms?.slice(0, 3) : item.platforms)"
                     :key="plat"
                     :icon="`simple-icons:${plat}`"
+                    :title="t(`metadata.platform.${plat}`, plat)"
                     :class="isCompact ? 'h-2.5 w-2.5 text-neutral-300' : 'h-3 w-3 text-neutral-400'"
                   />
                 </div>
@@ -450,8 +451,8 @@ onUnmounted(() => {
                 <span
                   v-for="lang in item.languages.slice(0, 3)"
                   :key="lang.lang"
-                  class="text-[9px] px-1 rounded bg-neutral-100 text-neutral-600 uppercase"
-                >{{ lang.lang }}</span>
+                  class="text-[9px] px-1 rounded bg-neutral-100 text-neutral-600"
+                >{{ t(`metadata.lang.${lang.lang}`, lang.lang) }}</span>
               </div>
               <div class="flex items-center justify-between text-[10px] text-neutral-400">
                 <div class="flex items-center gap-1 min-w-0">
@@ -465,6 +466,7 @@ onUnmounted(() => {
                     v-for="plat in (item.platforms?.slice(0, 4))"
                     :key="plat"
                     :icon="`simple-icons:${plat}`"
+                    :title="t(`metadata.platform.${plat}`, plat)"
                     class="h-2.5 w-2.5 text-neutral-300"
                   />
                 </div>
@@ -521,8 +523,8 @@ onUnmounted(() => {
                 <span
                   v-for="lang in item.languages.slice(0, 3)"
                   :key="lang.lang"
-                  class="text-[9px] px-1 rounded bg-neutral-100 text-neutral-600 uppercase"
-                >{{ lang.lang }}</span>
+                  class="text-[9px] px-1 rounded bg-neutral-100 text-neutral-600"
+                >{{ t(`metadata.lang.${lang.lang}`, lang.lang) }}</span>
               </div>
               <div class="flex items-center justify-between text-[10px] text-neutral-400">
                 <div class="flex items-center gap-1 min-w-0">
@@ -536,6 +538,7 @@ onUnmounted(() => {
                     v-for="plat in (item.platforms?.slice(0, 4))"
                     :key="plat"
                     :icon="`simple-icons:${plat}`"
+                    :title="t(`metadata.platform.${plat}`, plat)"
                     class="h-2.5 w-2.5 text-neutral-300"
                   />
                 </div>
@@ -582,7 +585,7 @@ onUnmounted(() => {
               >{{ t('release.all_ages') }}</span>
               <span v-if="item.patch" class="text-[9px] px-1 rounded bg-amber-50 text-amber-600 border border-amber-100">{{ t('release.patch') }}</span>
               <div class="flex gap-1">
-                <span v-for="lang in item.languages.slice(0, 3)" :key="lang.lang" class="text-[9px] text-neutral-400 uppercase">{{ lang.lang }}</span>
+                <span v-for="lang in item.languages.slice(0, 3)" :key="lang.lang" class="text-[9px] text-neutral-400">{{ t(`metadata.lang.${lang.lang}`, lang.lang) }}</span>
               </div>
             </div>
           </div>
@@ -591,6 +594,7 @@ onUnmounted(() => {
               v-for="plat in item.platforms?.slice(0, 4)"
               :key="plat"
               :icon="`simple-icons:${plat}`"
+              :title="t(`metadata.platform.${plat}`, plat)"
               class="h-3 w-3 text-neutral-300"
             />
           </div>

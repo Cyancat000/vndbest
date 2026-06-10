@@ -38,12 +38,12 @@ const langOptions = [
 
 const platformOptions = [
   { value: 'all', label: 'list.all' },
-  { value: 'win', label: 'Windows' },
-  { value: 'swi', label: 'Nintendo Switch' },
-  { value: 'ps5', label: 'PlayStation 5' },
-  { value: 'ps4', label: 'PlayStation 4' },
-  { value: 'and', label: 'Android' },
-  { value: 'ios', label: 'iOS' }
+  { value: 'win', label: 'metadata.platform.win' },
+  { value: 'swi', label: 'metadata.platform.swi' },
+  { value: 'ps5', label: 'metadata.platform.ps5' },
+  { value: 'ps4', label: 'metadata.platform.ps4' },
+  { value: 'and', label: 'metadata.platform.and' },
+  { value: 'ios', label: 'metadata.platform.ios' }
 ]
 
 async function fetchData(isLoadMore = false) {
@@ -161,7 +161,7 @@ onMounted(() => {
         <BaseSelect
           v-model="selectedPlatform"
           :options="platformOptions"
-          :label-renderer="(l) => l.startsWith('list.') ? t(l) : l"
+          :label-renderer="(l) => t(l, l)"
           class="!bg-neutral-50 rounded-lg border border-neutral-100"
         >
           <template #prefix>

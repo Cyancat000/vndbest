@@ -138,8 +138,8 @@ const getProducerTypeLabel = (type) => {
            <span class="inline-flex items-center rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-semibold text-neutral-600 border border-neutral-200">
             {{ getProducerTypeLabel(producer.type) }}
           </span>
-          <span v-if="producer.lang" class="text-xs font-bold text-neutral-400 uppercase tracking-tighter bg-neutral-50 px-2 py-0.5 rounded border border-neutral-100">
-            {{ producer.lang }}
+          <span v-if="producer.lang" class="text-xs font-bold text-neutral-400 tracking-tighter bg-neutral-50 px-2 py-0.5 rounded border border-neutral-100">
+            {{ t(`metadata.lang.${producer.lang}`, producer.lang) }}
           </span>
         </div>
       </div>

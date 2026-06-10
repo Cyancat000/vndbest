@@ -532,16 +532,16 @@ watch(
             <span class="text-neutral-800">{{ vn.released || t('metadata.gender.unknown') }}</span>
 
             <span class="text-neutral-400">{{ t('vn.olang') }}</span>
-            <span class="uppercase text-neutral-800">{{ vn.olang || t('metadata.gender.unknown') }}</span>
+            <span class="text-neutral-800">{{ t(`metadata.lang.${vn.olang}`, vn.olang) || t('metadata.gender.unknown') }}</span>
 
             <span class="text-neutral-400">{{ t('vn.languages') }}</span>
             <span class="text-neutral-800 truncate">
-              {{ vn.languages?.join(', ').toUpperCase() || t('metadata.gender.unknown') }}
+              {{ vn.languages?.map(l => t(`metadata.lang.${l}`, l)).join(', ') || t('metadata.gender.unknown') }}
             </span>
 
             <span class="text-neutral-400">{{ t('vn.platforms') }}</span>
             <span class="text-neutral-800 truncate">
-              {{ vn.platforms?.join(', ').toUpperCase() || t('metadata.gender.unknown') }}
+              {{ vn.platforms?.map(p => t(`metadata.platform.${p}`, p)).join(', ') || t('metadata.gender.unknown') }}
             </span>
 
             <span class="text-neutral-400">{{ t('vn.length') }}</span>
@@ -656,8 +656,8 @@ watch(
               
               <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[10px] text-neutral-500 pt-1 border-t border-neutral-100">
                 <div>{{ t('vn.releases.date') }}: <span class="text-neutral-700">{{ rel.released || t('metadata.gender.unknown') }}</span></div>
-                <div>{{ t('vn.releases.lang') }}: <span class="text-neutral-700 uppercase">{{ rel.languages?.map(l => l.lang).join(', ') || t('metadata.gender.unknown') }}</span></div>
-                <div>{{ t('vn.releases.platform') }}: <span class="text-neutral-700 uppercase">{{ rel.platforms?.join(', ') || t('metadata.gender.unknown') }}</span></div>
+                <div>{{ t('vn.releases.lang') }}: <span class="text-neutral-700">{{ rel.languages?.map(l => t(`metadata.lang.${l.lang}`, l.lang)).join(', ') || t('metadata.gender.unknown') }}</span></div>
+                <div>{{ t('vn.releases.platform') }}: <span class="text-neutral-700">{{ rel.platforms?.map(p => t(`metadata.platform.${p}`, p)).join(', ') || t('metadata.gender.unknown') }}</span></div>
                 <div v-if="rel.minage !== null">{{ t('vn.releases.age') }}: <span class="text-red-500 font-semibold">{{ rel.minage === 0 ? t('release.all_ages') : rel.minage + '+' }}</span></div>
               </div>
               

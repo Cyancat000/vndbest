@@ -403,8 +403,8 @@ function toggleReverse() {
                   {{ formatRating(getRating(item)) }}
                 </span>
 
-                <span v-if="getOlang(item)" class="text-[10px] rounded-full px-1.5 py-0.5 border border-neutral-200 bg-neutral-50 text-neutral-500 font-medium uppercase">
-                  {{ getOlang(item) }}
+                <span v-if="getOlang(item)" class="text-[10px] rounded-full px-1.5 py-0.5 border border-neutral-200 bg-neutral-50 text-neutral-500 font-medium">
+                  {{ t(`metadata.lang.${getOlang(item)}`, getOlang(item)) }}
                 </span>
                 <span v-if="getReleased(item)" class="text-[10px] text-neutral-400 font-medium">
                   {{ getReleased(item) }}

@@ -207,15 +207,15 @@ onMounted(() => {
 
             <span class="text-neutral-400">{{ t('vn.languages') }}</span>
             <div class="flex flex-wrap gap-1">
-              <span v-for="lang in release.languages" :key="lang.lang" 
-                class="text-[10px] px-1 rounded bg-white border border-neutral-200 uppercase font-bold"
+              <span v-for="lang in release.languages" :key="lang.lang"
+                class="text-[10px] px-1 rounded bg-white border border-neutral-200 font-bold"
                 :class="{ '!bg-neutral-900 !text-white !border-neutral-900': lang.main }">
-                {{ lang.lang }}
+                {{ t(`metadata.lang.${lang.lang}`, lang.lang) }}
               </span>
             </div>
 
             <span class="text-neutral-400">{{ t('vn.platforms') }}</span>
-            <span class="text-neutral-800 uppercase font-medium">{{ release.platforms?.join(', ') }}</span>
+            <span class="text-neutral-800 font-medium">{{ release.platforms?.map(p => t(`metadata.platform.${p}`, p)).join(', ') }}</span>
 
             <span v-if="release.engine" class="text-neutral-400">{{ t('release.engine') }}</span>
             <span v-if="release.engine" class="text-neutral-800 font-medium">{{ release.engine }}</span>
