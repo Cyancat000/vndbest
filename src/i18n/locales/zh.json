@@ -8,7 +8,8 @@
     "not_connected": "未连接",
     "loading": "加载中...",
     "error": "错误",
-    "sort_by": "排序方式"
+    "sort_by": "排序方式",
+    "go_back": "返回上一页"
   },
   "settings": {
     "title": "设置",
@@ -120,6 +121,11 @@
     "characters": "角色",
     "tags": "标签",
     "traits": "特征"
+  },
+  "producer_type": {
+    "co": "会社",
+    "in": "个人",
+    "ng": "同人组织"
   },
   "search": {
     "title": "搜索",
@@ -446,6 +452,7 @@
       "xone": "Xbox One",
       "xsxs": "Xbox Series X|S",
       "vita": "PlayStation Vita",
+      "bdp": "蓝光",
       "web": "网页浏览器",
       "otc": "其他"
     }

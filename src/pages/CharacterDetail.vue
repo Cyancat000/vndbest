@@ -174,7 +174,7 @@ onMounted(() => {
     <div v-else-if="error || !character" class="flex flex-col items-center justify-center py-20 text-neutral-400 space-y-4">
       <Icon icon="lucide:user-x" class="h-12 w-12 opacity-20" />
       <p class="text-sm font-medium">{{ error || t('vn.not_found') }}</p>
-      <button @click="router.back()" class="text-xs text-neutral-900 font-bold underline">返回上一页</button>
+      <button @click="router.back()" class="text-xs text-neutral-900 font-bold underline">{{ t('common.go_back') }}</button>
     </div>
 
     <!-- 详情内容 -->
@@ -240,7 +240,7 @@ onMounted(() => {
             <span class="text-[11px] text-neutral-400 font-medium">{{ t('vn.characters.measurements') }}</span>
             <div class="flex items-center gap-2">
               <span class="text-sm font-black text-neutral-800 tracking-tighter">{{ character.bust || '?' }} / {{ character.waist || '?' }} / {{ character.hips || '?' }}</span>
-              <span v-if="character.cup" class="px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 text-[10px] font-black uppercase">{{ character.cup }} Cup</span>
+              <span v-if="character.cup" class="px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 text-[10px] font-black uppercase">{{ t('vn.characters.cup', { cup: character.cup }) }}</span>
             </div>
           </div>
         </div>

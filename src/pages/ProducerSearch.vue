@@ -92,12 +92,7 @@ function goToDetail(id) {
 }
 
 const getProducerTypeLabel = (type) => {
-  const types = {
-    'co': 'Co.',
-    'in': 'Ind.',
-    'ng': 'Grp.'
-  }
-  return types[type] || type
+  return t(`producer_type.${type}`, type)
 }
 
 // 统一观察器初始化

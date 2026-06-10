@@ -534,7 +534,7 @@ watch(
             <p v-if="getAltTitle(vn)" class="text-xs text-neutral-400 font-medium mt-0.5">{{ getAltTitle(vn) }}</p>
           </div>
 
-          <div class="grid grid-cols-[80px_1fr] items-center gap-y-1.5 text-xs text-neutral-600">
+          <div class="grid grid-cols-[80px_1fr] items-start gap-y-1.5 text-xs text-neutral-600">
             <span class="text-neutral-400">{{ t('vn.id') }}</span>
             <span class="font-mono text-neutral-800">{{ vn.id }}</span>
 
@@ -546,18 +546,30 @@ watch(
             <span class="text-neutral-400">{{ t('vn.released') }}</span>
             <span class="text-neutral-800">{{ vn.released || t('metadata.gender.unknown') }}</span>
 
-            <span class="text-neutral-400">{{ t('vn.olang') }}</span>
-            <span class="text-neutral-800">{{ t(`metadata.lang.${vn.olang}`, vn.olang) || t('metadata.gender.unknown') }}</span>
+            <span class="text-neutral-400 pt-0.5">{{ t('vn.olang') }}</span>
+            <div>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-700 border border-neutral-200 font-medium">
+                {{ t(`metadata.lang.${vn.olang}`, vn.olang) || t('metadata.gender.unknown') }}
+              </span>
+            </div>
 
-            <span class="text-neutral-400">{{ t('vn.languages') }}</span>
-            <span class="text-neutral-800 truncate">
-              {{ vn.languages?.map(l => t(`metadata.lang.${l}`, l)).join(', ') || t('metadata.gender.unknown') }}
-            </span>
+            <span class="text-neutral-400 pt-0.5">{{ t('vn.languages') }}</span>
+            <div class="flex flex-wrap gap-1">
+              <span v-for="lang in (vn.languages || [])" :key="lang"
+                class="text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-700 border border-neutral-200 font-medium">
+                {{ t(`metadata.lang.${lang}`, lang) }}
+              </span>
+              <span v-if="!vn.languages?.length" class="text-neutral-800">{{ t('metadata.gender.unknown') }}</span>
+            </div>
 
-            <span class="text-neutral-400">{{ t('vn.platforms') }}</span>
-            <span class="text-neutral-800 truncate">
-              {{ vn.platforms?.map(p => t(`metadata.platform.${p}`, p)).join(', ') || t('metadata.gender.unknown') }}
-            </span>
+            <span class="text-neutral-400 pt-0.5">{{ t('vn.platforms') }}</span>
+            <div class="flex flex-wrap gap-1">
+              <span v-for="p in (vn.platforms || [])" :key="p"
+                class="text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-700 border border-neutral-200 font-medium">
+                {{ t(`metadata.platform.${p}`, p) }}
+              </span>
+              <span v-if="!vn.platforms?.length" class="text-neutral-800">{{ t('metadata.gender.unknown') }}</span>
+            </div>
 
             <span class="text-neutral-400">{{ t('vn.length') }}</span>
             <span class="text-neutral-800">{{ formatLength(vn) }}</span>

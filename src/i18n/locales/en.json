@@ -8,7 +8,8 @@
     "not_connected": "Not Connected",
     "loading": "Loading...",
     "error": "Error",
-    "sort_by": "Sort by"
+    "sort_by": "Sort by",
+    "go_back": "Go Back"
   },
   "settings": {
     "title": "Settings",
@@ -429,8 +430,14 @@
       "xone": "Xbox One",
       "xsxs": "Xbox Series X|S",
       "vita": "PlayStation Vita",
+      "bdp": "Blu-ray",
       "web": "Web Browser",
       "otc": "Other"
     }
+  },
+  "producer_type": {
+    "co": "Company",
+    "in": "Individual",
+    "ng": "Amateur Group"
   }
 }

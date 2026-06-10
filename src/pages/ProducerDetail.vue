@@ -97,12 +97,7 @@ const sortOptions = [
 ]
 
 const getProducerTypeLabel = (type) => {
-  const types = {
-    'co': 'Company',
-    'in': 'Individual',
-    'ng': 'Amateur group'
-  }
-  return types[type] || type
+  return t(`producer_type.${type}`, type)
 }
 </script>
 
