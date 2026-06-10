@@ -591,17 +591,19 @@ watch(
       <div class="space-y-4 pt-1">
         <!-- 1. 版本发行 Tab -->
         <div v-if="activeTab === 'releases'" class="space-y-3">
-          <div v-if="releasesLoading" class="text-center py-6 text-xs text-neutral-400 animate-pulse">
-            {{ t('vn.releases.loading') }}
+          <div v-if="releasesLoading" class="flex flex-col items-center justify-center py-10 gap-2">
+            <Icon icon="eos-icons:loading" class="h-6 w-6 text-neutral-300" />
+            <span class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">{{ t('release.loading') }}</span>
           </div>
           <div v-else-if="releases.length === 0" class="text-center py-6 text-xs text-neutral-400">
             {{ t('vn.releases.empty') }}
           </div>
           <div v-else class="space-y-3">
-            <div 
-              v-for="rel in releases" 
-              :key="rel.id" 
-              class="p-3 rounded-lg border border-neutral-200 bg-white hover:shadow-xs transition space-y-2"
+            <div
+              v-for="rel in releases"
+              :key="rel.id"
+              @click="router.push(`/release/${rel.id}`)"
+              class="p-3 rounded-lg border border-neutral-200 bg-white hover:shadow-xs hover:border-neutral-300 transition space-y-2 cursor-pointer active:scale-[0.98]"
             >
               <div class="flex justify-between items-start gap-2">
                 <div class="min-w-0">
@@ -620,7 +622,7 @@ watch(
                 <div>{{ t('vn.releases.date') }}: <span class="text-neutral-700">{{ rel.released || t('metadata.gender.unknown') }}</span></div>
                 <div>{{ t('vn.releases.lang') }}: <span class="text-neutral-700 uppercase">{{ rel.languages?.map(l => l.lang).join(', ') || t('metadata.gender.unknown') }}</span></div>
                 <div>{{ t('vn.releases.platform') }}: <span class="text-neutral-700 uppercase">{{ rel.platforms?.join(', ') || t('metadata.gender.unknown') }}</span></div>
-                <div v-if="rel.minage">{{ t('vn.releases.age') }}: <span class="text-red-500 font-semibold">{{ rel.minage }}+</span></div>
+                <div v-if="rel.minage !== null">{{ t('vn.releases.age') }}: <span class="text-red-500 font-semibold">{{ rel.minage === 0 ? t('release.all_ages') : rel.minage + '+' }}</span></div>
               </div>
               
               <div v-if="rel.notes" class="text-[10px] text-neutral-400 bg-neutral-50 p-1.5 rounded whitespace-pre-wrap leading-normal" v-html="parseBBCode(rel.notes)"></div>
@@ -630,8 +632,9 @@ watch(
 
         <!-- 2. 封面画册 Tab (从各种 Release 汇总正面、背面、数字大图) -->
         <div v-else-if="activeTab === 'covers'" class="space-y-3">
-          <div v-if="releasesLoading" class="text-center py-6 text-xs text-neutral-400 animate-pulse">
-            {{ t('vn.covers.loading') }}
+          <div v-if="releasesLoading" class="flex flex-col items-center justify-center py-10 gap-2">
+            <Icon icon="eos-icons:loading" class="h-6 w-6 text-neutral-300" />
+            <span class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">{{ t('release.loading') }}</span>
           </div>
           <div v-else-if="allCovers.length === 0" class="text-center py-6 text-xs text-neutral-400">
             {{ t('vn.covers.empty') }}
@@ -656,8 +659,9 @@ watch(
 
         <!-- 3. 关联角色 Tab (展示更饱满的角色背景、属性三围，采用 Notion 网格卡片) -->
         <div v-else-if="activeTab === 'characters'" class="space-y-3">
-          <div v-if="charactersLoading" class="text-center py-6 text-xs text-neutral-400 animate-pulse">
-            {{ t('vn.characters.loading') }}
+          <div v-if="charactersLoading" class="flex flex-col items-center justify-center py-10 gap-2">
+            <Icon icon="eos-icons:loading" class="h-6 w-6 text-neutral-300" />
+            <span class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">{{ t('release.loading') }}</span>
           </div>
           <div v-else-if="characters.length === 0" class="text-center py-6 text-xs text-neutral-400">
             {{ t('vn.characters.empty') }}
@@ -926,8 +930,9 @@ watch(
 
         <!-- 7. 精选摘录 Tab (Quotes) -->
         <div v-else-if="activeTab === 'quotes'" class="space-y-3">
-          <div v-if="quotesLoading" class="text-center py-6 text-xs text-neutral-400 animate-pulse">
-            {{ t('vn.quotes.loading') }}
+          <div v-if="quotesLoading" class="flex flex-col items-center justify-center py-10 gap-2">
+            <Icon icon="eos-icons:loading" class="h-6 w-6 text-neutral-300" />
+            <span class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">{{ t('release.loading') }}</span>
           </div>
           <div v-else-if="quotes.length === 0" class="text-center py-6 text-xs text-neutral-400">
             {{ t('vn.quotes.empty') }}

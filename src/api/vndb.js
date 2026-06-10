@@ -195,6 +195,20 @@ export async function getReleaseList(filters = [], params = {}) {
 }
 
 /**
+ * 3.1.2 获取特定 Release 的详细信息
+ * POST /release
+ */
+export async function getReleaseDetail(id) {
+  return request('/release', {
+    method: 'POST',
+    body: JSON.stringify({
+      filters: ['id', '=', id],
+      fields: 'id, title, alttitle, released, languages{lang,title,latin,main}, platforms, official, patch, freeware, notes, uncensored, minage, gtin, catalog, resolution, voiced, engine, media{medium,qty}, images{url,dims,type,languages}, vns{id,title,alttitle,titles{lang,title,latin},image{url,thumbnail},released,olang,rating}, producers{id,name,original,developer,publisher}',
+    })
+  })
+}
+
+/**
  * 3.2 获取特定 Visual Novel 的角色列表
  * POST /character
  */

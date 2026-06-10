@@ -57,10 +57,7 @@ function toggleLayout(mode) {
 }
 
 function handleItemClick(item) {
-  // Release 点击逻辑，目前可能没有 Release 详情页，可以先跳转到关联的 VN
-  if (item.vns && item.vns.length > 0) {
-    router.push(`/vn/${item.vns[0].id}`)
-  }
+  router.push(`/release/${item.id}`)
 }
 
 function getTitle(item) {
@@ -196,9 +193,12 @@ onUnmounted(() => {
             </div>
 
             <div class="flex items-center justify-between">
-              <div class="flex gap-2 items-center">
-                <span v-if="item.released" class="text-[10px] text-neutral-500 font-medium">{{ item.released }}</span>
-                <div class="flex gap-1">
+              <div class="flex gap-2 items-center min-w-0">
+                <span v-if="item.released" class="text-[10px] text-neutral-500 font-medium truncate shrink-0">{{ item.released }}</span>
+                <span v-if="item.minage === 0" class="text-[9px] px-1 rounded bg-neutral-100 text-neutral-500 font-bold shrink-0">
+                  {{ t('release.all_ages') }}
+                </span>
+                <div class="flex gap-1 shrink-0">
                   <Icon v-for="plat in item.platforms" :key="plat" :icon="`simple-icons:${plat}`" class="h-3 w-3 text-neutral-400" />
                 </div>
               </div>
@@ -232,7 +232,12 @@ onUnmounted(() => {
           <div class="p-2.5 space-y-1">
             <h3 class="text-xs font-semibold text-neutral-900 line-clamp-1">{{ getTitle(item) }}</h3>
             <div class="flex items-center justify-between text-[10px] text-neutral-400">
-              <span>{{ item.released }}</span>
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span>{{ item.released }}</span>
+                <span v-if="item.minage === 0" class="px-1 rounded bg-neutral-100 text-neutral-500 scale-90 origin-left font-bold">
+                  {{ t('release.all_ages') }}
+                </span>
+              </div>
               <div class="flex gap-1">
                 <span v-for="lang in item.languages.slice(0, 2)" :key="lang.lang" class="uppercase">{{ lang.lang }}</span>
               </div>

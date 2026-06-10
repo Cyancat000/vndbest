@@ -15,6 +15,7 @@ import StaffDetail from '@/pages/StaffDetail.vue'
 import CharacterSearch from '@/pages/CharacterSearch.vue'
 import TagSearch from '@/pages/TagSearch.vue'
 import TraitSearch from '@/pages/TraitSearch.vue'
+import ReleaseDetail from '@/pages/ReleaseDetail.vue'
 
 const routes = [
   {
@@ -63,6 +64,12 @@ const routes = [
     path: '/producer/:id',
     name: 'ProducerDetail',
     component: ProducerDetail,
+    meta: { showTabBar: false }
+  },
+  {
+    path: '/release/:id',
+    name: 'ReleaseDetail',
+    component: ReleaseDetail,
     meta: { showTabBar: false }
   },
   {

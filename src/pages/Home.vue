@@ -71,9 +71,7 @@ async function handleRandomClick() {
 }
 
 function handleReleaseClick(release) {
-  if (release.vns && release.vns.length > 0) {
-    router.push(`/vn/${release.vns[0].id}`)
-  }
+  router.push(`/release/${release.id}`)
 }
 </script>
 
@@ -214,7 +212,7 @@ function handleReleaseClick(release) {
     >
       <div class="flex items-center gap-3">
         <div class="grid h-10 w-10 place-items-center rounded-lg bg-purple-50 text-purple-600">
-          <Icon icon="lucide:dices" class="h-5 w-5" :class="{'animate-spin': loadingSections.random}" />
+          <Icon :icon="loadingSections.random ? 'eos-icons:loading' : 'lucide:dices'" class="h-5 w-5" />
         </div>
         <div>
           <span class="text-sm font-semibold text-neutral-800 block">{{ t('home.random_vn') }}</span>

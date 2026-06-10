@@ -215,6 +215,43 @@
       "confirm": "确认"
     }
   },
+  "release": {
+    "title": "版本详情",
+    "info": "版本信息",
+    "engine": "引擎",
+    "resolution": "分辨率",
+    "voiced": "配音程度",
+    "medium": "介质",
+    "gtin": "GTIN",
+    "catalog": "发行编号",
+    "notes": "版本备注",
+    "producers": "关联会社",
+    "associated_vn": "关联作品",
+    "official": "官方",
+    "unofficial": "非官方/同人",
+    "patch": "补丁/更新",
+    "freeware": "免费软件",
+    "commercial": "商业收费",
+    "uncensored": "无修正",
+    "censored": "有修正",
+    "voiced_none": "无配音",
+    "voiced_ero": "仅 H 场景配音",
+    "voiced_partial": "部分配音",
+    "voiced_full": "全角色配音",
+    "all_ages": "全年龄",
+    "loading": "加载中...",
+    "mediums": {
+      "cd": "CD",
+      "dvd": "DVD",
+      "gdr": "GD-ROM",
+      "blr": "蓝光光盘",
+      "flp": "软盘",
+      "msc": "磁带",
+      "mrt": "卡带",
+      "in": "网络",
+      "otc": "其他"
+    }
+  },
   "metadata": {
     "gender": {
       "m": "男",

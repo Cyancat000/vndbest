@@ -200,6 +200,44 @@
       "confirm": "Confirm"
     }
   },
+  "release": {
+    "title": "Release Details",
+    "info": "Release Information",
+    "engine": "Engine",
+    "resolution": "Resolution",
+    "voiced": "Voicing",
+    "medium": "Medium",
+    "gtin": "GTIN",
+    "catalog": "Catalog",
+    "notes": "Notes",
+    "producers": "Producers",
+    "associated_vn": "Associated Works",
+    "official": "Official",
+    "unofficial": "Unofficial",
+    "patch": "Patch",
+    "freeware": "Freeware",
+    "commercial": "Commercial",
+    "uncensored": "Uncensored",
+    "censored": "Censored",
+    "voiced_none": "Not voiced",
+    "voiced_ero": "Ero scenes only",
+    "voiced_partial": "Partially voiced",
+    "voiced_full": "Fully voiced",
+    "all_ages": "All Ages",
+    "loading": "Loading...",
+    "mediums": {
+      "cd": "CD",
+      "dvd": "DVD",
+      "gdr": "GD-ROM",
+      "blr": "Blu-ray",
+      "flp": "Floppy",
+      "msc": "Cassette",
+      "crt": "Cartridge",
+      "mrt": "Memory Card",
+      "in": "Digital",
+      "otc": "Other"
+    }
+  },
   "metadata": {
     "gender": {
       "m": "Male",
