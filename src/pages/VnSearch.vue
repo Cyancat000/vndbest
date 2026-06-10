@@ -1,6 +1,7 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import SearchBase from '@/components/SearchBase.vue'
 import VnList from '@/components/VnList.vue'
 import BaseSelect from '@/components/BaseSelect.vue'
@@ -8,6 +9,7 @@ import { Icon } from '@iconify/vue'
 import { getVnList } from '@/api/vndb.js'
 
 const { t } = useI18n()
+const route = useRoute()
 
 const query = ref('')
 const items = ref([])
@@ -21,6 +23,8 @@ const sortBy = ref('votecount')
 const reverse = ref(true)
 const selectedLang = ref('all')
 const selectedPlatform = ref('all')
+
+const selectedTag = computed(() => typeof route.query.tag === 'string' ? route.query.tag : '')
 
 const sortOptions = [
   { value: 'votecount', label: 'vn.votes_count' },
@@ -89,6 +93,10 @@ async function fetchData(isLoadMore = false) {
       filters.push(['platform', '=', selectedPlatform.value])
     }
 
+    if (selectedTag.value) {
+      filters.push(['tag', '=', selectedTag.value])
+    }
+
     // 处理排序。只有在有 search 过滤时才支持 searchrank
     let currentSort = sortBy.value
     if (currentSort === 'searchrank' && !query.value) {
@@ -147,7 +155,7 @@ function handleClear() {
 }
 
 // 筛选器变化时自动重新搜索
-watch([selectedLang, selectedPlatform], () => {
+watch([selectedLang, selectedPlatform, selectedTag], () => {
   fetchData()
 })
 

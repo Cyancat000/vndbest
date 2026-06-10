@@ -1,12 +1,13 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import SearchBase from '@/components/SearchBase.vue'
-import { searchCharacters, getCharacterList } from '@/api/vndb'
+import { getCharacterList } from '@/api/vndb'
 
 const { t } = useI18n()
+const route = useRoute()
 const router = useRouter()
 
 const query = ref('')
@@ -15,6 +16,10 @@ const isLoading = ref(false)
 const hasMore = ref(false)
 const page = ref(1)
 const resultsPerPage = 25
+
+function getSelectedTrait() {
+  return typeof route.query.trait === 'string' ? route.query.trait : ''
+}
 
 // 触底加载逻辑
 const sentinel = ref(null)
@@ -32,13 +37,28 @@ async function fetchCharacters(q = '', reset = true) {
   isLoading.value = true
   try {
     let res
+    const filters = []
+    const selectedTrait = getSelectedTrait()
+
     if (q && q.trim() !== '') {
-      res = await searchCharacters(q, { 
-        page: page.value, 
-        results: resultsPerPage 
+      filters.push(['search', '=', q])
+    }
+
+    if (selectedTrait) {
+      filters.push(['trait', '=', selectedTrait])
+    }
+
+    const finalFilters = filters.length > 1 ? ['and', ...filters] : (filters[0] || [])
+
+    if (finalFilters.length > 0) {
+      res = await getCharacterList(finalFilters, {
+        page: page.value,
+        results: resultsPerPage,
+        sort: q && q.trim() !== '' ? 'searchrank' : 'id',
+        reverse: false
       })
     } else {
-      res = await getCharacterList([], { 
+      res = await getCharacterList([], {
         page: page.value,
         results: resultsPerPage,
         sort: 'id',
@@ -110,13 +130,20 @@ function setupObserver() {
 }
 
 onMounted(() => {
-  fetchCharacters('', true)
+  fetchCharacters(query.value, true)
   setupObserver()
 })
 
 onUnmounted(() => {
   if (observer) observer.disconnect()
 })
+
+watch(
+  () => route.query.trait,
+  () => {
+    fetchCharacters(query.value, true)
+  }
+)
 
 // 监听 sentinel，确保 DOM 稳定
 watch(sentinel, (el) => {

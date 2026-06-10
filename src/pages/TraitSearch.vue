@@ -47,10 +47,12 @@ async function fetchTraits(q = '', reset = true) {
     }
     
     if (res && res.results) {
+      const visibleTraits = res.results.filter(item => item.char_count > 0)
+
       if (reset) {
-        results.value = res.results
+        results.value = visibleTraits
       } else {
-        results.value = [...results.value, ...res.results]
+        results.value = [...results.value, ...visibleTraits]
       }
       hasMore.value = !!res.more
     }
