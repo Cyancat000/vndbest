@@ -244,8 +244,9 @@ onMounted(() => {
             <div class="flex flex-wrap gap-1.5">
               <span
                 v-for="trait in traits"
-                :key="trait.name"
-                class="px-2.5 py-1 rounded-lg bg-white text-neutral-700 text-[11px] font-semibold border border-neutral-200 shadow-xs hover:border-neutral-400 transition-colors cursor-default"
+                :key="trait.id || trait.name"
+                @click="router.push(`/browse/characters?trait=${trait.id}`)"
+                class="px-2.5 py-1 rounded-lg bg-white text-neutral-700 text-[11px] font-semibold border border-neutral-200 shadow-xs hover:border-neutral-400 transition-colors cursor-pointer active:scale-[0.98]"
               >
                 {{ trait.name }}
               </span>

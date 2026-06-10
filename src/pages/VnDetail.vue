@@ -878,10 +878,11 @@ watch(
             {{ t('vn.tags.empty') }}
           </div>
           <div v-else class="flex flex-wrap gap-2">
-            <div 
-              v-for="tag in filteredTags" 
-              :key="tag.id" 
-              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border"
+            <div
+              v-for="tag in filteredTags"
+              :key="tag.id"
+              @click="router.push(`/browse/vn?tag=${tag.id}`)"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border cursor-pointer active:scale-[0.98] transition hover:border-neutral-400 hover:bg-neutral-100"
               :class="[
                 tag.spoiler === 2 
                   ? 'bg-red-50 text-red-700 border-red-200' 
