@@ -154,7 +154,7 @@ export async function getVnDetail(id) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['id', '=', id],
-      fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,dims,sexual,violence,thumbnail,thumbnail_dims}, released, olang, description, relations{id,title,alttitle,relation,relation_official,image{url,dims,thumbnail},rating,released,olang}, languages, platforms, developers{name}, rating, votecount, length, length_minutes, tags{id,name,rating,spoiler}, staff{role,name,original}, va{note,staff{name,original},character{id,name,original,image{url}}}, screenshots{url,dims,thumbnail,thumbnail_dims,sexual}',
+      fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,dims,sexual,violence,thumbnail,thumbnail_dims}, released, olang, description, relations{id,title,alttitle,relation,relation_official,image{url,dims,thumbnail},rating,released,olang}, languages, platforms, developers{name}, rating, votecount, length, length_minutes, tags{id,name,rating,spoiler}, staff{id,role,name,original}, va{note,staff{id,name,original},character{id,name,original,image{url}}}, screenshots{url,dims,thumbnail,thumbnail_dims,sexual}',
     })
   })
 }

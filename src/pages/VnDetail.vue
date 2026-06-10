@@ -818,7 +818,10 @@ watch(
                       <div v-if="getCharacterVA(char.id)" class="space-y-1">
                         <h5 class="text-[8px] font-bold text-neutral-400 uppercase tracking-tighter">{{ t('vn.characters.voiced_by') }}</h5>
                         <div class="text-[10px] text-neutral-700 font-medium">
-                          {{ getCharacterVA(char.id).staff?.name }}
+                          <span
+                            class="cursor-pointer hover:text-neutral-500 active:text-neutral-600 transition-colors"
+                            @click="getCharacterVA(char.id).staff?.id && router.push(`/staff/${getCharacterVA(char.id).staff.id}`)"
+                          >{{ getCharacterVA(char.id).staff?.name }}</span>
                           <span v-if="getCharacterVA(char.id).staff?.original" class="text-[9px] text-neutral-400 font-normal">({{ getCharacterVA(char.id).staff.original }})</span>
                         </div>
                       </div>
@@ -843,10 +846,11 @@ watch(
               {{ t('vn.staff.empty') }}
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div 
-                v-for="(st, idx) in vn.staff" 
-                :key="idx" 
-                class="flex justify-between items-center p-2 rounded-lg border border-neutral-100 bg-white"
+              <div
+                v-for="(st, idx) in vn.staff"
+                :key="idx"
+                class="flex justify-between items-center p-2 rounded-lg border border-neutral-100 bg-white cursor-pointer hover:bg-neutral-50 active:bg-neutral-100 transition-colors"
+                @click="st.id && router.push(`/staff/${st.id}`)"
               >
                 <div class="min-w-0">
                   <div class="text-xs font-medium text-neutral-800 truncate">{{ st.name }}</div>
@@ -866,15 +870,19 @@ watch(
               {{ t('vn.staff.va_empty') }}
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div 
-                v-for="(actor, idx) in vn.va" 
-                :key="idx" 
+              <div
+                v-for="(actor, idx) in vn.va"
+                :key="idx"
                 class="flex items-center gap-3 p-2 rounded-lg border border-neutral-200 bg-white"
               >
-                <div class="h-10 w-10 flex-shrink-0 rounded-full overflow-hidden border border-neutral-200 bg-neutral-100">
-                  <img 
-                    v-if="actor.character?.image?.url" 
-                    :src="actor.character.image.url" 
+                <!-- 角色头像 - 点击进入角色详情 -->
+                <div
+                  class="h-10 w-10 flex-shrink-0 rounded-full overflow-hidden border border-neutral-200 bg-neutral-100 cursor-pointer"
+                  @click="actor.character?.id && router.push(`/character/${actor.character.id}`)"
+                >
+                  <img
+                    v-if="actor.character?.image?.url"
+                    :src="actor.character.image.url"
                     class="h-full w-full object-cover object-top"
                   />
                   <div v-else class="h-full w-full flex items-center justify-center">
@@ -883,12 +891,18 @@ watch(
                 </div>
                 
                 <div class="min-w-0 flex-1">
-                  <div class="text-xs font-semibold text-neutral-800 truncate">
+                  <div
+                    class="text-xs font-semibold text-neutral-800 truncate cursor-pointer hover:text-neutral-500 active:text-neutral-600 transition-colors"
+                    @click="actor.character?.id && router.push(`/character/${actor.character.id}`)"
+                  >
                     {{ actor.character?.name }}
                     <span v-if="actor.character?.original" class="text-[10px] text-neutral-400 font-normal">({{ actor.character.original }})</span>
                   </div>
                   <div class="text-[10px] text-neutral-500 mt-0.5 truncate">
-                    CV: <span class="font-medium text-neutral-700">{{ actor.staff?.name }}</span>
+                    CV: <span
+                      class="font-medium text-neutral-700 cursor-pointer hover:text-neutral-500 active:text-neutral-600 transition-colors"
+                      @click="actor.staff?.id && router.push(`/staff/${actor.staff.id}`)"
+                    >{{ actor.staff?.name }}</span>
                     <span v-if="actor.staff?.original" class="text-[9px] text-neutral-400"> ({{ actor.staff.original }})</span>
                   </div>
                   <div v-if="actor.note" class="text-[9px] text-neutral-400 italic truncate mt-0.5">
