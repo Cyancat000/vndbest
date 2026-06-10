@@ -91,7 +91,7 @@ onUnmounted(() => {
     <button
       type="button"
       @click="toggleMenu"
-      class="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-neutral-100 transition text-xs font-medium text-neutral-600 hover:text-neutral-900 cursor-pointer"
+      class="flex w-full items-center justify-between gap-1.5 px-2 py-1 rounded-md hover:bg-neutral-100 transition text-xs font-medium text-neutral-600 hover:text-neutral-900 cursor-pointer"
     >
       <slot name="prefix"></slot>
       <span>{{ currentLabel }}</span>

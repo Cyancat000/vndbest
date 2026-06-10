@@ -4,6 +4,9 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import SearchBase from '@/components/SearchBase.vue'
+import BaseSelect from '@/components/BaseSelect.vue'
+import TraitChip from '@/components/TraitChip.vue'
+import TraitFilterModal from '@/components/TraitFilterModal.vue'
 import { getCharacterList } from '@/api/vndb'
 
 const { t } = useI18n()
@@ -17,15 +20,67 @@ const hasMore = ref(false)
 const page = ref(1)
 const resultsPerPage = 25
 
+// 筛选状态
+const selectedTraits = ref([])
+const showTraitModal = ref(false)
+const showAdvancedFilters = ref(false)
+
+// 高级筛选项
+const selectedSex = ref('all')
+const selectedBloodType = ref('all')
+const selectedRole = ref('all')
+
 function getSelectedTrait() {
   return typeof route.query.trait === 'string' ? route.query.trait : ''
+}
+
+// 筛选选项
+const sexOptions = [
+  { value: 'all', label: 'list.all' },
+  { value: 'm', label: '男' },
+  { value: 'f', label: '女' },
+  { value: 'b', label: '双性' },
+  { value: 'n', label: '无性' }
+]
+
+const bloodTypeOptions = [
+  { value: 'all', label: 'list.all' },
+  { value: 'a', label: 'A 型' },
+  { value: 'b', label: 'B 型' },
+  { value: 'ab', label: 'AB 型' },
+  { value: 'o', label: 'O 型' }
+]
+
+const roleOptions = [
+  { value: 'all', label: 'list.all' },
+  { value: 'main', label: '视点角色' },
+  { value: 'primary', label: '主要角色' },
+  { value: 'side', label: '配角' },
+  { value: 'appears', label: '客串/出场' }
+]
+
+// 计算是否有激活的筛选条件
+function hasActiveFilters() {
+  return selectedTraits.value.length > 0
+    || selectedSex.value !== 'all'
+    || selectedBloodType.value !== 'all'
+    || selectedRole.value !== 'all'
+}
+
+// 清除所有筛选
+function clearAllFilters() {
+  selectedTraits.value = []
+  selectedSex.value = 'all'
+  selectedBloodType.value = 'all'
+  selectedRole.value = 'all'
+  fetchData()
 }
 
 // 触底加载逻辑
 const sentinel = ref(null)
 let observer = null
 
-async function fetchCharacters(q = '', reset = true) {
+async function fetchData(q = '', reset = true) {
   if (isLoading.value && !reset) return
   
   if (reset) {
@@ -36,35 +91,52 @@ async function fetchCharacters(q = '', reset = true) {
   
   isLoading.value = true
   try {
-    let res
     const filters = []
-    const selectedTrait = getSelectedTrait()
+    const searchQ = q || query.value
 
-    if (q && q.trim() !== '') {
-      filters.push(['search', '=', q])
+    if (searchQ && searchQ.trim() !== '') {
+      filters.push(['search', '=', searchQ])
     }
 
-    if (selectedTrait) {
-      filters.push(['trait', '=', selectedTrait])
+    // URL 参数中的 trait
+    const routeTrait = getSelectedTrait()
+    if (routeTrait) {
+      filters.push(['trait', '=', routeTrait])
+    }
+
+    // 选择的特征（多选用 or）
+    if (selectedTraits.value.length > 0) {
+      if (selectedTraits.value.length === 1) {
+        filters.push(['trait', '=', selectedTraits.value[0].id])
+      } else {
+        const traitFilters = selectedTraits.value.map(t => ['trait', '=', t.id])
+        filters.push(['or', ...traitFilters])
+      }
+    }
+
+    // 性别
+    if (selectedSex.value !== 'all') {
+      filters.push(['sex', '=', selectedSex.value])
+    }
+
+    // 血型
+    if (selectedBloodType.value !== 'all') {
+      filters.push(['blood_type', '=', selectedBloodType.value])
+    }
+
+    // 角色定位
+    if (selectedRole.value !== 'all') {
+      filters.push(['role', '=', selectedRole.value])
     }
 
     const finalFilters = filters.length > 1 ? ['and', ...filters] : (filters[0] || [])
 
-    if (finalFilters.length > 0) {
-      res = await getCharacterList(finalFilters, {
-        page: page.value,
-        results: resultsPerPage,
-        sort: q && q.trim() !== '' ? 'searchrank' : 'id',
-        reverse: false
-      })
-    } else {
-      res = await getCharacterList([], {
-        page: page.value,
-        results: resultsPerPage,
-        sort: 'id',
-        reverse: false
-      })
-    }
+    const res = await getCharacterList(finalFilters, {
+      page: page.value,
+      results: resultsPerPage,
+      sort: searchQ && searchQ.trim() !== '' ? 'searchrank' : 'id',
+      reverse: false
+    })
     
     if (res && res.results) {
       if (reset) {
@@ -94,21 +166,34 @@ async function fetchCharacters(q = '', reset = true) {
 async function loadMore() {
   if (isLoading.value || !hasMore.value) return
   page.value++
-  await fetchCharacters(query.value, false)
+  await fetchData(query.value, false)
 }
 
 function handleSearch(q) {
   query.value = q
-  fetchCharacters(q, true)
+  fetchData(q, true)
 }
 
 function handleClear() {
   query.value = ''
-  fetchCharacters('', true)
+  fetchData('', true)
 }
 
 function goToDetail(id) {
   router.push(`/character/${id}`)
+}
+
+// Trait 相关
+function handleRemoveTrait(trait) {
+  selectedTraits.value = selectedTraits.value.filter(t => t.id !== trait.id)
+}
+
+function handleTraitDetail(trait) {
+  router.push(`/browse/characters?trait=${trait.id}`)
+}
+
+function handleTraitModalConfirm(traits) {
+  selectedTraits.value = traits
 }
 
 // 统一观察器初始化
@@ -130,7 +215,7 @@ function setupObserver() {
 }
 
 onMounted(() => {
-  fetchCharacters(query.value, true)
+  fetchData(query.value, true)
   setupObserver()
 })
 
@@ -138,10 +223,19 @@ onUnmounted(() => {
   if (observer) observer.disconnect()
 })
 
+// 筛选器变化时自动重新搜索
+watch([selectedSex, selectedBloodType, selectedRole], () => {
+  fetchData()
+})
+
+watch(selectedTraits, () => {
+  fetchData()
+}, { deep: true })
+
 watch(
   () => route.query.trait,
   () => {
-    fetchCharacters(query.value, true)
+    fetchData(query.value, true)
   }
 )
 
@@ -178,6 +272,106 @@ const getSexClass = (sex) => {
       @search="handleSearch"
       @clear="handleClear"
     >
+      <template #filters>
+        <div class="space-y-2 pb-2">
+          <!-- 基础筛选行 -->
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- 特征筛选按钮 -->
+            <button
+              @click="showTraitModal = true"
+              class="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
+              :class="selectedTraits.length > 0 
+                ? 'bg-violet-600 text-white' 
+                : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
+            >
+              <Icon icon="lucide:scan-search" class="h-3.5 w-3.5" />
+              <span>特征</span>
+              <span
+                v-if="selectedTraits.length > 0"
+                class="inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold"
+                :class="selectedTraits.length > 0 ? 'bg-white/20 text-white' : 'bg-neutral-200 text-neutral-600'"
+              >
+                {{ selectedTraits.length }}
+              </span>
+            </button>
+
+            <!-- 高级筛选切换 -->
+            <button
+              @click="showAdvancedFilters = !showAdvancedFilters"
+              class="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
+              :class="showAdvancedFilters 
+                ? 'bg-neutral-900 text-white' 
+                : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
+            >
+              <Icon icon="lucide:sliders-horizontal" class="h-3.5 w-3.5" />
+              <span>筛选</span>
+            </button>
+
+            <!-- 清除所有筛选 -->
+            <button
+              v-if="hasActiveFilters()"
+              @click="clearAllFilters"
+              class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-red-500 bg-red-50 border border-red-100 hover:bg-red-100 transition cursor-pointer"
+            >
+              <Icon icon="lucide:x" class="h-3 w-3" />
+              <span>清除</span>
+            </button>
+          </div>
+
+          <!-- 已选特征展示区域 -->
+          <div v-if="selectedTraits.length > 0" class="flex flex-wrap gap-1.5">
+            <TraitChip
+              v-for="trait in selectedTraits"
+              :key="trait.id"
+              :trait="trait"
+              @remove="handleRemoveTrait"
+              @show-detail="handleTraitDetail"
+            />
+          </div>
+
+          <!-- 高级筛选面板 -->
+          <Transition name="panel">
+            <div v-if="showAdvancedFilters" class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+              <!-- 性别 -->
+              <BaseSelect
+                v-model="selectedSex"
+                :options="sexOptions"
+                :label-renderer="(l) => t(l, l)"
+                class="!bg-neutral-50 rounded-lg border border-neutral-100"
+              >
+                <template #prefix>
+                  <Icon icon="lucide:users" class="h-3.5 w-3.5 text-neutral-400" />
+                </template>
+              </BaseSelect>
+
+              <!-- 血型 -->
+              <BaseSelect
+                v-model="selectedBloodType"
+                :options="bloodTypeOptions"
+                :label-renderer="(l) => t(l, l)"
+                class="!bg-neutral-50 rounded-lg border border-neutral-100"
+              >
+                <template #prefix>
+                  <Icon icon="lucide:droplets" class="h-3.5 w-3.5 text-neutral-400" />
+                </template>
+              </BaseSelect>
+
+              <!-- 角色定位 -->
+              <BaseSelect
+                v-model="selectedRole"
+                :options="roleOptions"
+                :label-renderer="(l) => t(l, l)"
+                class="!bg-neutral-50 rounded-lg border border-neutral-100"
+              >
+                <template #prefix>
+                  <Icon icon="lucide:badge" class="h-3.5 w-3.5 text-neutral-400" />
+                </template>
+              </BaseSelect>
+            </div>
+          </Transition>
+        </div>
+      </template>
+
       <!-- 列表内容 -->
       <div class="grid grid-cols-1 gap-3">
         <div 
@@ -269,5 +463,32 @@ const getSexClass = (sex) => {
         <Icon icon="eos-icons:loading" class="h-8 w-8 text-neutral-200" />
       </div>
     </SearchBase>
+
+    <!-- 特征选择弹窗 -->
+    <TraitFilterModal
+      :show="showTraitModal"
+      :selected-traits="selectedTraits"
+      @close="showTraitModal = false"
+      @confirm="handleTraitModalConfirm"
+    />
   </div>
 </template>
+
+<style scoped>
+.panel-enter-active,
+.panel-leave-active {
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+.panel-enter-from,
+.panel-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-8px);
+}
+.panel-enter-to,
+.panel-leave-from {
+  opacity: 1;
+  max-height: 200px;
+}
+</style>
