@@ -73,6 +73,7 @@ function getAltTitle(item) {
 }
 
 function getImage(item) {
+  if (!item) return null
   if (item.images && item.images.length > 0) {
     return item.images[0]
   }
