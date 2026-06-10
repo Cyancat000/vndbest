@@ -4,6 +4,9 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import BaseSelect from './BaseSelect.vue'
+import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
+
+const { getCardAction } = usePrivacy()
 
 const props = defineProps({
   items: {
@@ -74,6 +77,24 @@ function getImage(item) {
     return item.images[0]
   }
   return null
+}
+
+// 隐私过滤
+function getItemAction(item) {
+  return getCardAction('release', getImageNsfwLevel(getImage(item)))
+}
+
+function shouldBlurCover(item) {
+  const action = getItemAction(item)
+  return action === 'blur' || action === 'blur_card'
+}
+
+function shouldBlurCard(item) {
+  return getItemAction(item) === 'blur_card'
+}
+
+function isIconPlaceholder(item) {
+  return shouldBlurCover(item) && !shouldBlurCard(item)
 }
 
 const defaultSortOptions = [
@@ -159,20 +180,27 @@ onUnmounted(() => {
         <div
           v-for="item in items"
           :key="item.id"
-          class="flex items-start gap-3 p-3 rounded-xl border border-neutral-200 bg-white shadow-xs hover:border-neutral-300 transition cursor-pointer"
+          class="relative flex items-start gap-3 p-3 rounded-xl border border-neutral-200 bg-white shadow-xs hover:border-neutral-300 transition cursor-pointer overflow-hidden"
           @click="handleItemClick(item)"
         >
-          <div class="h-24 w-18 rounded-lg bg-neutral-50 overflow-hidden border border-neutral-100 shrink-0">
-            <img
-              v-if="getImage(item)"
-              :src="getImage(item).url"
-              alt="cover"
-              class="h-full w-full object-cover"
-              loading="lazy"
-            />
-            <div v-else class="h-full w-full flex items-center justify-center text-neutral-300">
-              <Icon icon="lucide:package" class="h-8 w-8" />
-            </div>
+          <div class="relative h-24 w-18 rounded-lg bg-neutral-50 overflow-hidden border border-neutral-100 shrink-0">
+            <template v-if="isIconPlaceholder(item)">
+              <div class="h-full w-full flex items-center justify-center bg-neutral-100">
+                <Icon icon="lucide:eye-off" class="h-5 w-5 text-neutral-400" />
+              </div>
+            </template>
+            <template v-else>
+              <img
+                v-if="getImage(item)"
+                :src="getImage(item).url"
+                alt="cover"
+                class="h-full w-full object-cover"
+                loading="lazy"
+              />
+              <div v-else class="h-full w-full flex items-center justify-center text-neutral-300">
+                <Icon icon="lucide:package" class="h-8 w-8" />
+              </div>
+            </template>
           </div>
 
           <div class="min-w-0 flex-1 flex flex-col justify-between py-0.5 h-24">
@@ -205,26 +233,37 @@ onUnmounted(() => {
             </div>
           </div>
         </div>
+        <!-- 整卡模糊遮罩 -->
+        <div v-if="shouldBlurCard(item)" class="absolute inset-0 rounded-xl bg-white/50 backdrop-blur-md flex items-center justify-center z-10 pointer-events-none">
+          <Icon icon="lucide:eye-off" class="h-8 w-8 text-neutral-400" />
+        </div>
       </div>
 
       <div v-else class="grid grid-cols-2 gap-3.5">
         <div
           v-for="item in items"
           :key="item.id"
-          class="rounded-xl border border-neutral-200 bg-white overflow-hidden shadow-xs hover:border-neutral-300 transition cursor-pointer"
+          class="relative rounded-xl border border-neutral-200 bg-white overflow-hidden shadow-xs hover:border-neutral-300 transition cursor-pointer"
           @click="handleItemClick(item)"
         >
           <div class="aspect-3/4 relative bg-neutral-50">
-            <img
-              v-if="getImage(item)"
-              :src="getImage(item).url"
-              alt="cover"
-              class="w-full h-full object-cover"
-              loading="lazy"
-            />
-            <div v-else class="w-full h-full flex items-center justify-center text-neutral-200">
-              <Icon icon="lucide:package" class="h-12 w-12" />
-            </div>
+            <template v-if="isIconPlaceholder(item)">
+              <div class="w-full h-full flex items-center justify-center bg-neutral-100">
+                <Icon icon="lucide:eye-off" class="h-8 w-8 text-neutral-400" />
+              </div>
+            </template>
+            <template v-else>
+              <img
+                v-if="getImage(item)"
+                :src="getImage(item).url"
+                alt="cover"
+                class="w-full h-full object-cover"
+                loading="lazy"
+              />
+              <div v-else class="w-full h-full flex items-center justify-center text-neutral-200">
+                <Icon icon="lucide:package" class="h-12 w-12" />
+              </div>
+            </template>
             <div v-if="item.official" class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-blue-600 text-white text-[8px] font-bold">
               OFFICIAL
             </div>
@@ -241,6 +280,10 @@ onUnmounted(() => {
               <div class="flex gap-1">
                 <span v-for="lang in item.languages.slice(0, 2)" :key="lang.lang" class="uppercase">{{ lang.lang }}</span>
               </div>
+            </div>
+            <!-- 整卡模糊遮罩 -->
+            <div v-if="shouldBlurCard(item)" class="absolute inset-0 rounded-xl bg-white/50 backdrop-blur-md flex items-center justify-center z-10 pointer-events-none">
+              <Icon icon="lucide:eye-off" class="h-8 w-8 text-neutral-400" />
             </div>
           </div>
         </div>

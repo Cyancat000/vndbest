@@ -43,6 +43,28 @@
       "es": "西班牙语",
       "pt-br": "巴西葡萄牙语",
       "vi": "越南)"
+    },
+    "privacy": {
+      "title": "隐私与内容过滤",
+      "description": "控制敏感内容的显示方式",
+      "card_list": "卡片列表",
+      "card_list_desc": "在列表/搜索/瀑布流等卡片视图中的过滤方式",
+      "detail_page": "详情页",
+      "detail_page_desc": "在作品/版本详情页中的过滤方式",
+      "screenshots": "截图",
+      "screenshots_desc": "在详情页截图区域的过滤方式",
+      "label_sexual_vn": "性暗示作品",
+      "label_sexual_release": "性暗示版本",
+      "label_nsfw_cover_vn": "露骨封面作品",
+      "label_nsfw_cover_release": "露骨封面版本",
+      "label_sexual_screenshot": "性暗示截图",
+      "label_nsfw_screenshot": "露骨截图",
+      "option_show_all": "完全显示",
+      "option_blur_cover": "规避封面",
+      "option_blur_card": "规避卡片",
+      "option_hide_card": "完全屏蔽卡片",
+      "option_blur_thumb": "规避缩略图",
+      "option_hide_screenshot": "屏蔽截图"
     }
   },
   "nav": {

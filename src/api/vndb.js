@@ -72,7 +72,7 @@ export async function getStats() {
 export async function searchVn(query, params = {}) {
   const payload = {
     filters: ['search', '=', query],
-    fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail}, released, olang, rating',
+    fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail,sexual}, released, olang, rating',
     results: 20,
     ...params
   }
@@ -89,7 +89,7 @@ export async function searchVn(query, params = {}) {
 export async function getLatestVn(params = {}) {
   const payload = {
     filters: ['released', '>=', '2020-01-01'],
-    fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail}, released, olang, rating',
+    fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail,sexual}, released, olang, rating',
     sort: 'released',
     reverse: true,
     results: 10,
@@ -107,7 +107,7 @@ export async function getLatestVn(params = {}) {
  */
 export async function getVnList(filters = [], params = {}) {
   const payload = {
-    fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail}, released, olang, rating',
+    fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail,sexual}, released, olang, rating',
     results: 20,
     ...params
   }
@@ -131,7 +131,7 @@ export async function getRandomVn(params = {}) {
   const randomId = Math.floor(Math.random() * maxId) + 1
   const payload = {
     filters: ['id', '>=', `v${randomId}`],
-    fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail}, released, olang, rating',
+    fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail,sexual}, released, olang, rating',
     sort: 'id',
     results: 1,
     ...params
@@ -154,7 +154,7 @@ export async function getVnDetail(id) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['id', '=', id],
-      fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,dims,sexual,violence,thumbnail,thumbnail_dims}, released, olang, description, relations{id,title,alttitle,relation,relation_official,image{url,dims,thumbnail},rating,released,olang}, languages, platforms, developers{name}, rating, votecount, length, length_minutes, tags{id,name,rating,spoiler}, staff{role,name,original}, va{note,staff{name,original},character{id,name,original,image{url}}}, screenshots{url,dims,thumbnail,thumbnail_dims}',
+      fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,dims,sexual,violence,thumbnail,thumbnail_dims}, released, olang, description, relations{id,title,alttitle,relation,relation_official,image{url,dims,thumbnail},rating,released,olang}, languages, platforms, developers{name}, rating, votecount, length, length_minutes, tags{id,name,rating,spoiler}, staff{role,name,original}, va{note,staff{name,original},character{id,name,original,image{url}}}, screenshots{url,dims,thumbnail,thumbnail_dims,sexual}',
     })
   })
 }
@@ -168,7 +168,7 @@ export async function getVnReleases(vnId) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['vn', '=', ['id', '=', vnId]],
-      fields: 'id, title, alttitle, released, languages{lang}, platforms, official, patch, freeware, notes, uncensored, minage, images{url,dims,type,languages}',
+      fields: 'id, title, alttitle, released, languages{lang}, platforms, official, patch, freeware, notes, uncensored, minage, images{url,dims,type,languages,sexual}',
       sort: 'released',
       results: 50
     })
@@ -181,7 +181,7 @@ export async function getVnReleases(vnId) {
  */
 export async function getReleaseList(filters = [], params = {}) {
   const payload = {
-    fields: 'id, title, alttitle, released, languages{lang}, platforms, official, patch, freeware, notes, uncensored, minage, images{url,dims,type,languages}',
+    fields: 'id, title, alttitle, released, languages{lang}, platforms, official, patch, freeware, notes, uncensored, minage, images{url,dims,type,languages,sexual}',
     results: 20,
     ...params
   }
@@ -203,7 +203,7 @@ export async function getReleaseDetail(id) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['id', '=', id],
-      fields: 'id, title, alttitle, released, languages{lang,title,latin,main}, platforms, official, patch, freeware, notes, uncensored, minage, gtin, catalog, resolution, voiced, engine, media{medium,qty}, images{url,dims,type,languages}, vns{id,title,alttitle,titles{lang,title,latin},image{url,thumbnail},released,olang,rating}, producers{id,name,original,developer,publisher}',
+      fields: 'id, title, alttitle, released, languages{lang,title,latin,main}, platforms, official, patch, freeware, notes, uncensored, minage, gtin, catalog, resolution, voiced, engine, media{medium,qty}, images{url,dims,type,languages,sexual}, vns{id,title,alttitle,titles{lang,title,latin},image{url,thumbnail,sexual},released,olang,rating}, producers{id,name,original,developer,publisher}',
     })
   })
 }
@@ -324,7 +324,7 @@ export async function getUserList(params = {}) {
       payload.fields += ', vn.titles{lang,title,latin}'
     }
   } else {
-    payload.fields = 'id, added, voted, lastmod, vote, started, finished, notes, labels{id,label}, vn{id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail}, released, olang, rating}'
+    payload.fields = 'id, added, voted, lastmod, vote, started, finished, notes, labels{id,label}, vn{id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail,sexual}, released, olang, rating}'
   }
   return request('/ulist', {
     method: 'POST',

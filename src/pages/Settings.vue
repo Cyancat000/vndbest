@@ -67,6 +67,40 @@ function savePriority() {
   localStorage.setItem('vndb_title_lang_priority', JSON.stringify(titleLangPriority.value))
 }
 
+// ====== 隐私与内容过滤设置 ======
+const privacyCardList = ref(JSON.parse(localStorage.getItem('vndb_privacy_card_list') || '{"sexual_vn":0,"sexual_release":0,"nsfw_cover_vn":0,"nsfw_cover_release":0}'))
+const privacyDetail = ref(JSON.parse(localStorage.getItem('vndb_privacy_detail') || '{"sexual_vn":0,"sexual_release":0,"nsfw_cover_vn":0,"nsfw_cover_release":0}'))
+const privacyScreenshots = ref(JSON.parse(localStorage.getItem('vndb_privacy_screenshots') || '{"sexual_screenshot":0,"nsfw_screenshot":0}'))
+
+const cardListOptions = [
+  { value: 0, label: 'settings.privacy.option_show_all' },
+  { value: 1, label: 'settings.privacy.option_blur_cover' },
+  { value: 2, label: 'settings.privacy.option_blur_card' },
+  { value: 3, label: 'settings.privacy.option_hide_card' }
+]
+
+const detailOptions = [
+  { value: 0, label: 'settings.privacy.option_show_all' },
+  { value: 1, label: 'settings.privacy.option_blur_cover' }
+]
+
+const screenshotOptions = [
+  { value: 0, label: 'settings.privacy.option_show_all' },
+  { value: 1, label: 'settings.privacy.option_blur_thumb' },
+  { value: 2, label: 'settings.privacy.option_hide_screenshot' }
+]
+
+function savePrivacySettings() {
+  localStorage.setItem('vndb_privacy_card_list', JSON.stringify(privacyCardList.value))
+  localStorage.setItem('vndb_privacy_detail', JSON.stringify(privacyDetail.value))
+  localStorage.setItem('vndb_privacy_screenshots', JSON.stringify(privacyScreenshots.value))
+}
+
+// 监听隐私设置变化并自动保存
+watch(privacyCardList, savePrivacySettings, { deep: true })
+watch(privacyDetail, savePrivacySettings, { deep: true })
+watch(privacyScreenshots, savePrivacySettings, { deep: true })
+
 // 监听语言变化并保存
 watch(currentLang, (newLang) => {
   locale.value = newLang
@@ -237,6 +271,80 @@ function goToLogin() {
             >
               <Icon icon="lucide:x" class="h-4 w-4" />
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 隐私与内容过滤设置 -->
+    <div class="rounded-xl border border-neutral-200 bg-white p-4 shadow-xs space-y-4">
+      <div class="border-b border-neutral-100 pb-2">
+        <h2 class="text-sm font-semibold text-neutral-800">{{ t('settings.privacy.title') }}</h2>
+        <p class="text-[10px] text-neutral-400">{{ t('settings.privacy.description') }}</p>
+      </div>
+
+      <!-- 卡片列表 -->
+      <div class="space-y-3 pt-2 border-t border-neutral-100">
+        <div class="space-y-0.5">
+          <h3 class="text-sm font-semibold text-neutral-800">{{ t('settings.privacy.card_list') }}</h3>
+          <p class="text-[10px] text-neutral-400">{{ t('settings.privacy.card_list_desc') }}</p>
+        </div>
+        <div class="space-y-2">
+          <div
+            v-for="key in ['sexual_vn', 'sexual_release', 'nsfw_cover_vn', 'nsfw_cover_release']"
+            :key="'card-' + key"
+            class="flex items-center justify-between py-2 px-3 rounded-lg border border-neutral-100 bg-neutral-50/50"
+          >
+            <span class="text-xs font-medium text-neutral-700">{{ t(`settings.privacy.label_${key}`) }}</span>
+            <BaseSelect
+              v-model="privacyCardList[key]"
+              :options="cardListOptions"
+              :label-renderer="(l) => t(l)"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- 详情页 -->
+      <div class="space-y-3 pt-2 border-t border-neutral-100">
+        <div class="space-y-0.5">
+          <h3 class="text-sm font-semibold text-neutral-800">{{ t('settings.privacy.detail_page') }}</h3>
+          <p class="text-[10px] text-neutral-400">{{ t('settings.privacy.detail_page_desc') }}</p>
+        </div>
+        <div class="space-y-2">
+          <div
+            v-for="key in ['sexual_vn', 'sexual_release', 'nsfw_cover_vn', 'nsfw_cover_release']"
+            :key="'detail-' + key"
+            class="flex items-center justify-between py-2 px-3 rounded-lg border border-neutral-100 bg-neutral-50/50"
+          >
+            <span class="text-xs font-medium text-neutral-700">{{ t(`settings.privacy.label_${key}`) }}</span>
+            <BaseSelect
+              v-model="privacyDetail[key]"
+              :options="detailOptions"
+              :label-renderer="(l) => t(l)"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- 截图 -->
+      <div class="space-y-3 pt-2 border-t border-neutral-100">
+        <div class="space-y-0.5">
+          <h3 class="text-sm font-semibold text-neutral-800">{{ t('settings.privacy.screenshots') }}</h3>
+          <p class="text-[10px] text-neutral-400">{{ t('settings.privacy.screenshots_desc') }}</p>
+        </div>
+        <div class="space-y-2">
+          <div
+            v-for="key in ['sexual_screenshot', 'nsfw_screenshot']"
+            :key="'screenshot-' + key"
+            class="flex items-center justify-between py-2 px-3 rounded-lg border border-neutral-100 bg-neutral-50/50"
+          >
+            <span class="text-xs font-medium text-neutral-700">{{ t(`settings.privacy.label_${key}`) }}</span>
+            <BaseSelect
+              v-model="privacyScreenshots[key]"
+              :options="screenshotOptions"
+              :label-renderer="(l) => t(l)"
+            />
           </div>
         </div>
       </div>

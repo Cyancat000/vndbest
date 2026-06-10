@@ -4,6 +4,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { getReleaseDetail } from '@/api/vndb'
+import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
+
+const { getDetailAction } = usePrivacy()
 
 const { t } = useI18n()
 const route = useRoute()
@@ -70,6 +73,24 @@ function getAltTitle(v) {
   return ''
 }
 
+// 隐私过滤：已揭示的内容
+const revealedItems = ref(new Set())
+
+function toggleReveal(key) {
+  if (revealedItems.value.has(key)) {
+    revealedItems.value.delete(key)
+  } else {
+    revealedItems.value.add(key)
+  }
+  revealedItems.value = new Set(revealedItems.value)
+}
+
+// 详情页封面过滤动作
+const coverAction = computed(() => {
+  if (!release.value?.images?.length) return 'show'
+  return getDetailAction('release', getImageNsfwLevel(release.value.images[0]))
+})
+
 onMounted(() => {
   fetchReleaseDetail()
 })
@@ -114,17 +135,31 @@ onMounted(() => {
     <div v-else class="space-y-5 animate-in fade-in duration-500 px-0.5">
       <!-- 1. 封面与基本属性 (模仿 VnDetail 顶栏) -->
       <div class="flex flex-col items-center sm:flex-row sm:items-start gap-4 p-4 rounded-xl border border-neutral-200 bg-neutral-50">
-        <div 
+        <div
           class="relative flex-shrink-0 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm w-full max-w-[180px] aspect-[3/4]"
         >
-          <img 
-            v-if="release.images?.length > 0" 
-            :src="release.images[0].url" 
+          <!-- 正常图片 -->
+          <img
+            v-if="release.images?.length > 0 && !(coverAction === 'hide' && !revealedItems.has('cover'))"
+            :src="release.images[0].url"
             class="h-full w-full object-cover"
           />
-          <div v-else class="h-full w-full flex items-center justify-center bg-neutral-100">
+          <!-- 图标占位 -->
+          <div v-if="coverAction === 'hide' && !revealedItems.has('cover')" class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10">
+            <Icon icon="lucide:eye-off" class="h-10 w-10 text-neutral-400" />
+          </div>
+          <!-- 无封面兜底 -->
+          <div v-if="!release.images?.length" class="h-full w-full flex items-center justify-center bg-neutral-100">
             <Icon icon="lucide:package" class="h-10 w-10 text-neutral-300" />
           </div>
+          <!-- 小眼睛切换按钮 -->
+          <button
+            v-if="coverAction === 'hide'"
+            @click.stop="toggleReveal('cover')"
+            class="absolute bottom-2 right-2 p-1.5 rounded-full bg-black/40 text-white hover:bg-black/60 transition z-20"
+          >
+            <Icon :icon="revealedItems.has('cover') ? 'lucide:eye' : 'lucide:eye-off'" class="h-3.5 w-3.5" />
+          </button>
         </div>
 
         <div class="flex-1 space-y-3 w-full">

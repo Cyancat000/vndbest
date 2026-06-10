@@ -86,7 +86,7 @@ async function fetchList(reset = false) {
     }
     
     const params = {
-      fields: 'id, vote, added, lastmod, started, finished, notes, labels{id,label}, vn{id,title,alttitle,released,image{url,thumbnail},rating,votecount,olang}',
+      fields: 'id, vote, added, lastmod, started, finished, notes, labels{id,label}, vn{id,title,alttitle,released,image{url,thumbnail,sexual},rating,votecount,olang}',
       results: resultsPerPage,
       page: page.value,
       sort: sortBy.value,

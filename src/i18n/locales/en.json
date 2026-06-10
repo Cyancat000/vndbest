@@ -43,6 +43,28 @@
       "es": "Spanish",
       "pt-br": "Portuguese (Brazil)",
       "vi": "Vietnamese"
+    },
+    "privacy": {
+      "title": "Privacy & Content Filter",
+      "description": "Control how sensitive content is displayed",
+      "card_list": "Card List",
+      "card_list_desc": "Filter method in list/search/grid card views",
+      "detail_page": "Detail Page",
+      "detail_page_desc": "Filter method on VN/Release detail pages",
+      "screenshots": "Screenshots",
+      "screenshots_desc": "Filter method in detail page screenshot section",
+      "label_sexual_vn": "Sexual VN",
+      "label_sexual_release": "Sexual Release",
+      "label_nsfw_cover_vn": "NSFW Cover VN",
+      "label_nsfw_cover_release": "NSFW Cover Release",
+      "label_sexual_screenshot": "Sexual Screenshot",
+      "label_nsfw_screenshot": "NSFW Screenshot",
+      "option_show_all": "Show All",
+      "option_blur_cover": "Blur Cover",
+      "option_blur_card": "Blur Card",
+      "option_hide_card": "Hide Card",
+      "option_blur_thumb": "Blur Thumbnail",
+      "option_hide_screenshot": "Hide Screenshot"
     }
   },
   "nav": {

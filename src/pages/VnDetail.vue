@@ -5,6 +5,9 @@ import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { getVnDetail, getVnReleases, getVnCharacters, getVnQuotes } from '@/api/vndb'
 import VnList from '@/components/VnList.vue'
+import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
+
+const { getDetailAction, getScreenshotAction } = usePrivacy()
 
 const route = useRoute()
 const router = useRouter()
@@ -41,6 +44,25 @@ const isDescriptionExpanded = ref(false)
 
 // 控制角色详情展开/收起 (存储展开的角色 ID)
 const expandedCharIds = ref(new Set())
+
+// 隐私过滤：已揭示的内容 (点击眼睛图标后)
+const revealedItems = ref(new Set())
+
+function toggleReveal(key) {
+  if (revealedItems.value.has(key)) {
+    revealedItems.value.delete(key)
+  } else {
+    revealedItems.value.add(key)
+  }
+  // 触发响应式更新
+  revealedItems.value = new Set(revealedItems.value)
+}
+
+// 详情页封面过滤动作
+const coverAction = computed(() => {
+  if (!vn.value?.image) return 'show'
+  return getDetailAction('vn', getImageNsfwLevel(vn.value.image))
+})
 
 const toggleCharExpansion = (id) => {
   if (expandedCharIds.value.has(id)) {
@@ -457,23 +479,37 @@ watch(
     <div v-else class="space-y-5">
       <!-- 1. 封面图与基本信息 (固定在选项卡上方) -->
       <div class="flex flex-col items-center sm:flex-row sm:items-start gap-4 p-4 rounded-xl border border-neutral-200 bg-neutral-50">
-        <div 
+        <div
           class="relative flex-shrink-0 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm"
           :class="[
-            vn.image?.dims && vn.image.dims[0] > vn.image.dims[1] 
-              ? 'w-full max-w-[280px] aspect-[4/3]' 
+            vn.image?.dims && vn.image.dims[0] > vn.image.dims[1]
+              ? 'w-full max-w-[280px] aspect-[4/3]'
               : 'w-full max-w-[180px] aspect-[3/4]'
           ]"
         >
-          <img 
-            v-if="vn.image?.url" 
-            :src="vn.image.url" 
-            :alt="vn.title" 
+          <!-- 正常图片 -->
+          <img
+            v-if="vn.image?.url && !(coverAction === 'hide' && !revealedItems.has('cover'))"
+            :src="vn.image.url"
+            :alt="vn.title"
             class="h-full w-full object-cover"
           />
-          <div v-else class="h-full w-full flex items-center justify-center bg-neutral-100">
+          <!-- 图标占位 -->
+          <div v-if="coverAction === 'hide' && !revealedItems.has('cover')" class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10">
+            <Icon icon="lucide:eye-off" class="h-10 w-10 text-neutral-400" />
+          </div>
+          <!-- 无封面兜底 -->
+          <div v-if="!vn.image?.url" class="h-full w-full flex items-center justify-center bg-neutral-100">
             <Icon icon="lucide:image" class="h-10 w-10 text-neutral-300" />
           </div>
+          <!-- 小眼睛切换按钮 -->
+          <button
+            v-if="coverAction === 'hide'"
+            @click.stop="toggleReveal('cover')"
+            class="absolute bottom-2 right-2 p-1.5 rounded-full bg-black/40 text-white hover:bg-black/60 transition z-20"
+          >
+            <Icon :icon="revealedItems.has('cover') ? 'lucide:eye' : 'lucide:eye-off'" class="h-3.5 w-3.5" />
+          </button>
         </div>
 
         <!-- 基本属性信息 -->
@@ -913,17 +949,37 @@ watch(
             {{ t('vn.screenshots.empty') }}
           </div>
           <div v-else class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <div 
-              v-for="(scr, idx) in vn.screenshots" 
-              :key="idx" 
+            <div
+              v-for="(scr, idx) in vn.screenshots"
+              :key="idx"
               @click="openLightbox(idx, vn.screenshots)"
               class="group relative block overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100 aspect-video shadow-xs transition hover:opacity-90 cursor-pointer"
             >
-              <img 
-                :src="scr.thumbnail || scr.url" 
-                class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                loading="lazy"
-              />
+              <!-- 完全屏蔽截图 -->
+              <template v-if="getScreenshotAction(getImageNsfwLevel(scr)) === 'hide'">
+                <div @click.stop class="h-full w-full flex items-center justify-center bg-neutral-100 cursor-default">
+                  <Icon icon="lucide:eye-off" class="h-6 w-6 text-neutral-300" />
+                </div>
+              </template>
+              <!-- 缩略图规避（模糊覆盖，仍可点击打开大图） -->
+              <template v-else-if="getScreenshotAction(getImageNsfwLevel(scr)) === 'blur'">
+                <img
+                  :src="scr.thumbnail || scr.url"
+                  class="h-full w-full object-cover blur-xl"
+                  loading="lazy"
+                />
+                <div class="absolute inset-0 bg-white/40 flex items-center justify-center pointer-events-none">
+                  <Icon icon="lucide:eye-off" class="h-5 w-5 text-neutral-500" />
+                </div>
+              </template>
+              <!-- 正常截图 -->
+              <template v-else>
+                <img
+                  :src="scr.thumbnail || scr.url"
+                  class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                  loading="lazy"
+                />
+              </template>
             </div>
           </div>
         </div>
@@ -1044,15 +1100,27 @@ watch(
           class="flex w-full h-[80vh] overflow-x-hidden snap-x snap-mandatory scroll-smooth no-scrollbar"
           @click.stop
         >
-          <div 
-            v-for="(img, idx) in lightboxImagesList" 
-            :key="idx" 
-            class="flex-shrink-0 w-full h-full flex flex-col items-center justify-center snap-center p-6 space-y-2"
+          <div
+            v-for="(img, idx) in lightboxImagesList"
+            :key="idx"
+            class="relative flex-shrink-0 w-full h-full flex flex-col items-center justify-center snap-center p-6 space-y-2"
           >
-            <img 
-              :src="img.url" 
-              class="max-w-full max-h-[72vh] object-contain rounded-lg border border-neutral-800 shadow-2xl pointer-events-none" 
-            />
+            <!-- 大图容器（overflow-hidden 防止模糊溢出） -->
+            <div class="relative max-w-full max-h-[72vh] overflow-hidden rounded-lg border border-neutral-800 shadow-2xl">
+              <img
+                :src="img.url"
+                class="max-w-full max-h-[72vh] object-contain pointer-events-none transition-all duration-300"
+                :class="{ 'blur-xl': getScreenshotAction(getImageNsfwLevel(img)) === 'blur' && !revealedItems.has(`lb-${idx}`) }"
+              />
+              <!-- 大图模糊时的眼睛图标 -->
+              <button
+                v-if="getScreenshotAction(getImageNsfwLevel(img)) === 'blur' && !revealedItems.has(`lb-${idx}`)"
+                @click.stop="toggleReveal(`lb-${idx}`)"
+                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition z-10"
+              >
+                <Icon icon="lucide:eye-off" class="h-6 w-6" />
+              </button>
+            </div>
             <div v-if="img.title" class="text-center max-w-lg px-4 text-xs text-neutral-300 truncate">
               {{ img.title }}
             </div>
