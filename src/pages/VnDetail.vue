@@ -316,11 +316,19 @@ const translateRelation = (relationType) => {
   return t(`metadata.relation.${relationType}`) || relationType
 }
 
-// 翻译角色性别
+// 翻译角色性别（sex 可能为数组 ["f","f"] 或字符串 "f,f"）
 const translateGender = (sex) => {
-  if (!sex || sex.length === 0) return t('metadata.gender.unknown')
-  const primarySex = sex[0]
-  return t(`metadata.gender.${primarySex}`) || primarySex
+  if (!sex) return t('metadata.gender.unknown')
+  let primarySex
+  if (Array.isArray(sex)) {
+    primarySex = sex.length > 0 ? sex[0] : null
+  } else if (typeof sex === 'string' && sex.length > 0) {
+    primarySex = sex.includes(',') ? sex.split(',')[0].trim() : sex[0]
+  } else {
+    primarySex = sex
+  }
+  if (!primarySex) return t('metadata.gender.unknown')
+  return t(`metadata.gender.${primarySex}`) || sex
 }
 
 // 翻译演职人员角色
@@ -331,6 +339,13 @@ const translateStaffRole = (role) => {
 // 翻译角色类型关系
 const translateCharRole = (role) => {
   return t(`metadata.role.${role.toLowerCase()}`) || role
+}
+
+// 翻译特征分组名（分组名可能含空格、括号如 "ENGAGES IN_(SEXUAL)"）
+const translateTraitGroup = (groupName) => {
+  if (!groupName) return t('metadata.trait_group.other')
+  const key = groupName.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '')
+  return t(`metadata.trait_group.${key}`) || groupName
 }
 
 // 加载主要详情及其他关联选项卡内容
@@ -578,7 +593,7 @@ watch(
             class="mt-1 text-[10px] font-bold text-neutral-400 hover:text-neutral-600 flex items-center gap-0.5 transition-colors"
           >
             <Icon :icon="isDescriptionExpanded ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="h-3 w-3" />
-            {{ isDescriptionExpanded ? '收起全文' : '展开全文' }}
+            {{ isDescriptionExpanded ? t('vn.collapse') : t('vn.expand') }}
           </button>
         </div>
       </div>
@@ -786,7 +801,7 @@ watch(
                         :key="group"
                         class="space-y-1"
                       >
-                        <h5 class="text-[8px] font-bold text-neutral-400 uppercase tracking-tighter">{{ group }}</h5>
+                        <h5 class="text-[8px] font-bold text-neutral-400 uppercase tracking-tighter">{{ translateTraitGroup(group) }}</h5>
                         <div class="flex flex-wrap gap-1">
                           <span
                             v-for="trait in traits"
@@ -801,7 +816,7 @@ watch(
 
                       <!-- Voiced by (CV) -->
                       <div v-if="getCharacterVA(char.id)" class="space-y-1">
-                        <h5 class="text-[8px] font-bold text-neutral-400 uppercase tracking-tighter">Voiced by</h5>
+                        <h5 class="text-[8px] font-bold text-neutral-400 uppercase tracking-tighter">{{ t('vn.characters.voiced_by') }}</h5>
                         <div class="text-[10px] text-neutral-700 font-medium">
                           {{ getCharacterVA(char.id).staff?.name }}
                           <span v-if="getCharacterVA(char.id).staff?.original" class="text-[9px] text-neutral-400 font-normal">({{ getCharacterVA(char.id).staff.original }})</span>

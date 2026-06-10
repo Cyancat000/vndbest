@@ -15,10 +15,26 @@ const character = ref(null)
 const loading = ref(true)
 const error = ref(null)
 
-// 翻译角色性别
+// 翻译角色性别（sex 可能为数组 ["f","f"] 或字符串 "f,f"）
 const translateGender = (sex) => {
   if (!sex) return t('metadata.gender.unknown')
-  return t(`metadata.gender.${sex}`) || sex
+  let primarySex
+  if (Array.isArray(sex)) {
+    primarySex = sex.length > 0 ? sex[0] : null
+  } else if (typeof sex === 'string' && sex.length > 0) {
+    primarySex = sex.includes(',') ? sex.split(',')[0].trim() : sex[0]
+  } else {
+    primarySex = sex
+  }
+  if (!primarySex) return t('metadata.gender.unknown')
+  return t(`metadata.gender.${primarySex}`) || sex
+}
+
+// 翻译特征分组名（分组名可能含空格、括号如 "ENGAGES IN_(SEXUAL)"）
+const translateTraitGroup = (groupName) => {
+  if (!groupName) return t('metadata.trait_group.other')
+  const key = groupName.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '')
+  return t(`metadata.trait_group.${key}`) || groupName
 }
 
 // 翻译角色类型关系
@@ -80,17 +96,33 @@ async function fetchCharacterInfo() {
   }
 }
 
-// 性别图标和颜色
+// 性别图标和颜色（sex 可能为数组、逗号分隔字符串或单字符）
 const getSexIcon = (sex) => {
-  if (sex === 'f') return 'lucide:venus'
-  if (sex === 'm') return 'lucide:mars'
-  if (sex === 'b') return 'lucide:venus-mars'
+  let s
+  if (Array.isArray(sex)) {
+    s = sex.length > 0 ? sex[0] : null
+  } else if (typeof sex === 'string' && sex.length > 0) {
+    s = sex.includes(',') ? sex.split(',')[0].trim() : sex[0]
+  } else {
+    s = sex
+  }
+  if (s === 'f') return 'lucide:venus'
+  if (s === 'm') return 'lucide:mars'
+  if (s === 'b') return 'lucide:venus-mars'
   return null
 }
 
 const getSexClass = (sex) => {
-  if (sex === 'f') return 'text-rose-400 bg-rose-50 border-rose-100'
-  if (sex === 'm') return 'text-blue-400 bg-blue-50 border-blue-100'
+  let s
+  if (Array.isArray(sex)) {
+    s = sex.length > 0 ? sex[0] : null
+  } else if (typeof sex === 'string' && sex.length > 0) {
+    s = sex.includes(',') ? sex.split(',')[0].trim() : sex[0]
+  } else {
+    s = sex
+  }
+  if (s === 'f') return 'text-rose-400 bg-rose-50 border-rose-100'
+  if (s === 'm') return 'text-blue-400 bg-blue-50 border-blue-100'
   return 'text-neutral-400 bg-neutral-50 border-neutral-100'
 }
 
@@ -239,7 +271,7 @@ onMounted(() => {
             class="space-y-2 bg-neutral-50/30 p-3 rounded-xl border border-neutral-100"
           >
             <h5 class="text-[10px] font-black text-neutral-400 uppercase tracking-widest flex items-center gap-2">
-              {{ group }}
+              {{ translateTraitGroup(group) }}
             </h5>
             <div class="flex flex-wrap gap-1.5">
               <span

@@ -216,8 +216,11 @@
       "measurements": "Measurements",
       "cup": "{cup} Cup",
       "birthday": "Birthday",
-      "birthday_val": "{month}/{day}"
+      "birthday_val": "{month}/{day}",
+      "voiced_by": "Voiced by"
     },
+    "expand": "Expand",
+    "collapse": "Collapse",
     "staff": {
       "title": "Staff",
       "va_title": "Voice Actors",
@@ -369,6 +372,33 @@
       "ro": "Romanian",
       "nl": "Dutch",
       "pt": "Portuguese"
+    },
+    "trait_group": {
+      "hair": "Hair",
+      "body": "Body",
+      "eyes": "Eyes",
+      "face": "Face",
+      "skin": "Skin",
+      "physique": "Physique",
+      "clothing": "Clothing",
+      "clothes": "Clothes",
+      "accessories": "Accessories",
+      "accessory": "Accessory",
+      "expression": "Expression",
+      "personality": "Personality",
+      "background": "Background",
+      "race": "Race",
+      "sex": "Sex",
+      "role": "Role",
+      "engages_in": "Engages In",
+      "subject_of_sexual": "Subject of (Sexual)",
+      "engages_in_sexual": "Engages In (Sexual)",
+      "likes": "Likes",
+      "dislikes": "Dislikes",
+      "species": "Species",
+      "occupation": "Occupation",
+      "title": "Title",
+      "other": "Other"
     },
     "platform": {
       "win": "Windows",
