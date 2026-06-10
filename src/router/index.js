@@ -122,11 +122,44 @@ const routes = [
   }
 ]
 
+// 保存滚动位置的映射
+const scrollPositions = new Map()
+
 const router = createRouter({
   history: createWebHashHistory(),
   routes,
-  scrollBehavior() {
+  scrollBehavior(to, from, savedPosition) {
+    // 如果是通过浏览器前进/后退按钮，恢复保存的位置
+    if (savedPosition) {
+      return savedPosition
+    }
+
+    // 如果是从详情页返回列表页，恢复之前保存的滚动位置
+    const savedScroll = scrollPositions.get(from.fullPath)
+    if (savedScroll) {
+      return savedScroll
+    }
+
+    // 默认滚动到顶部
     return { top: 0 }
+  }
+})
+
+// 路由离开前保存滚动位置
+router.beforeEach((to, from) => {
+  // 保存当前页面的滚动位置
+  if (from.fullPath && from.meta.keepScrollPosition !== false) {
+    const scrollY = window.scrollY || document.documentElement.scrollTop
+    scrollPositions.set(from.fullPath, { top: scrollY })
+  }
+})
+
+// 清理旧的滚动位置记录（避免内存泄漏）
+const MAX_SCROLL_CACHE = 20
+router.afterEach(() => {
+  if (scrollPositions.size > MAX_SCROLL_CACHE) {
+    const firstKey = scrollPositions.keys().next().value
+    scrollPositions.delete(firstKey)
   }
 })
 

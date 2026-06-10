@@ -2,6 +2,9 @@
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { Icon } from '@iconify/vue'
 import { searchTags, getTagList } from '@/api/vndb'
+import { useTranslation } from '@/composables/useTranslation'
+
+const { translateTagName } = useTranslation()
 
 const props = defineProps({
   show: {
@@ -194,7 +197,7 @@ async function fetchPopularTags() {
                 :class="getCategoryClass(tag.category)"
                 @click="toggleTag(tag)"
               >
-                {{ tag.name }}
+                {{ translateTagName(tag.name) }}
                 <span class="p-0.5 rounded-full hover:bg-black/10">
                   <Icon icon="lucide:x" class="h-3 w-3" />
                 </span>
@@ -219,7 +222,7 @@ async function fetchPopularTags() {
                 >
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
-                      <span class="font-medium text-sm text-neutral-900 truncate">{{ tag.name }}</span>
+                      <span class="font-medium text-sm text-neutral-900 truncate">{{ translateTagName(tag.name) }}</span>
                       <span
                         v-if="tag.category"
                         class="shrink-0 inline-flex items-center rounded-md px-1 py-0.5 text-[9px] font-bold border uppercase"
@@ -263,7 +266,7 @@ async function fetchPopularTags() {
                 >
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
-                      <span class="font-medium text-sm text-neutral-900 truncate">{{ tag.name }}</span>
+                      <span class="font-medium text-sm text-neutral-900 truncate">{{ translateTagName(tag.name) }}</span>
                       <span
                         v-if="tag.category"
                         class="shrink-0 inline-flex items-center rounded-md px-1 py-0.5 text-[9px] font-bold border uppercase"

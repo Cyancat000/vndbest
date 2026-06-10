@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue'
 import { Icon } from '@iconify/vue'
+import { useTranslation } from '@/composables/useTranslation'
+
+const { translateTraitName } = useTranslation()
 
 const props = defineProps({
   trait: {
@@ -40,7 +43,7 @@ function cleanDescription(desc) {
       @click="handleClick"
       class="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-md border text-[11px] font-medium transition-all cursor-pointer hover:shadow-sm bg-violet-50 text-violet-600 border-violet-200"
     >
-      <span class="max-w-[120px] truncate">{{ trait.name }}</span>
+      <span class="max-w-[120px] truncate">{{ translateTraitName(trait.name) }}</span>
       <span
         @click="handleRemove"
         class="ml-0.5 p-0.5 rounded-full hover:bg-black/10 transition-colors"
@@ -66,7 +69,7 @@ function cleanDescription(desc) {
               >
                 {{ trait.group_name || 'trait' }}
               </span>
-              <h3 class="font-bold text-sm text-neutral-900 truncate">{{ trait.name }}</h3>
+              <h3 class="font-bold text-sm text-neutral-900 truncate">{{ translateTraitName(trait.name) }}</h3>
             </div>
             <button
               @click="showTooltip = false"

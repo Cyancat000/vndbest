@@ -1,4 +1,6 @@
 <script setup>
+defineOptions({ name: 'Settings' })
+
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'

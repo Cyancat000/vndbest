@@ -1,13 +1,17 @@
 <script setup>
+defineOptions({ name: 'TagSearch' })
+
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import SearchBase from '@/components/SearchBase.vue'
 import { searchTags, getTagList } from '@/api/vndb'
+import { useTranslation } from '@/composables/useTranslation'
 
 const { t } = useI18n()
 const router = useRouter()
+const { translateTagName } = useTranslation()
 
 const query = ref('')
 const results = ref([])
@@ -159,7 +163,7 @@ const getCategoryClass = (category) => {
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
                 <h3 class="font-bold text-sm text-neutral-900 truncate">
-                  {{ item.name }}
+                    {{ translateTagName(item.name) }}
                 </h3>
                 <span 
                   v-if="item.category" 

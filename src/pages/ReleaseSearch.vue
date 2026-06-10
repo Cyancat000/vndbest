@@ -1,4 +1,6 @@
 <script setup>
+defineOptions({ name: 'ReleaseSearch' })
+
 import { ref, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SearchBase from '@/components/SearchBase.vue'

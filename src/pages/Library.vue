@@ -1,4 +1,6 @@
 <script setup>
+defineOptions({ name: 'Library' })
+
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'

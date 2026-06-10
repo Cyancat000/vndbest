@@ -21,15 +21,32 @@ const activePath = computed(() => route.path)
 function navigate(path) {
   router.push(path)
 }
+
+// 需要缓存的页面组件名称（与路由 name 对应）
+const keepAliveInclude = [
+  'Home',
+  'Library',
+  'List',
+  'Settings',
+  'VnSearch',
+  'ReleaseSearch',
+  'ProducerSearch',
+  'StaffSearch',
+  'CharacterSearch',
+  'TagSearch',
+  'TraitSearch'
+]
 </script>
 
 <template>
   <div class="min-h-screen bg-white text-neutral-900 flex flex-col font-sans antialiased">
     <!-- 主体内容区域 (Notion style container) -->
     <main class="flex-1 mx-auto w-full max-w-2xl px-4 pt-6 pb-24">
-      <router-view v-slot="{ Component }">
+      <router-view v-slot="{ Component, route: currentRoute }">
         <transition name="fade" mode="out-in">
-          <component :is="Component" />
+          <keep-alive :include="keepAliveInclude">
+            <component :is="Component" :key="currentRoute.fullPath" />
+          </keep-alive>
         </transition>
       </router-view>
     </main>

@@ -1,4 +1,6 @@
 <script setup>
+defineOptions({ name: 'StaffSearch' })
+
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'

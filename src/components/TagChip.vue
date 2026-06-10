@@ -1,6 +1,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { Icon } from '@iconify/vue'
+import { useTranslation } from '@/composables/useTranslation'
+
+const { translateTagName } = useTranslation()
 
 const props = defineProps({
   tag: {
@@ -50,7 +53,7 @@ function cleanDescription(desc) {
       class="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-md border text-[11px] font-medium transition-all cursor-pointer hover:shadow-sm"
       :class="getCategoryClass(tag.category)"
     >
-      <span class="max-w-[120px] truncate">{{ tag.name }}</span>
+      <span class="max-w-[120px] truncate">{{ translateTagName(tag.name) }}</span>
       <span
         @click="handleRemove"
         class="ml-0.5 p-0.5 rounded-full hover:bg-black/10 transition-colors"
@@ -77,7 +80,7 @@ function cleanDescription(desc) {
               >
                 {{ tag.category }}
               </span>
-              <h3 class="font-bold text-sm text-neutral-900 truncate">{{ tag.name }}</h3>
+              <h3 class="font-bold text-sm text-neutral-900 truncate">{{ translateTagName(tag.name) }}</h3>
             </div>
             <button
               @click="showTooltip = false"

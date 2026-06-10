@@ -2,6 +2,9 @@
 import { ref, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { searchTraits, getTraitList } from '@/api/vndb'
+import { useTranslation } from '@/composables/useTranslation'
+
+const { translateTraitName } = useTranslation()
 
 const props = defineProps({
   show: {
@@ -185,7 +188,7 @@ async function fetchPopularTraits() {
                 class="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-md border text-[11px] font-medium cursor-pointer transition-all hover:shadow-sm bg-violet-50 text-violet-600 border-violet-200"
                 @click="toggleTrait(trait)"
               >
-                {{ trait.name }}
+                {{ translateTraitName(trait.name) }}
                 <span class="p-0.5 rounded-full hover:bg-black/10">
                   <Icon icon="lucide:x" class="h-3 w-3" />
                 </span>
@@ -210,7 +213,7 @@ async function fetchPopularTraits() {
                 >
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
-                      <span class="font-medium text-sm text-neutral-900 truncate">{{ trait.name }}</span>
+                      <span class="font-medium text-sm text-neutral-900 truncate">{{ translateTraitName(trait.name) }}</span>
                       <span class="shrink-0 inline-flex items-center rounded-md px-1 py-0.5 text-[9px] font-bold border uppercase bg-violet-50 text-violet-600 border-violet-200">
                         {{ trait.group_name || 'trait' }}
                       </span>
@@ -250,7 +253,7 @@ async function fetchPopularTraits() {
                 >
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
-                      <span class="font-medium text-sm text-neutral-900 truncate">{{ trait.name }}</span>
+                      <span class="font-medium text-sm text-neutral-900 truncate">{{ translateTraitName(trait.name) }}</span>
                       <span class="shrink-0 inline-flex items-center rounded-md px-1 py-0.5 text-[9px] font-bold border uppercase bg-violet-50 text-violet-600 border-violet-200">
                         {{ trait.group_name || 'trait' }}
                       </span>

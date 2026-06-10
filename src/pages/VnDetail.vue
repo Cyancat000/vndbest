@@ -6,12 +6,14 @@ import { Icon } from '@iconify/vue'
 import { getVnDetail, getVnReleases, getVnCharacters, getVnQuotes } from '@/api/vndb'
 import VnList from '@/components/VnList.vue'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
+import { useTranslation } from '@/composables/useTranslation'
 
 const { getDetailAction, getScreenshotAction } = usePrivacy()
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
+const { translateTagName, translateTraitName } = useTranslation()
 
 const vn = ref(null)
 const releases = ref([])
@@ -821,7 +823,7 @@ watch(
                             class="px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600 text-[8px] font-medium transition-colors"
                             :class="[trait.spoiler > 0 ? 'bg-amber-50 text-amber-700 border border-amber-100' : 'border border-transparent']"
                           >
-                            {{ trait.name }}
+                            {{ translateTraitName(trait.name) }}
                           </span>
                         </div>
                       </div>
@@ -973,7 +975,7 @@ watch(
               ]"
               :title="`评分: ${tag.rating.toFixed(1)} / 剧透: ${tag.spoiler}`"
             >
-              <span>{{ tag.name }}</span>
+              <span>{{ translateTagName(tag.name) }}</span>
               <span class="text-[9px] opacity-60 font-mono">
                 {{ tag.rating.toFixed(1) }}
               </span>
