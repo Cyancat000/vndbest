@@ -8,6 +8,7 @@ import { Icon } from '@iconify/vue'
 import SearchBase from '@/components/SearchBase.vue'
 import { searchTraits, getTraitList } from '@/api/vndb'
 import { useTranslation } from '@/composables/useTranslation'
+import { IonPage, IonContent } from '@ionic/vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -134,7 +135,9 @@ watch(sentinel, (el) => {
 </script>
 
 <template>
-  <div class="px-4 py-6">
+  <ion-page>
+  <ion-content>
+  <div class="page-container pb-24">
     <SearchBase 
       type="traits" 
       v-model="query"
@@ -210,4 +213,6 @@ watch(sentinel, (el) => {
       </div>
     </SearchBase>
   </div>
+  </ion-content>
+  </ion-page>
 </template>

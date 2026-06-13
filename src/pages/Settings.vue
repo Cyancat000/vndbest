@@ -6,6 +6,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import BaseSelect from '@/components/BaseSelect.vue'
+import { IonPage, IonContent } from '@ionic/vue'
 
 const router = useRouter()
 const { t, locale } = useI18n()
@@ -121,7 +122,9 @@ function goToLogin() {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <ion-page>
+  <ion-content>
+  <div class="page-container pb-24 space-y-6">
     <div class="flex items-center gap-3">
       <div class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs">
         <Icon icon="lucide:settings" class="h-5 w-5 text-neutral-800" />
@@ -352,4 +355,6 @@ function goToLogin() {
       </div>
     </div>
   </div>
+  </ion-content>
+  </ion-page>
 </template>

@@ -12,6 +12,7 @@ import TagFilterModal from '@/components/TagFilterModal.vue'
 import DualRangeSlider from '@/components/DualRangeSlider.vue'
 import { Icon } from '@iconify/vue'
 import { getVnList } from '@/api/vndb.js'
+import { IonPage, IonContent } from '@ionic/vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -342,6 +343,15 @@ watch(query, (newVal) => {
   }
 })
 
+// 监听 URL 中 tag 参数变化（从 VnDetail 点击标签导航回来时，组件可能已存在于 Ionic 页面栈中）
+watch(routeTag, (newTag) => {
+  if (newTag) {
+    selectedTags.value = [{ id: newTag, name: newTag, category: '', vn_count: 0 }]
+    tagInitialized.value = true
+    // fetchData 会由 selectedTags 的 watcher 自动触发
+  }
+})
+
 onMounted(() => {
   // 如果 URL 带了 tag 参数，自动添加到 selectedTags
   if (routeTag.value && !tagInitialized.value) {
@@ -353,7 +363,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+  <ion-page>
+  <ion-content>
+  <div class="page-container pb-24">
   <SearchBase
     v-model="query"
     type="vn" 
@@ -546,6 +558,8 @@ onMounted(() => {
     @confirm="handleTagModalConfirm"
   />
   </div>
+  </ion-content>
+  </ion-page>
 </template>
 
 <style scoped>

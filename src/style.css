@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@ionic/vue/css/core.css";
 
 :root {
   font-family:
@@ -31,4 +32,51 @@ select {
 
 #app {
   min-height: 100vh;
+}
+
+/* Ionic 全局覆盖：禁用过渡动画 */
+ion-router-outlet {
+  --ion-router-outlet-transition-duration: 0ms;
+}
+
+ion-app {
+  display: block !important;
+  position: relative !important;
+  width: 100%;
+  height: 100vh;
+}
+
+/* 禁用 ion-content 默认 padding，由 .page-container 控制布局 */
+ion-content {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+/* 覆盖 Ionic 的 ion-page-hidden：不用 display:none（会重置滚动位置）
+   改用 visibility:hidden + 绝对定位来保留滚动位置 */
+ion-router-outlet > .ion-page-hidden,
+.ion-page-hidden {
+  display: flex !important;
+  visibility: hidden !important;
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* 页面内容容器：max-width 居中 + 水平/顶部 padding */
+.page-container {
+  max-width: 42rem; /* max-w-2xl */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;   /* px-4 */
+  padding-right: 1rem;  /* px-4 */
+  padding-top: 1.5rem;  /* pt-6 */
 }

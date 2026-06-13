@@ -6,6 +6,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { getStats, getReleaseList, getRandomVn } from '@/api/vndb'
+import { IonPage, IonContent } from '@ionic/vue'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -78,7 +79,9 @@ function handleReleaseClick(release) {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <ion-page>
+  <ion-content>
+  <div class="page-container pb-24 space-y-6">
     <div class="flex items-center gap-3">
       <div class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs">
         <Icon icon="lucide:home" class="h-5 w-5 text-neutral-800" />
@@ -224,4 +227,6 @@ function handleReleaseClick(release) {
       <Icon icon="lucide:chevron-right" class="h-4 w-4 text-neutral-400" />
     </button>
   </div>
+  </ion-content>
+  </ion-page>
 </template>

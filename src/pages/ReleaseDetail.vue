@@ -1,17 +1,18 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { getReleaseDetail } from '@/api/vndb'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
+import { IonPage, IonContent } from '@ionic/vue'
 
 const { getDetailAction } = usePrivacy()
 
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
-const releaseId = route.params.id
+const releaseId = ref(route.params.id)
 
 const release = ref(null)
 const loading = ref(true)
@@ -21,7 +22,7 @@ const fetchReleaseDetail = async () => {
   loading.value = true
   error.value = null
   try {
-    const data = await getReleaseDetail(releaseId)
+    const data = await getReleaseDetail(releaseId.value)
     if (data && data.results && data.results.length > 0) {
       release.value = data.results[0]
     } else {
@@ -91,13 +92,28 @@ const coverAction = computed(() => {
   return getDetailAction('release', getImageNsfwLevel(release.value.images[0]))
 })
 
-onMounted(() => {
-  fetchReleaseDetail()
-})
+// 当前已加载的版本 ID，用于避免从子页面返回时重复加载
+const currentLoadedId = ref(null)
+
+watch(
+  () => route.params.id,
+  (newId) => {
+    if (newId) {
+      // 如果 ID 没变（从子页面返回），跳过重新加载以保留数据/位置状态
+      if (newId === currentLoadedId.value) return
+      currentLoadedId.value = newId
+      releaseId.value = newId
+      fetchReleaseDetail()
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
-  <div class="space-y-4 pb-8">
+  <ion-page>
+  <ion-content>
+  <div class="page-container space-y-4">
     <!-- 头部导航 -->
     <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
       <button 
@@ -330,6 +346,8 @@ onMounted(() => {
       </div>
     </div>
   </div>
+  </ion-content>
+  </ion-page>
 </template>
 
 <style scoped>

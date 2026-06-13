@@ -7,6 +7,7 @@ import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { getUserList, getUserListLabels } from '@/api/vndb'
 import VnList from '@/components/VnList.vue'
+import { IonPage, IonContent } from '@ionic/vue'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -147,7 +148,9 @@ function goToLogin() {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <ion-page>
+  <ion-content>
+  <div class="page-container pb-24 space-y-6">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs">
@@ -245,6 +248,8 @@ function goToLogin() {
       </div>
     </div>
   </div>
+  </ion-content>
+  </ion-page>
 </template>
 
 <style scoped>

@@ -8,6 +8,7 @@ import ReleaseList from '@/components/ReleaseList.vue'
 import BaseSelect from '@/components/BaseSelect.vue'
 import { Icon } from '@iconify/vue'
 import { getReleaseList } from '@/api/vndb.js'
+import { IonPage, IonContent } from '@ionic/vue'
 
 const { t } = useI18n()
 
@@ -286,7 +287,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <SearchBase 
+  <ion-page>
+  <ion-content>
+  <div class="page-container pb-24">
+  <SearchBase
     v-model="query"
     type="releases" 
     :title="t('library.releases')" 
@@ -437,6 +441,9 @@ onMounted(() => {
       @reverse-change="handleReverseChange"
     />
   </SearchBase>
+  </div>
+  </ion-content>
+  </ion-page>
 </template>
 
 <style scoped>

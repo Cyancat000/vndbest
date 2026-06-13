@@ -1,10 +1,11 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { getStaffDetail, getVnListByStaff } from '@/api/vndb'
 import VnList from '@/components/VnList.vue'
+import { IonPage, IonContent } from '@ionic/vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -84,10 +85,23 @@ function handleReverseChange(r) {
   fetchList(true)
 }
 
-onMounted(() => {
-  fetchStaffInfo()
-  fetchList(true)
-})
+// 当前已加载的制作人员 ID，用于避免从子页面返回时重复加载
+const currentLoadedId = ref(null)
+
+watch(
+  () => route.params.id,
+  (newId) => {
+    if (newId) {
+      // 如果 ID 没变（从子页面返回），跳过重新加载以保留数据/位置状态
+      if (newId === currentLoadedId.value) return
+      currentLoadedId.value = newId
+      staffId.value = newId
+      fetchStaffInfo()
+      fetchList(true)
+    }
+  },
+  { immediate: true }
+)
 
 const sortOptions = [
   { value: 'released', label: 'vn.released' },
@@ -97,7 +111,9 @@ const sortOptions = [
 </script>
 
 <template>
-  <div class="px-4 pb-8 space-y-6">
+  <ion-page>
+  <ion-content>
+  <div class="page-container space-y-6">
     <!-- Header/Back Navigation -->
     <div class="flex items-center gap-4 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100">
       <button
@@ -201,4 +217,6 @@ const sortOptions = [
       <p>未找到该人物的信息</p>
     </div>
   </div>
+  </ion-content>
+  </ion-page>
 </template>

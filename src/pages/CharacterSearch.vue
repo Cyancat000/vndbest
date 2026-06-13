@@ -10,6 +10,7 @@ import BaseSelect from '@/components/BaseSelect.vue'
 import TraitChip from '@/components/TraitChip.vue'
 import TraitFilterModal from '@/components/TraitFilterModal.vue'
 import { getCharacterList } from '@/api/vndb'
+import { IonPage, IonContent } from '@ionic/vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -236,7 +237,10 @@ watch(selectedTraits, () => {
 
 watch(
   () => route.query.trait,
-  () => {
+  (newTrait) => {
+    if (newTrait) {
+      selectedTraits.value = [{ id: newTrait, name: newTrait, category: '', vn_count: 0 }]
+    }
     fetchData(query.value, true)
   }
 )
@@ -264,7 +268,9 @@ const getSexClass = (sex) => {
 </script>
 
 <template>
-  <div class="px-4 py-6">
+  <ion-page>
+  <ion-content>
+  <div class="page-container pb-24">
     <SearchBase 
       type="characters" 
       v-model="query"
@@ -474,6 +480,8 @@ const getSexClass = (sex) => {
       @confirm="handleTraitModalConfirm"
     />
   </div>
+  </ion-content>
+  </ion-page>
 </template>
 
 <style scoped>

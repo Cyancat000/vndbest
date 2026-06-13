@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { getAuthInfo } from '@/api/vndb'
+import { IonPage, IonContent } from '@ionic/vue'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -83,7 +84,9 @@ function goBack() {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <ion-page>
+  <ion-content>
+  <div class="page-container space-y-6">
     <!-- 头部导航 -->
     <div class="flex items-center gap-3">
       <button
@@ -181,4 +184,6 @@ function goBack() {
       </div>
     </div>
   </div>
+  </ion-content>
+  </ion-page>
 </template>

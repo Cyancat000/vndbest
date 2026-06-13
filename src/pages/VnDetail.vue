@@ -7,6 +7,7 @@ import { getVnDetail, getVnReleases, getVnCharacters, getVnQuotes } from '@/api/
 import VnList from '@/components/VnList.vue'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { useTranslation } from '@/composables/useTranslation'
+import { IonPage, IonContent } from '@ionic/vue'
 
 const { getDetailAction, getScreenshotAction } = usePrivacy()
 
@@ -450,10 +451,16 @@ function getAltTitle(v) {
   return ''
 }
 
+// 当前已加载的 VN ID，用于避免从子页面返回时重复加载
+const currentLoadedId = ref(null)
+
 watch(
   () => route.params.id,
   (newId) => {
     if (newId && route.name === 'VnDetail') {
+      // 如果 ID 没变（从子页面返回），跳过重新加载以保留数据/Tab/位置状态
+      if (newId === currentLoadedId.value) return
+      currentLoadedId.value = newId
       loadVnDetail(newId)
     }
   },
@@ -462,7 +469,9 @@ watch(
 </script>
 
 <template>
-  <div class="space-y-4 pb-8">
+  <ion-page>
+  <ion-content>
+  <div class="page-container space-y-4">
     <!-- 头部导航 -->
     <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
       <button 
@@ -1176,6 +1185,8 @@ watch(
       </div>
     </Teleport>
   </div>
+  </ion-content>
+  </ion-page>
 </template>
 
 <style scoped>

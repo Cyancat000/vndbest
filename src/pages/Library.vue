@@ -4,6 +4,7 @@ defineOptions({ name: 'Library' })
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import { IonPage, IonContent } from '@ionic/vue'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -73,7 +74,9 @@ function navigateTo(path) {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <ion-page>
+  <ion-content>
+  <div class="page-container pb-24 space-y-6">
     <div class="flex items-center gap-3">
       <div class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs">
         <Icon icon="lucide:library" class="h-5 w-5 text-neutral-800" />
@@ -103,4 +106,6 @@ function navigateTo(path) {
       </button>
     </div>
   </div>
+  </ion-content>
+  </ion-page>
 </template>

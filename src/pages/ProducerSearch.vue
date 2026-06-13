@@ -7,6 +7,7 @@ import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import SearchBase from '@/components/SearchBase.vue'
 import { searchProducers, getProducerList } from '@/api/vndb'
+import { IonPage, IonContent } from '@ionic/vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -133,7 +134,9 @@ watch(sentinel, (el) => {
 </script>
 
 <template>
-  <div class="px-4 py-6">
+  <ion-page>
+  <ion-content>
+  <div class="page-container pb-24">
     <SearchBase 
       type="producers" 
       v-model="query"
@@ -210,4 +213,6 @@ watch(sentinel, (el) => {
       </div>
     </SearchBase>
   </div>
+  </ion-content>
+  </ion-page>
 </template>

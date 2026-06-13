@@ -8,6 +8,7 @@ import { Icon } from '@iconify/vue'
 import SearchBase from '@/components/SearchBase.vue'
 import { searchTags, getTagList } from '@/api/vndb'
 import { useTranslation } from '@/composables/useTranslation'
+import { IonPage, IonContent } from '@ionic/vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -141,7 +142,9 @@ const getCategoryClass = (category) => {
 </script>
 
 <template>
-  <div class="px-4 py-6">
+  <ion-page>
+  <ion-content>
+  <div class="page-container pb-24">
     <SearchBase 
       type="tags" 
       v-model="query"
@@ -218,4 +221,6 @@ const getCategoryClass = (category) => {
       </div>
     </SearchBase>
   </div>
+  </ion-content>
+  </ion-page>
 </template>
