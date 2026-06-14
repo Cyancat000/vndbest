@@ -125,7 +125,7 @@ function goToLogin() {
   <ion-page>
   <ion-content>
   <div class="page-container pb-24 space-y-6">
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3 py-3 sticky top-0 bg-white/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100">
       <div class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs">
         <Icon icon="lucide:settings" class="h-5 w-5 text-neutral-800" />
       </div>

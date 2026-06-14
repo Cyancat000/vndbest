@@ -58,7 +58,7 @@ const goBack = () => router.back()
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-4 py-3 sticky top-0 bg-white/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100">
       <button 
         @click="goBack"
         class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs active:scale-95 transition-transform cursor-pointer"

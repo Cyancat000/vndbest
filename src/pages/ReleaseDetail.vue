@@ -153,7 +153,7 @@ watch(
   <ion-content>
   <div class="page-container space-y-4">
     <!-- 头部导航 -->
-    <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+    <div class="flex items-center justify-between py-3 sticky top-0 bg-white/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100">
       <button 
         @click="goBack"
         class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 active:bg-neutral-100 transition active:scale-95"
