@@ -35,6 +35,8 @@ const selectedOfficial = ref('all')
 const selectedFreeware = ref('all')
 const selectedVoiced = ref('all')
 const selectedEngine = ref('all')
+const selectedDateFrom = ref('')
+const selectedDateTo = ref('')
 
 const sortOptions = [
   { value: 'released', label: 'vn.releases.date' },
@@ -145,6 +147,8 @@ function hasActiveFilters() {
     || selectedFreeware.value !== 'all'
     || selectedVoiced.value !== 'all'
     || selectedEngine.value !== 'all'
+    || selectedDateFrom.value !== ''
+    || selectedDateTo.value !== ''
 }
 
 // 清除所有筛选
@@ -157,6 +161,8 @@ function clearAllFilters() {
   selectedFreeware.value = 'all'
   selectedVoiced.value = 'all'
   selectedEngine.value = 'all'
+  selectedDateFrom.value = ''
+  selectedDateTo.value = ''
   fetchData()
 }
 
@@ -219,6 +225,14 @@ async function fetchData(isLoadMore = false) {
       filters.push(['engine', '=', selectedEngine.value])
     }
 
+    // 发布日期范围
+    if (selectedDateFrom.value) {
+      filters.push(['released', '>=', selectedDateFrom.value.replace(/-/g, '')])
+    }
+    if (selectedDateTo.value) {
+      filters.push(['released', '<=', selectedDateTo.value.replace(/-/g, '')])
+    }
+
     const params = {
       results: resultsPerPage,
       page: page.value,
@@ -273,6 +287,15 @@ function handleClear() {
 // 监听所有筛选变化
 watch([selectedLang, selectedPlatform, selectedMinAge, selectedPatch, selectedOfficial, selectedFreeware, selectedVoiced, selectedEngine], () => {
   fetchData()
+})
+
+// 发布日期使用防抖
+let dateDebounceTimer = null
+watch([selectedDateFrom, selectedDateTo], () => {
+  if (dateDebounceTimer) clearTimeout(dateDebounceTimer)
+  dateDebounceTimer = setTimeout(() => {
+    fetchData()
+  }, 500)
 })
 
 watch(query, (newVal) => {
@@ -424,6 +447,32 @@ onMounted(() => {
                 <Icon icon="lucide:cog" class="h-3.5 w-3.5 text-neutral-400" />
               </template>
             </BaseSelect>
+
+            <!-- 发布日期范围 -->
+            <div class="flex flex-col gap-1 px-2 py-1.5 rounded-lg border border-neutral-100 bg-neutral-50 col-span-2 sm:col-span-3">
+              <div class="flex items-center gap-1.5 mb-1">
+                <Icon icon="lucide:calendar" class="h-3.5 w-3.5 text-neutral-400" />
+                <span class="text-xs font-medium text-neutral-600">发布日期范围</span>
+                <span v-if="selectedDateFrom || selectedDateTo" class="text-[10px] font-bold text-neutral-900">
+                  {{ selectedDateFrom || '不限' }} ~ {{ selectedDateTo || '不限' }}
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                <input
+                  v-model="selectedDateFrom"
+                  type="date"
+                  class="flex-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-900/5"
+                  placeholder="开始日期"
+                />
+                <span class="text-xs text-neutral-400">~</span>
+                <input
+                  v-model="selectedDateTo"
+                  type="date"
+                  class="flex-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-900/5"
+                  placeholder="结束日期"
+                />
+              </div>
+            </div>
           </div>
         </Transition>
       </div>

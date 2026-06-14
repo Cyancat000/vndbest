@@ -42,6 +42,8 @@ const selectedLength = ref('all')
 const selectedDevStatus = ref('all')
 const selectedHasScreenshot = ref('all')
 const selectedRatingRange = ref([0, 100])
+const selectedDateFrom = ref('')
+const selectedDateTo = ref('')
 
 // URL 中的 tag 参数
 const routeTag = computed(() => typeof route.query.tag === 'string' ? route.query.tag : '')
@@ -163,6 +165,8 @@ function hasActiveFilters() {
     || selectedHasScreenshot.value !== 'all'
     || selectedRatingRange.value[0] > 0
     || selectedRatingRange.value[1] < 100
+    || selectedDateFrom.value !== ''
+    || selectedDateTo.value !== ''
 }
 
 // 清除所有筛选
@@ -175,6 +179,8 @@ function clearAllFilters() {
   selectedDevStatus.value = 'all'
   selectedHasScreenshot.value = 'all'
   selectedRatingRange.value = [0, 100]
+  selectedDateFrom.value = ''
+  selectedDateTo.value = ''
   fetchData()
 }
 
@@ -243,6 +249,14 @@ async function fetchData(isLoadMore = false) {
     }
     if (ratingMax < 100) {
       filters.push(['rating', '<=', ratingMax])
+    }
+
+    // 发布日期范围
+    if (selectedDateFrom.value) {
+      filters.push(['released', '>=', selectedDateFrom.value.replace(/-/g, '')])
+    }
+    if (selectedDateTo.value) {
+      filters.push(['released', '<=', selectedDateTo.value.replace(/-/g, '')])
     }
 
     // 处理排序。只有在有 search 过滤时才支持 searchrank
@@ -329,8 +343,18 @@ watch(selectedRatingRange, () => {
   }, 500)
 }, { deep: true })
 
+// 发布日期使用防抖
+let dateDebounceTimer = null
+watch([selectedDateFrom, selectedDateTo], () => {
+  if (dateDebounceTimer) clearTimeout(dateDebounceTimer)
+  dateDebounceTimer = setTimeout(() => {
+    fetchData()
+  }, 500)
+})
+
 onUnmounted(() => {
   if (ratingDebounceTimer) clearTimeout(ratingDebounceTimer)
+  if (dateDebounceTimer) clearTimeout(dateDebounceTimer)
 })
 
 watch(selectedTags, () => {
@@ -506,6 +530,32 @@ onMounted(() => {
                 <Icon icon="lucide:image" class="h-3.5 w-3.5 text-neutral-400" />
               </template>
             </BaseSelect>
+
+            <!-- 发布日期范围 -->
+            <div class="flex flex-col gap-1 px-2 py-1.5 rounded-lg border border-neutral-100 bg-neutral-50 col-span-2 sm:col-span-3">
+              <div class="flex items-center gap-1.5 mb-1">
+                <Icon icon="lucide:calendar" class="h-3.5 w-3.5 text-neutral-400" />
+                <span class="text-xs font-medium text-neutral-600">发布日期范围</span>
+                <span v-if="selectedDateFrom || selectedDateTo" class="text-[10px] font-bold text-neutral-900">
+                  {{ selectedDateFrom || '不限' }} ~ {{ selectedDateTo || '不限' }}
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                <input
+                  v-model="selectedDateFrom"
+                  type="date"
+                  class="flex-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-900/5"
+                  placeholder="开始日期"
+                />
+                <span class="text-xs text-neutral-400">~</span>
+                <input
+                  v-model="selectedDateTo"
+                  type="date"
+                  class="flex-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-900/5"
+                  placeholder="结束日期"
+                />
+              </div>
+            </div>
 
             <!-- 评分范围滑动条 -->
             <div class="flex flex-col gap-1 px-2 py-1.5 rounded-lg border border-neutral-100 bg-neutral-50 col-span-2 sm:col-span-3">
