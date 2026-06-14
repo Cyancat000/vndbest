@@ -6,6 +6,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import SearchBase from '@/components/SearchBase.vue'
+import BaseSelect from '@/components/BaseSelect.vue'
 import { searchProducers, getProducerList } from '@/api/vndb'
 import { IonPage, IonContent } from '@ionic/vue'
 
@@ -19,11 +20,50 @@ const hasMore = ref(false)
 const page = ref(1)
 const resultsPerPage = 25
 
+// 筛选状态
+const showAdvancedFilters = ref(false)
+const selectedLang = ref('all')
+const selectedType = ref('all')
+
+// 筛选选项
+const langOptions = [
+  { value: 'all', label: 'list.all' },
+  { value: 'ja', label: 'settings.lang_names.ja' },
+  { value: 'en', label: 'settings.lang_names.en' },
+  { value: 'zh', label: 'settings.lang_names.zh' },
+  { value: 'ko', label: 'settings.lang_names.ko' },
+  { value: 'fr', label: 'settings.lang_names.fr' },
+  { value: 'de', label: 'settings.lang_names.de' },
+  { value: 'ru', label: 'settings.lang_names.ru' },
+  { value: 'es', label: 'settings.lang_names.es' },
+  { value: 'it', label: 'settings.lang_names.it' }
+]
+
+const typeOptions = [
+  { value: 'all', label: 'list.all' },
+  { value: 'co', label: '会社' },
+  { value: 'in', label: '个人' },
+  { value: 'ng', label: '同人' }
+]
+
+// 计算是否有激活的筛选条件
+function hasActiveFilters() {
+  return selectedLang.value !== 'all'
+    || selectedType.value !== 'all'
+}
+
+// 清除所有筛选
+function clearAllFilters() {
+  selectedLang.value = 'all'
+  selectedType.value = 'all'
+  fetchData()
+}
+
 // 触底加载逻辑
 const sentinel = ref(null)
 let observer = null
 
-async function fetchProducers(q = '', reset = true) {
+async function fetchData(q = '', reset = true) {
   if (isLoading.value && !reset) return
   
   if (reset) {
@@ -34,20 +74,31 @@ async function fetchProducers(q = '', reset = true) {
   
   isLoading.value = true
   try {
-    let res
-    if (q && q.trim() !== '') {
-      res = await searchProducers(q, { 
-        page: page.value, 
-        results: resultsPerPage 
-      })
-    } else {
-      res = await getProducerList([], { 
-        page: page.value,
-        results: resultsPerPage,
-        sort: 'id',
-        reverse: false
-      })
+    const filters = []
+    const searchQ = q || query.value
+
+    if (searchQ && searchQ.trim() !== '') {
+      filters.push(['search', '=', searchQ])
     }
+
+    // 语言
+    if (selectedLang.value !== 'all') {
+      filters.push(['lang', '=', selectedLang.value])
+    }
+
+    // 类型
+    if (selectedType.value !== 'all') {
+      filters.push(['type', '=', selectedType.value])
+    }
+
+    const finalFilters = filters.length > 1 ? ['and', ...filters] : (filters.length === 1 ? filters[0] : [])
+
+    const res = await getProducerList(finalFilters, {
+      page: page.value,
+      results: resultsPerPage,
+      sort: searchQ && searchQ.trim() !== '' ? 'searchrank' : 'id',
+      reverse: false
+    })
     
     if (res && res.results) {
       if (reset) {
@@ -77,17 +128,17 @@ async function fetchProducers(q = '', reset = true) {
 async function loadMore() {
   if (isLoading.value || !hasMore.value) return
   page.value++
-  await fetchProducers(query.value, false)
+  await fetchData(query.value, false)
 }
 
 function handleSearch(q) {
   query.value = q
-  fetchProducers(q, true)
+  fetchData(q, true)
 }
 
 function handleClear() {
   query.value = ''
-  fetchProducers('', true)
+  fetchData('', true)
 }
 
 function goToDetail(id) {
@@ -117,12 +168,17 @@ function setupObserver() {
 }
 
 onMounted(() => {
-  fetchProducers('', true)
+  fetchData('', true)
   setupObserver()
 })
 
 onUnmounted(() => {
   if (observer) observer.disconnect()
+})
+
+// 筛选器变化时自动重新搜索
+watch([selectedLang, selectedType], () => {
+  fetchData()
 })
 
 // 监听 sentinel，确保 DOM 稳定
@@ -146,6 +202,64 @@ watch(sentinel, (el) => {
       @search="handleSearch"
       @clear="handleClear"
     >
+      <template #filters>
+        <div class="space-y-2 pb-2">
+          <!-- 筛选行 -->
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- 高级筛选切换 -->
+            <button
+              @click="showAdvancedFilters = !showAdvancedFilters"
+              class="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
+              :class="showAdvancedFilters 
+                ? 'bg-neutral-900 text-white' 
+                : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
+            >
+              <Icon icon="lucide:sliders-horizontal" class="h-3.5 w-3.5" />
+              <span>筛选</span>
+            </button>
+
+            <!-- 清除所有筛选 -->
+            <button
+              v-if="hasActiveFilters()"
+              @click="clearAllFilters"
+              class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-red-500 bg-red-50 border border-red-100 hover:bg-red-100 transition cursor-pointer"
+            >
+              <Icon icon="lucide:x" class="h-3 w-3" />
+              <span>清除</span>
+            </button>
+          </div>
+
+          <!-- 高级筛选面板 -->
+          <Transition name="panel">
+            <div v-if="showAdvancedFilters" class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+              <!-- 语言 -->
+              <BaseSelect
+                v-model="selectedLang"
+                :options="langOptions"
+                :label-renderer="(l) => t(l)"
+                class="!bg-neutral-50 rounded-lg border border-neutral-100"
+              >
+                <template #prefix>
+                  <Icon icon="lucide:languages" class="h-3.5 w-3.5 text-neutral-400" />
+                </template>
+              </BaseSelect>
+
+              <!-- 类型 -->
+              <BaseSelect
+                v-model="selectedType"
+                :options="typeOptions"
+                :label-renderer="(l) => t(l, l)"
+                class="!bg-neutral-50 rounded-lg border border-neutral-100"
+              >
+                <template #prefix>
+                  <Icon icon="lucide:building-2" class="h-3.5 w-3.5 text-neutral-400" />
+                </template>
+              </BaseSelect>
+            </div>
+          </Transition>
+        </div>
+      </template>
+
       <!-- 列表内容：始终渲染，内部判断项 -->
       <div class="space-y-2">
         <div 
@@ -216,3 +330,22 @@ watch(sentinel, (el) => {
   </ion-content>
   </ion-page>
 </template>
+
+<style scoped>
+.panel-enter-active,
+.panel-leave-active {
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+.panel-enter-from,
+.panel-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-8px);
+}
+.panel-enter-to,
+.panel-leave-from {
+  opacity: 1;
+  max-height: 200px;
+}
+</style>
