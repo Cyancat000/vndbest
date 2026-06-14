@@ -7,7 +7,7 @@ import { getReleaseDetail } from '@/api/vndb'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { IonPage, IonContent } from '@ionic/vue'
 
-const { getDetailAction } = usePrivacy()
+const { getDetailAction, getCardAction } = usePrivacy()
 
 const { t } = useI18n()
 const route = useRoute()
@@ -90,6 +90,44 @@ function toggleReveal(key) {
 const coverAction = computed(() => {
   if (!release.value?.images?.length) return 'show'
   return getDetailAction('release', getImageNsfwLevel(release.value.images[0]))
+})
+
+// 隐私过滤：关联 VN 卡片
+function getVnCardAction(vn) {
+  return getCardAction('vn', getImageNsfwLevel(vn.image))
+}
+
+function shouldBlurVnCard(vn) {
+  const action = getVnCardAction(vn)
+  return action === 'blur' || action === 'blur_card'
+}
+
+function isVnHidden(vn) {
+  return getVnCardAction(vn) === 'hide'
+}
+
+const filteredVns = computed(() => {
+  if (!release.value?.vns) return []
+  return release.value.vns.filter(vn => !isVnHidden(vn))
+})
+
+// 隐私过滤：封面画廊图片
+function getCoverImgAction(img) {
+  return getCardAction('release', getImageNsfwLevel(img))
+}
+
+function shouldBlurCoverImg(img) {
+  const action = getCoverImgAction(img)
+  return action === 'blur' || action === 'blur_card'
+}
+
+function isCoverImgHidden(img) {
+  return getCoverImgAction(img) === 'hide'
+}
+
+const filteredImages = computed(() => {
+  if (!release.value?.images) return []
+  return release.value.images.filter(img => !isCoverImgHidden(img))
 })
 
 // 当前已加载的版本 ID，用于避免从子页面返回时重复加载
@@ -264,17 +302,20 @@ watch(
       </div>
 
       <!-- 2. 图片展示 (模仿 VnDetail Tabs 里的风格) -->
-      <div v-if="release.images?.length > 1" class="space-y-1.5">
+      <div v-if="filteredImages.length > 1" class="space-y-1.5">
         <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
           <Icon icon="lucide:image" class="h-3.5 w-3.5" />
           {{ t('vn.tabs.covers') }}
         </h3>
         <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar snap-x">
-          <div v-for="(img, idx) in release.images" :key="idx" 
+          <div v-for="(img, idx) in filteredImages" :key="idx"
             class="shrink-0 snap-start h-48 rounded-lg overflow-hidden border border-neutral-200 bg-neutral-50 shadow-xs relative group"
           >
-            <img :src="img.url" class="h-full w-full object-contain" />
-            <div class="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-black/50 backdrop-blur-sm text-white text-[8px] font-black uppercase tracking-widest">
+            <img :src="img.url" class="h-full w-full object-contain" :class="{ 'blur-md': shouldBlurCoverImg(img) }" />
+            <div v-if="shouldBlurCoverImg(img)" class="absolute inset-0 flex items-center justify-center bg-neutral-100/80 z-10">
+              <Icon icon="lucide:eye-off" class="h-6 w-6 text-neutral-400" />
+            </div>
+            <div class="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-black/50 backdrop-blur-sm text-white text-[8px] font-black uppercase tracking-widest z-20">
               {{ img.type }}
             </div>
           </div>
@@ -282,18 +323,21 @@ watch(
       </div>
 
       <!-- 3. 关联作品 (模仿 VnDetail 的 Relations 风格) -->
-      <div v-if="release.vns?.length > 0" class="space-y-1.5">
+      <div v-if="filteredVns.length > 0" class="space-y-1.5">
         <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
           <Icon icon="lucide:book-open" class="h-3.5 w-3.5" />
           {{ t('release.associated_vn') }}
         </h3>
         <div class="space-y-2">
-          <div v-for="vn in release.vns" :key="vn.id" 
+          <div v-for="vn in filteredVns" :key="vn.id"
             @click="goToVn(vn.id)"
             class="p-2.5 rounded-xl border border-neutral-100 bg-white flex items-center gap-3 shadow-xs hover:border-neutral-200 transition cursor-pointer active:scale-[0.98]"
           >
-            <div class="h-16 w-12 shrink-0 rounded-lg overflow-hidden border border-neutral-100 bg-neutral-50">
-              <img :src="vn.image?.thumbnail || vn.image?.url" class="h-full w-full object-cover" />
+            <div class="h-16 w-12 shrink-0 rounded-lg overflow-hidden border border-neutral-100 bg-neutral-50 relative">
+              <img :src="vn.image?.thumbnail || vn.image?.url" class="h-full w-full object-cover" :class="{ 'blur-md': shouldBlurVnCard(vn) }" />
+              <div v-if="shouldBlurVnCard(vn)" class="absolute inset-0 flex items-center justify-center bg-neutral-100/80 z-10">
+                <Icon icon="lucide:eye-off" class="h-4 w-4 text-neutral-400" />
+              </div>
             </div>
             <div class="min-w-0 flex-1">
               <h4 class="text-xs font-bold text-neutral-900 truncate">{{ getTitle(vn) }}</h4>

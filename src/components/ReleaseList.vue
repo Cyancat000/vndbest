@@ -163,11 +163,19 @@ function isIconPlaceholder(item) {
   return shouldBlurCover(item) && !shouldBlurCard(item)
 }
 
+// 隐私过滤：过滤掉需要隐藏的项目
+const filteredItems = computed(() => {
+  return props.items.filter(item => {
+    const action = getCardAction('release', getImageNsfwLevel(getImage(item)))
+    return action !== 'hide'
+  })
+})
+
 // ── 瀑布流双列分配 ──
 const waterfallColumns = computed(() => {
   const leftCol = []
   const rightCol = []
-  props.items.forEach((item, index) => {
+  filteredItems.value.forEach((item, index) => {
     if (index % 2 === 0) {
       leftCol.push(item)
     } else {
@@ -272,9 +280,9 @@ onUnmounted(() => {
     <div class="px-0.5">
 
       <!-- ═══════════ 1. 卡片布局 (list) ═══════════ -->
-      <div v-if="items.length > 0 && isList" class="grid grid-cols-1 gap-3">
+      <div v-if="filteredItems.length > 0 && isList" class="grid grid-cols-1 gap-3">
         <div
-          v-for="item in items"
+          v-for="item in filteredItems"
           :key="item.id"
           class="relative rounded-xl border border-neutral-200 bg-white shadow-xs hover:border-neutral-300 transition cursor-pointer overflow-hidden"
           :class="isCompact ? 'p-2' : 'p-3'"
@@ -405,7 +413,7 @@ onUnmounted(() => {
       </div>
 
       <!-- ═══════════ 2. 瀑布流布局 (waterfall) ═══════════ -->
-      <div v-else-if="items.length > 0 && isWaterfall" class="grid grid-cols-2 gap-3 items-start">
+      <div v-else-if="filteredItems.length > 0 && isWaterfall" class="grid grid-cols-2 gap-3 items-start">
         <div class="flex flex-col gap-3">
           <div
             v-for="item in waterfallColumns.leftCol"
@@ -552,9 +560,9 @@ onUnmounted(() => {
       </div>
 
       <!-- ═══════════ 3. 文本布局 (text) ═══════════ -->
-      <div v-else-if="items.length > 0 && isText" class="divide-y divide-neutral-100 bg-white rounded-xl border border-neutral-200 overflow-hidden shadow-xs">
+      <div v-else-if="filteredItems.length > 0 && isText" class="divide-y divide-neutral-100 bg-white rounded-xl border border-neutral-200 overflow-hidden shadow-xs">
         <div
-          v-for="item in items"
+          v-for="item in filteredItems"
           :key="item.id"
           class="px-3.5 py-2.5 hover:bg-neutral-50 transition cursor-pointer flex items-center justify-between gap-3"
           @click="handleItemClick(item)"
@@ -616,7 +624,7 @@ onUnmounted(() => {
     </div>
 
     <!-- 触底加载哨兵 & 状态 -->
-    <div ref="sentinel" class="py-6 flex justify-center" v-show="items.length > 0">
+    <div ref="sentinel" class="py-6 flex justify-center" v-show="filteredItems.length > 0">
       <template v-if="showFooterStatus">
         <div v-if="isLoading" class="flex items-center gap-2 text-xs text-neutral-400">
           <Icon icon="eos-icons:loading" class="h-4 w-4" />
@@ -629,7 +637,7 @@ onUnmounted(() => {
     </div>
 
     <!-- 空状态 -->
-    <div v-if="items.length === 0 && !isLoading" class="rounded-xl border border-neutral-200 bg-white p-12 text-center shadow-xs space-y-3">
+    <div v-if="filteredItems.length === 0 && !isLoading" class="rounded-xl border border-neutral-200 bg-white p-12 text-center shadow-xs space-y-3">
       <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-neutral-50 border border-neutral-100">
         <Icon icon="lucide:file" class="h-5 w-5 text-neutral-400" />
       </div>

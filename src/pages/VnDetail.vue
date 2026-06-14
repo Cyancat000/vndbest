@@ -9,7 +9,7 @@ import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { useTranslation } from '@/composables/useTranslation'
 import { IonPage, IonContent } from '@ionic/vue'
 
-const { getDetailAction, getScreenshotAction } = usePrivacy()
+const { getDetailAction, getScreenshotAction, getCardAction } = usePrivacy()
 
 const route = useRoute()
 const router = useRouter()
@@ -98,7 +98,7 @@ const filteredTags = computed(() => {
   return vn.value.tags.filter(tag => tag.spoiler <= spoilerLevel.value)
 })
 
-// 从 releases 数据中提取所有封面图
+// 从 releases 数据中提取所有封面图（保留原始 image 对象用于隐私过滤）
 const allCovers = computed(() => {
   const list = []
   
@@ -108,7 +108,8 @@ const allCovers = computed(() => {
       url: vn.value.image.url,
       dims: vn.value.image.dims,
       title: '主视觉图 (Main Visual)',
-      desc: vn.value.title
+      desc: vn.value.title,
+      image: vn.value.image
     })
   }
 
@@ -127,7 +128,8 @@ const allCovers = computed(() => {
             url: img.url,
             dims: img.dims,
             title: `${label} - ${rel.title}`,
-            desc: rel.released || '发售日未知'
+            desc: rel.released || '发售日未知',
+            image: img
           })
         }
       })
@@ -135,6 +137,24 @@ const allCovers = computed(() => {
   })
 
   return list
+})
+
+// 隐私过滤：封面画册图片
+function getCoverAction(cover) {
+  return getCardAction('release', getImageNsfwLevel(cover.image))
+}
+
+function shouldBlurCover(cover) {
+  const action = getCoverAction(cover)
+  return action === 'blur' || action === 'blur_card'
+}
+
+function isCoverHidden(cover) {
+  return getCoverAction(cover) === 'hide'
+}
+
+const filteredCovers = computed(() => {
+  return allCovers.value.filter(cover => !isCoverHidden(cover))
 })
 
 // 获取当前大图的 URL
@@ -714,14 +734,17 @@ watch(
             {{ t('vn.covers.empty') }}
           </div>
           <div v-else class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <div 
-              v-for="(cover, idx) in allCovers" 
+            <div
+              v-for="(cover, idx) in filteredCovers"
               :key="idx"
-              @click="openLightbox(idx, allCovers)"
+              @click="openLightbox(idx, filteredCovers)"
               class="p-2 rounded-lg border border-neutral-200 bg-neutral-50 hover:bg-neutral-100 transition cursor-pointer flex flex-col justify-between items-center text-center space-y-2"
             >
-              <div class="h-40 w-full overflow-hidden rounded border border-neutral-200 bg-white flex items-center justify-center">
-                <img :src="cover.url" class="max-h-full max-w-full object-contain" loading="lazy" />
+              <div class="h-40 w-full overflow-hidden rounded border border-neutral-200 bg-white flex items-center justify-center relative">
+                <img :src="cover.url" class="max-h-full max-w-full object-contain" :class="{ 'blur-md': shouldBlurCover(cover) }" loading="lazy" />
+                <div v-if="shouldBlurCover(cover)" class="absolute inset-0 flex items-center justify-center bg-neutral-100/80">
+                  <Icon icon="lucide:eye-off" class="h-6 w-6 text-neutral-400" />
+                </div>
               </div>
               <div class="w-full text-left">
                 <div class="text-[10px] font-semibold text-neutral-800 truncate">{{ cover.title }}</div>

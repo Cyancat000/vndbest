@@ -1,15 +1,17 @@
 <script setup>
 defineOptions({ name: 'Home' })
 
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { getStats, getReleaseList, getRandomVn } from '@/api/vndb'
+import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { IonPage, IonContent } from '@ionic/vue'
 
 const router = useRouter()
 const { t } = useI18n()
+const { getCardAction } = usePrivacy()
 
 const stats = ref(null)
 const justReleased = ref([])
@@ -76,6 +78,33 @@ async function handleRandomClick() {
 function handleReleaseClick(release) {
   router.push(`/release/${release.id}`)
 }
+
+// 隐私过滤：获取 release 封面的 NSFW 等级
+function getReleaseCoverNsfwLevel(item) {
+  if (!item?.images?.length) return 0
+  return getImageNsfwLevel(item.images[0])
+}
+
+// 隐私过滤：判断 release 卡片是否需要模糊
+function shouldBlurReleaseCover(item) {
+  const action = getCardAction('release', getReleaseCoverNsfwLevel(item))
+  return action === 'blur' || action === 'blur_card'
+}
+
+// 隐私过滤：判断 release 卡片是否隐藏
+function isReleaseHidden(item) {
+  const action = getCardAction('release', getReleaseCoverNsfwLevel(item))
+  return action === 'hide'
+}
+
+// 过滤后的列表
+const filteredJustReleased = computed(() => {
+  return justReleased.value.filter(item => !isReleaseHidden(item))
+})
+
+const filteredUpcomingReleases = computed(() => {
+  return upcomingReleases.value.filter(item => !isReleaseHidden(item))
+})
 </script>
 
 <template>
@@ -142,15 +171,15 @@ function handleReleaseClick(release) {
         </div>
         <div v-else class="space-y-2">
           <div
-            v-for="item in justReleased"
+            v-for="item in filteredJustReleased"
             :key="item.id"
             @click="handleReleaseClick(item)"
             class="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-50 transition cursor-pointer group"
           >
-            <div class="h-10 w-8 rounded bg-neutral-100 overflow-hidden shrink-0 border border-neutral-200/50">
-              <img v-if="item.images?.[0]?.url" :src="item.images[0].url" class="h-full w-full object-cover" />
-              <div v-else class="h-full w-full flex items-center justify-center text-neutral-300">
-                <Icon icon="lucide:package" class="h-4 w-4" />
+            <div class="h-10 w-8 rounded bg-neutral-100 overflow-hidden shrink-0 border border-neutral-200/50 relative">
+              <img v-if="item.images?.[0]?.url" :src="item.images[0].url" class="h-full w-full object-cover" :class="{ 'blur-md': shouldBlurReleaseCover(item) }" />
+              <div v-if="!item.images?.[0]?.url || shouldBlurReleaseCover(item)" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
+                <Icon :icon="shouldBlurReleaseCover(item) ? 'lucide:eye-off' : 'lucide:package'" class="h-4 w-4" :class="shouldBlurReleaseCover(item) ? 'text-neutral-400' : 'text-neutral-300'" />
               </div>
             </div>
             <div class="min-w-0 flex-1">
@@ -182,15 +211,15 @@ function handleReleaseClick(release) {
         </div>
         <div v-else class="space-y-2">
           <div
-            v-for="item in upcomingReleases"
+            v-for="item in filteredUpcomingReleases"
             :key="item.id"
             @click="handleReleaseClick(item)"
             class="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-50 transition cursor-pointer group"
           >
-            <div class="h-10 w-8 rounded bg-neutral-100 overflow-hidden shrink-0 border border-neutral-200/50">
-              <img v-if="item.images?.[0]?.url" :src="item.images[0].url" class="h-full w-full object-cover" />
-              <div v-else class="h-full w-full flex items-center justify-center text-neutral-300">
-                <Icon icon="lucide:package" class="h-4 w-4" />
+            <div class="h-10 w-8 rounded bg-neutral-100 overflow-hidden shrink-0 border border-neutral-200/50 relative">
+              <img v-if="item.images?.[0]?.url" :src="item.images[0].url" class="h-full w-full object-cover" :class="{ 'blur-md': shouldBlurReleaseCover(item) }" />
+              <div v-if="!item.images?.[0]?.url || shouldBlurReleaseCover(item)" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
+                <Icon :icon="shouldBlurReleaseCover(item) ? 'lucide:eye-off' : 'lucide:package'" class="h-4 w-4" :class="shouldBlurReleaseCover(item) ? 'text-neutral-400' : 'text-neutral-300'" />
               </div>
             </div>
             <div class="min-w-0 flex-1">

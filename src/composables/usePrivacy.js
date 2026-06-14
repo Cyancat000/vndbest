@@ -29,12 +29,12 @@ export function usePrivacy() {
    * 获取卡片列表的过滤动作
    * @param {'vn'|'release'} type
    * @param {number} nsfwLevel - 0, 1, 2
-   * @returns {'show'|'icon'|'icon_card'|'hide'}
+   * @returns {'show'|'blur'|'blur_card'|'hide'}
    */
   function getCardAction(type, nsfwLevel) {
     if (nsfwLevel === 0) return 'show'
     const cl = getCardListSettings()
-    const actionMap = ['show', 'icon', 'icon_card', 'hide']
+    const actionMap = ['show', 'blur', 'blur_card', 'hide']
     if (nsfwLevel >= 2) {
       const v = cl[`nsfw_cover_${type}`] || 0
       if (v > 0) return actionMap[v] || 'show'

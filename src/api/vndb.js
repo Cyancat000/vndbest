@@ -154,7 +154,7 @@ export async function getVnDetail(id) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['id', '=', id],
-      fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,dims,sexual,violence,thumbnail,thumbnail_dims}, released, olang, description, relations{id,title,alttitle,relation,relation_official,image{url,dims,thumbnail},rating,released,olang}, languages, platforms, developers{name}, rating, votecount, length, length_minutes, tags{id,name,rating,spoiler}, staff{id,role,name,original}, va{note,staff{id,name,original},character{id,name,original,image{url}}}, screenshots{url,dims,thumbnail,thumbnail_dims,sexual}',
+      fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,dims,sexual,violence,thumbnail,thumbnail_dims}, released, olang, description, relations{id,title,alttitle,relation,relation_official,image{url,dims,thumbnail,sexual},rating,released,olang}, languages, platforms, developers{name}, rating, votecount, length, length_minutes, tags{id,name,rating,spoiler}, staff{id,role,name,original}, va{note,staff{id,name,original},character{id,name,original,image{url,sexual}}}, screenshots{url,dims,thumbnail,thumbnail_dims,sexual}',
     })
   })
 }
@@ -249,7 +249,7 @@ export async function getCharacterDetail(id) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['id', '=', id],
-      fields: 'id, name, original, description, image{url,dims,sexual,violence}, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday, vns{id,role,spoiler,title,alttitle,image{url,dims,thumbnail},rating,released,olang}, traits{id,name,spoiler,group_name}',
+      fields: 'id, name, original, description, image{url,dims,sexual,violence}, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday, vns{id,role,spoiler,title,alttitle,image{url,dims,thumbnail,sexual},rating,released,olang}, traits{id,name,spoiler,group_name}',
     })
   })
 }
@@ -261,7 +261,7 @@ export async function getCharacterDetail(id) {
 export async function searchCharacters(query, params = {}) {
   const payload = {
     filters: ['search', '=', query],
-    fields: 'id, name, original, description, image{url,dims}, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday',
+    fields: 'id, name, original, description, image{url,dims,sexual}, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday',
     results: 20,
     ...params
   }
@@ -277,7 +277,7 @@ export async function searchCharacters(query, params = {}) {
  */
 export async function getCharacterList(filters = [], params = {}) {
   const payload = {
-    fields: 'id, name, original, description, image{url,dims}, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday',
+    fields: 'id, name, original, description, image{url,dims,sexual}, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday',
     results: 20,
     ...params
   }
@@ -453,7 +453,7 @@ export async function getStaffList(filters = [], params = {}) {
 export async function getVnListByStaff(staffId, params = {}) {
   const payload = {
     filters: ['staff', '=', ['id', '=', staffId]],
-    fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail}, released, olang, rating',
+    fields: 'id, title, alttitle, titles{lang,title,latin}, image{url,thumbnail,sexual}, released, olang, rating',
     results: 20,
     ...params
   }
