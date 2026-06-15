@@ -3,15 +3,20 @@ defineOptions({ name: 'StaffSearch' })
 
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import SearchBase from '@/components/SearchBase.vue'
 import BaseSelect from '@/components/BaseSelect.vue'
 import { searchStaff, getStaffList } from '@/api/vndb'
 import { IonPage, IonContent } from '@ionic/vue'
+import { useSavedSearches } from '@/composables/useSavedSearches'
 
 const { t } = useI18n()
+const route = useRoute()
 const router = useRouter()
+const { getById } = useSavedSearches()
+const searchBaseRef = ref(null)
+const openSaveDialog = () => searchBaseRef.value?.openSaveDialog()
 
 const query = ref('')
 const results = ref([])
@@ -187,7 +192,26 @@ function setupObserver() {
   }
 }
 
+function applyFilters(filters) {
+  if (!filters) return
+  if (filters.query !== undefined) query.value = filters.query
+  if (filters.selectedLang !== undefined) selectedLang.value = filters.selectedLang
+  if (filters.selectedGender !== undefined) selectedGender.value = filters.selectedGender
+  if (filters.selectedRole !== undefined) selectedRole.value = filters.selectedRole
+}
+
+function handleRefresh() {
+  fetchData('', true)
+}
+
 onMounted(() => {
+  const savedId = route.query.savedId
+  if (savedId) {
+    const saved = getById(savedId)
+    if (saved && saved.filters) {
+      applyFilters(saved.filters)
+    }
+  }
   fetchData('', true)
   setupObserver()
 })
@@ -213,14 +237,17 @@ watch(sentinel, (el) => {
   <ion-page>
   <ion-content>
   <div class="page-container pb-24">
-    <SearchBase 
-      type="staff" 
+    <SearchBase
+      ref="searchBaseRef"
+      type="staff"
       v-model="query"
-      :title="t('library.staff')" 
+      :title="t('library.staff')"
       icon="lucide:users"
       :loading="isLoading"
+      :filters="{ query, selectedLang, selectedGender, selectedRole }"
       @search="handleSearch"
       @clear="handleClear"
+      @refresh="handleRefresh"
     >
       <template #filters>
         <div class="space-y-2 pb-2">
@@ -236,6 +263,16 @@ watch(sentinel, (el) => {
             >
               <Icon icon="lucide:sliders-horizontal" class="h-3.5 w-3.5" />
               <span>筛选</span>
+            </button>
+
+            <!-- 保存筛选 -->
+            <button
+              v-if="hasActiveFilters()"
+              @click="openSaveDialog"
+              class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-blue-600 bg-blue-50 border border-blue-100 hover:bg-blue-100 transition cursor-pointer"
+            >
+              <Icon icon="lucide:bookmark" class="h-3 w-3" />
+              <span>保存</span>
             </button>
 
             <!-- 清除所有筛选 -->

@@ -11,10 +11,14 @@ import TraitChip from '@/components/TraitChip.vue'
 import TraitFilterModal from '@/components/TraitFilterModal.vue'
 import { getCharacterList } from '@/api/vndb'
 import { IonPage, IonContent } from '@ionic/vue'
+import { useSavedSearches } from '@/composables/useSavedSearches'
 
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const { getById } = useSavedSearches()
+const searchBaseRef = ref(null)
+const openSaveDialog = () => searchBaseRef.value?.openSaveDialog()
 
 const query = ref('')
 const results = ref([])
@@ -217,7 +221,27 @@ function setupObserver() {
   }
 }
 
+function applyFilters(filters) {
+  if (!filters) return
+  if (filters.query !== undefined) query.value = filters.query
+  if (filters.selectedTraits !== undefined) selectedTraits.value = filters.selectedTraits
+  if (filters.selectedSex !== undefined) selectedSex.value = filters.selectedSex
+  if (filters.selectedBloodType !== undefined) selectedBloodType.value = filters.selectedBloodType
+  if (filters.selectedRole !== undefined) selectedRole.value = filters.selectedRole
+}
+
+function handleRefresh() {
+  fetchData(query.value, true)
+}
+
 onMounted(() => {
+  const savedId = route.query.savedId
+  if (savedId) {
+    const saved = getById(savedId)
+    if (saved && saved.filters) {
+      applyFilters(saved.filters)
+    }
+  }
   fetchData(query.value, true)
   setupObserver()
 })
@@ -271,48 +295,42 @@ const getSexClass = (sex) => {
   <ion-page>
   <ion-content>
   <div class="page-container pb-24">
-    <SearchBase 
-      type="characters" 
+    <SearchBase
+      ref="searchBaseRef"
+      type="characters"
       v-model="query"
-      :title="t('library.characters')" 
+      :title="t('library.characters')"
       icon="lucide:user-circle"
       :loading="isLoading"
+      :filters="{ query, selectedTraits, selectedSex, selectedBloodType, selectedRole }"
       @search="handleSearch"
       @clear="handleClear"
+      @refresh="handleRefresh"
     >
       <template #filters>
         <div class="space-y-2 pb-2">
-          <!-- 基础筛选行 -->
+          <!-- 筛选操作行 -->
           <div class="flex flex-wrap items-center gap-2">
-            <!-- 特征筛选按钮 -->
-            <button
-              @click="showTraitModal = true"
-              class="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
-              :class="selectedTraits.length > 0 
-                ? 'bg-violet-600 text-white' 
-                : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
-            >
-              <Icon icon="lucide:scan-search" class="h-3.5 w-3.5" />
-              <span>特征</span>
-              <span
-                v-if="selectedTraits.length > 0"
-                class="inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold"
-                :class="selectedTraits.length > 0 ? 'bg-white/20 text-white' : 'bg-neutral-200 text-neutral-600'"
-              >
-                {{ selectedTraits.length }}
-              </span>
-            </button>
-
             <!-- 高级筛选切换 -->
             <button
               @click="showAdvancedFilters = !showAdvancedFilters"
               class="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
-              :class="showAdvancedFilters 
-                ? 'bg-neutral-900 text-white' 
+              :class="showAdvancedFilters
+                ? 'bg-neutral-900 text-white'
                 : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
             >
               <Icon icon="lucide:sliders-horizontal" class="h-3.5 w-3.5" />
               <span>筛选</span>
+            </button>
+
+            <!-- 保存筛选 -->
+            <button
+              v-if="hasActiveFilters()"
+              @click="openSaveDialog"
+              class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-blue-600 bg-blue-50 border border-blue-100 hover:bg-blue-100 transition cursor-pointer"
+            >
+              <Icon icon="lucide:bookmark" class="h-3 w-3" />
+              <span>保存</span>
             </button>
 
             <!-- 清除所有筛选 -->
@@ -340,6 +358,26 @@ const getSexClass = (sex) => {
           <!-- 高级筛选面板 -->
           <Transition name="panel">
             <div v-if="showAdvancedFilters" class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+              <!-- 特征筛选按钮 -->
+              <button
+                @click="showTraitModal = true"
+                class="flex w-full items-center justify-between gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
+                :class="selectedTraits.length > 0
+                  ? 'bg-violet-600 text-white'
+                  : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
+              >
+                <Icon icon="lucide:scan-search" class="h-3.5 w-3.5" />
+                <span>特征</span>
+                <span
+                  v-if="selectedTraits.length > 0"
+                  class="inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold"
+                  :class="selectedTraits.length > 0 ? 'bg-white/20 text-white' : 'bg-neutral-200 text-neutral-600'"
+                >
+                  {{ selectedTraits.length }}
+                </span>
+                <Icon v-else icon="lucide:chevron-down" class="h-3 w-3 text-neutral-400" />
+              </button>
+
               <!-- 性别 -->
               <BaseSelect
                 v-model="selectedSex"

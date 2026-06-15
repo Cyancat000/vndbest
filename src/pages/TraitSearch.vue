@@ -3,16 +3,19 @@ defineOptions({ name: 'TraitSearch' })
 
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import SearchBase from '@/components/SearchBase.vue'
 import { searchTraits, getTraitList } from '@/api/vndb'
 import { useTranslation } from '@/composables/useTranslation'
+import { useSavedSearches } from '@/composables/useSavedSearches'
 import { IonPage, IonContent } from '@ionic/vue'
 
 const { t } = useI18n()
 const router = useRouter()
 const { translateTraitName } = useTranslation()
+const route = useRoute()
+const { getById } = useSavedSearches()
 
 const query = ref('')
 const results = ref([])
@@ -117,8 +120,25 @@ function setupObserver() {
   }
 }
 
+function applyFilters(filters) {
+  if (!filters) return
+  if (filters.query !== undefined) query.value = filters.query
+}
+
+function handleRefresh() {
+  fetchTraits(query.value, true)
+}
+
 onMounted(() => {
-  fetchTraits('', true)
+  // 加载已保存的搜索参数
+  const savedId = route.query.savedId
+  if (savedId) {
+    const saved = getById(savedId)
+    if (saved && saved.filters) {
+      applyFilters(saved.filters)
+    }
+  }
+  fetchTraits(query.value, true)
   setupObserver()
 })
 
@@ -138,14 +158,16 @@ watch(sentinel, (el) => {
   <ion-page>
   <ion-content>
   <div class="page-container pb-24">
-    <SearchBase 
-      type="traits" 
+    <SearchBase
+      type="traits"
       v-model="query"
-      :title="t('library.traits')" 
+      :title="t('library.traits')"
       icon="lucide:fingerprint"
       :loading="isLoading"
+      :filters="{ query }"
       @search="handleSearch"
       @clear="handleClear"
+      @refresh="handleRefresh"
     >
       <!-- 列表内容 -->
       <div class="grid grid-cols-1 gap-2">

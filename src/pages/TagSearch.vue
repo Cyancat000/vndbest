@@ -3,16 +3,19 @@ defineOptions({ name: 'TagSearch' })
 
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import SearchBase from '@/components/SearchBase.vue'
 import { searchTags, getTagList } from '@/api/vndb'
 import { useTranslation } from '@/composables/useTranslation'
+import { useSavedSearches } from '@/composables/useSavedSearches'
 import { IonPage, IonContent } from '@ionic/vue'
 
 const { t } = useI18n()
 const router = useRouter()
 const { translateTagName } = useTranslation()
+const route = useRoute()
+const { getById } = useSavedSearches()
 
 const query = ref('')
 const results = ref([])
@@ -115,8 +118,25 @@ function setupObserver() {
   }
 }
 
+function applyFilters(filters) {
+  if (!filters) return
+  if (filters.query !== undefined) query.value = filters.query
+}
+
+function handleRefresh() {
+  fetchTags(query.value, true)
+}
+
 onMounted(() => {
-  fetchTags('', true)
+  // 加载已保存的搜索参数
+  const savedId = route.query.savedId
+  if (savedId) {
+    const saved = getById(savedId)
+    if (saved && saved.filters) {
+      applyFilters(saved.filters)
+    }
+  }
+  fetchTags(query.value, true)
   setupObserver()
 })
 
@@ -145,14 +165,16 @@ const getCategoryClass = (category) => {
   <ion-page>
   <ion-content>
   <div class="page-container pb-24">
-    <SearchBase 
-      type="tags" 
+    <SearchBase
+      type="tags"
       v-model="query"
-      :title="t('library.tags')" 
+      :title="t('library.tags')"
       icon="lucide:tags"
       :loading="isLoading"
+      :filters="{ query }"
       @search="handleSearch"
       @clear="handleClear"
+      @refresh="handleRefresh"
     >
       <!-- 列表内容 -->
       <div class="grid grid-cols-1 gap-2">

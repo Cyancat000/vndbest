@@ -3,14 +3,21 @@ defineOptions({ name: 'ReleaseSearch' })
 
 import { ref, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import SearchBase from '@/components/SearchBase.vue'
 import ReleaseList from '@/components/ReleaseList.vue'
 import BaseSelect from '@/components/BaseSelect.vue'
 import { Icon } from '@iconify/vue'
 import { getReleaseList } from '@/api/vndb.js'
 import { IonPage, IonContent } from '@ionic/vue'
+import { useSavedSearches } from '@/composables/useSavedSearches'
 
 const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
+const { getById } = useSavedSearches()
+const searchBaseRef = ref(null)
+const openSaveDialog = () => searchBaseRef.value?.openSaveDialog()
 
 const query = ref('')
 const items = ref([])
@@ -225,12 +232,14 @@ async function fetchData(isLoadMore = false) {
       filters.push(['engine', '=', selectedEngine.value])
     }
 
-    // 发布日期范围
+    // 发布日期范围（'today' 为特殊状态，API 调用时解析为当天日期）
     if (selectedDateFrom.value) {
-      filters.push(['released', '>=', selectedDateFrom.value.replace(/-/g, '')])
+      const dateFrom = selectedDateFrom.value === 'today' ? getTodayStr() : selectedDateFrom.value
+      filters.push(['released', '>=', dateFrom.replace(/-/g, '')])
     }
     if (selectedDateTo.value) {
-      filters.push(['released', '<=', selectedDateTo.value.replace(/-/g, '')])
+      const dateTo = selectedDateTo.value === 'today' ? getTodayStr() : selectedDateTo.value
+      filters.push(['released', '<=', dateTo.replace(/-/g, '')])
     }
 
     const params = {
@@ -304,7 +313,51 @@ watch(query, (newVal) => {
   }
 })
 
+function getTodayStr() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function applyFilters(filters) {
+  if (!filters) return
+  if (filters.query !== undefined) query.value = filters.query
+  if (filters.sortBy !== undefined) sortBy.value = filters.sortBy
+  if (filters.reverse !== undefined) reverse.value = filters.reverse
+  if (filters.selectedLang !== undefined) selectedLang.value = filters.selectedLang
+  if (filters.selectedPlatform !== undefined) selectedPlatform.value = filters.selectedPlatform
+  if (filters.selectedMinAge !== undefined) selectedMinAge.value = filters.selectedMinAge
+  if (filters.selectedPatch !== undefined) selectedPatch.value = filters.selectedPatch
+  if (filters.selectedOfficial !== undefined) selectedOfficial.value = filters.selectedOfficial
+  if (filters.selectedFreeware !== undefined) selectedFreeware.value = filters.selectedFreeware
+  if (filters.selectedVoiced !== undefined) selectedVoiced.value = filters.selectedVoiced
+  if (filters.selectedEngine !== undefined) selectedEngine.value = filters.selectedEngine
+  // 保留 'today' 特殊状态，不转换为具体日期
+  if (filters.selectedDateFrom !== undefined) selectedDateFrom.value = filters.selectedDateFrom || ''
+  if (filters.selectedDateTo !== undefined) selectedDateTo.value = filters.selectedDateTo || ''
+}
+
+function handleRefresh() {
+  fetchData()
+}
+
+function setTodayDateTo() {
+  // 切换：如果已经是 'today' 则清除，否则设为 'today'
+  selectedDateTo.value = selectedDateTo.value === 'today' ? '' : 'today'
+}
+
+function setTodayDateFrom() {
+  // 切换：如果已经是 'today' 则清除，否则设为 'today'
+  selectedDateFrom.value = selectedDateFrom.value === 'today' ? '' : 'today'
+}
+
 onMounted(() => {
+  const savedId = route.query.savedId
+  if (savedId) {
+    const saved = getById(savedId)
+    if (saved && saved.filters) {
+      applyFilters(saved.filters)
+    }
+  }
   fetchData()
 })
 </script>
@@ -314,52 +367,41 @@ onMounted(() => {
   <ion-content>
   <div class="page-container pb-24">
   <SearchBase
+    ref="searchBaseRef"
     v-model="query"
-    type="releases" 
-    :title="t('library.releases')" 
+    type="releases"
+    :title="t('library.releases')"
     icon="lucide:package"
     :loading="isLoading"
+    :filters="{ query, sortBy, reverse, selectedLang, selectedPlatform, selectedMinAge, selectedPatch, selectedOfficial, selectedFreeware, selectedVoiced, selectedEngine, selectedDateFrom, selectedDateTo }"
     @search="handleSearch"
     @clear="handleClear"
+    @refresh="handleRefresh"
   >
     <template #filters>
       <div class="space-y-2 pb-2">
-        <!-- 基础筛选行 -->
+        <!-- 筛选操作行 -->
         <div class="flex flex-wrap items-center gap-2">
-          <!-- 语言筛选 -->
-          <BaseSelect
-            v-model="selectedLang"
-            :options="langOptions"
-            :label-renderer="(l) => t(l)"
-            class="!bg-neutral-50 rounded-lg border border-neutral-100"
-          >
-            <template #prefix>
-              <Icon icon="lucide:languages" class="h-3.5 w-3.5 text-neutral-400" />
-            </template>
-          </BaseSelect>
-
-          <!-- 平台筛选 -->
-          <BaseSelect
-            v-model="selectedPlatform"
-            :options="platformOptions"
-            :label-renderer="(l) => t(l, l)"
-            class="!bg-neutral-50 rounded-lg border border-neutral-100"
-          >
-            <template #prefix>
-              <Icon icon="lucide:monitor" class="h-3.5 w-3.5 text-neutral-400" />
-            </template>
-          </BaseSelect>
-
           <!-- 高级筛选切换 -->
           <button
             @click="showAdvancedFilters = !showAdvancedFilters"
             class="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
-            :class="showAdvancedFilters 
-              ? 'bg-neutral-900 text-white' 
+            :class="showAdvancedFilters
+              ? 'bg-neutral-900 text-white'
               : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
           >
             <Icon icon="lucide:sliders-horizontal" class="h-3.5 w-3.5" />
             <span>筛选</span>
+          </button>
+
+          <!-- 保存筛选 -->
+          <button
+            v-if="hasActiveFilters()"
+            @click="openSaveDialog"
+            class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-blue-600 bg-blue-50 border border-blue-100 hover:bg-blue-100 transition cursor-pointer"
+          >
+            <Icon icon="lucide:bookmark" class="h-3 w-3" />
+            <span>保存</span>
           </button>
 
           <!-- 清除所有筛选 -->
@@ -376,6 +418,30 @@ onMounted(() => {
         <!-- 高级筛选面板 -->
         <Transition name="panel">
           <div v-if="showAdvancedFilters" class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+            <!-- 语言筛选 -->
+            <BaseSelect
+              v-model="selectedLang"
+              :options="langOptions"
+              :label-renderer="(l) => t(l)"
+              class="!bg-neutral-50 rounded-lg border border-neutral-100"
+            >
+              <template #prefix>
+                <Icon icon="lucide:languages" class="h-3.5 w-3.5 text-neutral-400" />
+              </template>
+            </BaseSelect>
+
+            <!-- 平台筛选 -->
+            <BaseSelect
+              v-model="selectedPlatform"
+              :options="platformOptions"
+              :label-renderer="(l) => t(l, l)"
+              class="!bg-neutral-50 rounded-lg border border-neutral-100"
+            >
+              <template #prefix>
+                <Icon icon="lucide:monitor" class="h-3.5 w-3.5 text-neutral-400" />
+              </template>
+            </BaseSelect>
+
             <!-- 年龄分级 -->
             <BaseSelect
               v-model="selectedMinAge"
@@ -454,23 +520,42 @@ onMounted(() => {
                 <Icon icon="lucide:calendar" class="h-3.5 w-3.5 text-neutral-400" />
                 <span class="text-xs font-medium text-neutral-600">发布日期范围</span>
                 <span v-if="selectedDateFrom || selectedDateTo" class="text-[10px] font-bold text-neutral-900">
-                  {{ selectedDateFrom || '不限' }} ~ {{ selectedDateTo || '不限' }}
+                  {{ selectedDateFrom === 'today' ? '今天' : (selectedDateFrom || '不限') }} ~ {{ selectedDateTo === 'today' ? '今天' : (selectedDateTo || '不限') }}
                 </span>
               </div>
+              <!-- 开始日期 -->
               <div class="flex items-center gap-2">
+                <span class="text-[10px] text-neutral-400 w-6 shrink-0">从</span>
                 <input
+                  v-if="selectedDateFrom !== 'today'"
                   v-model="selectedDateFrom"
                   type="date"
                   class="flex-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-900/5"
-                  placeholder="开始日期"
                 />
-                <span class="text-xs text-neutral-400">~</span>
+                <button
+                  @click="setTodayDateFrom"
+                  class="rounded-md border px-3 py-1 text-[10px] font-medium transition-colors"
+                  :class="selectedDateFrom === 'today'
+                    ? 'flex-1 border-neutral-800 bg-neutral-800 text-white'
+                    : 'border-neutral-200 bg-white text-neutral-500 hover:bg-neutral-100 active:bg-neutral-200'"
+                >{{ selectedDateFrom === 'today' ? '今天 ✓' : '今天' }}</button>
+              </div>
+              <!-- 结束日期 -->
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] text-neutral-400 w-6 shrink-0">到</span>
                 <input
+                  v-if="selectedDateTo !== 'today'"
                   v-model="selectedDateTo"
                   type="date"
                   class="flex-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-900/5"
-                  placeholder="结束日期"
                 />
+                <button
+                  @click="setTodayDateTo"
+                  class="rounded-md border px-3 py-1 text-[10px] font-medium transition-colors"
+                  :class="selectedDateTo === 'today'
+                    ? 'flex-1 border-neutral-800 bg-neutral-800 text-white'
+                    : 'border-neutral-200 bg-white text-neutral-500 hover:bg-neutral-100 active:bg-neutral-200'"
+                >{{ selectedDateTo === 'today' ? '今天 ✓' : '今天' }}</button>
               </div>
             </div>
           </div>

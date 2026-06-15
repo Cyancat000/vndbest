@@ -9,7 +9,8 @@
     "loading": "加载中...",
     "error": "错误",
     "sort_by": "排序方式",
-    "go_back": "返回上一页"
+    "go_back": "返回上一页",
+    "cancel": "取消"
   },
   "settings": {
     "title": "设置",
@@ -109,7 +110,12 @@
     "just_released": "刚刚发布",
     "upcoming_releases": "即将发布",
     "random_vn": "随机作品",
-    "view_all": "查看全部"
+    "view_all": "查看全部",
+    "no_results": "暂无搜索结果",
+    "saved_searches": "已保存的搜索",
+    "delete": "删除",
+    "delete_confirm_title": "确认删除",
+    "delete_confirm_message": "确定要删除「{name}」吗？"
   },
   "library": {
     "title": "库",

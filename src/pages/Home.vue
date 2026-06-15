@@ -5,13 +5,15 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
-import { getStats, getReleaseList, getRandomVn } from '@/api/vndb'
+import { getStats, getReleaseList, getRandomVn, getVnList, getCharacterList, getProducerList, getStaffList } from '@/api/vndb'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
+import { useSavedSearches, SEARCH_TYPE_MAP } from '@/composables/useSavedSearches'
 import { IonPage, IonContent } from '@ionic/vue'
 
 const router = useRouter()
 const { t } = useI18n()
 const { getCardAction } = usePrivacy()
+const { list: savedSearches, remove: removeSavedSearch } = useSavedSearches()
 
 const stats = ref(null)
 const justReleased = ref([])
@@ -23,6 +25,232 @@ const loadingSections = ref({
   releases: true,
   random: true
 })
+
+// ============ 已保存搜索结果预览 ============
+const savedSearchResults = ref({})
+const savedSearchLoading = ref({})
+
+function getTodayStr() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+// 从保存的搜索条件重建 API 过滤器
+function buildFiltersFromSaved(item) {
+  const f = item.filters || {}
+  const filters = []
+  let sort = 'id'
+  let reverse = false
+
+  switch (item.type) {
+    case 'releases': {
+      if (f.query) filters.push(['search', '=', f.query])
+      if (f.selectedLang && f.selectedLang !== 'all') filters.push(['lang', '=', f.selectedLang])
+      if (f.selectedPlatform && f.selectedPlatform !== 'all') filters.push(['platform', '=', f.selectedPlatform])
+      if (f.selectedMinAge && f.selectedMinAge !== 'all') filters.push(['minage', '=', parseInt(f.selectedMinAge)])
+      if (f.selectedPatch === 'yes') filters.push(['patch', '=', 1])
+      else if (f.selectedPatch === 'no') filters.push(['patch', '!=', 1])
+      if (f.selectedOfficial === 'yes') filters.push(['official', '=', 1])
+      else if (f.selectedOfficial === 'no') filters.push(['official', '!=', 1])
+      if (f.selectedFreeware === 'yes') filters.push(['freeware', '=', 1])
+      else if (f.selectedFreeware === 'no') filters.push(['freeware', '!=', 1])
+      if (f.selectedVoiced && f.selectedVoiced !== 'all') filters.push(['voiced', '=', parseInt(f.selectedVoiced)])
+      if (f.selectedEngine && f.selectedEngine !== 'all') filters.push(['engine', '=', f.selectedEngine])
+      if (f.selectedDateFrom) {
+        const dateFrom = f.selectedDateFrom === 'today' ? getTodayStr() : f.selectedDateFrom
+        filters.push(['released', '>=', dateFrom.replace(/-/g, '')])
+      }
+      if (f.selectedDateTo) {
+        const dateTo = f.selectedDateTo === 'today' ? getTodayStr() : f.selectedDateTo
+        filters.push(['released', '<=', dateTo.replace(/-/g, '')])
+      }
+      sort = f.sortBy || 'released'
+      reverse = f.reverse !== undefined ? f.reverse : true
+      break
+    }
+    case 'vn': {
+      if (f.query) filters.push(['search', '=', f.query])
+      if (f.selectedLang && f.selectedLang !== 'all') filters.push(['lang', '=', f.selectedLang])
+      if (f.selectedPlatform && f.selectedPlatform !== 'all') filters.push(['platform', '=', f.selectedPlatform])
+      if (f.selectedTags && f.selectedTags.length > 0) {
+        if (f.selectedTags.length === 1) {
+          filters.push(['tag', '=', f.selectedTags[0].id])
+        } else {
+          filters.push(['or', ...f.selectedTags.map(t => ['tag', '=', t.id])])
+        }
+      }
+      if (f.selectedOrigLang && f.selectedOrigLang !== 'all') filters.push(['olang', '=', f.selectedOrigLang])
+      if (f.selectedLength && f.selectedLength !== 'all') filters.push(['length', '=', parseInt(f.selectedLength)])
+      if (f.selectedDevStatus && f.selectedDevStatus !== 'all') filters.push(['devstatus', '=', parseInt(f.selectedDevStatus)])
+      if (f.selectedHasScreenshot === 'yes') filters.push(['has_screenshot', '=', 1])
+      else if (f.selectedHasScreenshot === 'no') filters.push(['has_screenshot', '!=', 1])
+      if (f.selectedRatingRange) {
+        const [min, max] = f.selectedRatingRange
+        if (min > 0) filters.push(['rating', '>=', min])
+        if (max < 100) filters.push(['rating', '<=', max])
+      }
+      if (f.selectedDateFrom) {
+        const dateFrom = f.selectedDateFrom === 'today' ? getTodayStr() : f.selectedDateFrom
+        filters.push(['released', '>=', dateFrom.replace(/-/g, '')])
+      }
+      if (f.selectedDateTo) {
+        const dateTo = f.selectedDateTo === 'today' ? getTodayStr() : f.selectedDateTo
+        filters.push(['released', '<=', dateTo.replace(/-/g, '')])
+      }
+      sort = f.sortBy || (f.query ? 'searchrank' : 'rating')
+      reverse = f.reverse !== undefined ? f.reverse : false
+      break
+    }
+    case 'characters': {
+      if (f.query) filters.push(['search', '=', f.query])
+      if (f.selectedTraits && f.selectedTraits.length > 0) {
+        if (f.selectedTraits.length === 1) {
+          filters.push(['trait', '=', f.selectedTraits[0].id])
+        } else {
+          filters.push(['or', ...f.selectedTraits.map(t => ['trait', '=', t.id])])
+        }
+      }
+      if (f.selectedSex && f.selectedSex !== 'all') filters.push(['sex', '=', f.selectedSex])
+      if (f.selectedBloodType && f.selectedBloodType !== 'all') filters.push(['blood_type', '=', f.selectedBloodType])
+      if (f.selectedRole && f.selectedRole !== 'all') filters.push(['role', '=', f.selectedRole])
+      sort = f.query ? 'searchrank' : 'id'
+      break
+    }
+    case 'producers': {
+      if (f.query) filters.push(['search', '=', f.query])
+      if (f.selectedLang && f.selectedLang !== 'all') filters.push(['lang', '=', f.selectedLang])
+      if (f.selectedType && f.selectedType !== 'all') filters.push(['type', '=', f.selectedType])
+      sort = f.query ? 'searchrank' : 'id'
+      break
+    }
+    case 'staff': {
+      if (f.query) filters.push(['search', '=', f.query])
+      filters.push(['ismain', '=', 1])
+      if (f.selectedLang && f.selectedLang !== 'all') filters.push(['lang', '=', f.selectedLang])
+      if (f.selectedGender && f.selectedGender !== 'all') filters.push(['gender', '=', f.selectedGender])
+      if (f.selectedRole && f.selectedRole !== 'all') filters.push(['role', '=', f.selectedRole])
+      sort = f.query ? 'searchrank' : 'id'
+      break
+    }
+  }
+
+  const finalFilters = filters.length > 1 ? ['and', ...filters] : (filters[0] || [])
+  return { filters: finalFilters, sort, reverse }
+}
+
+// 获取已保存搜索的结果预览
+async function fetchSavedSearchResults() {
+  const searches = displayedSavedSearches.value
+  if (!searches.length) return
+
+  for (const search of searches) {
+    savedSearchLoading.value[search.id] = true
+
+    try {
+      const { filters: apiFilters, sort, reverse } = buildFiltersFromSaved(search)
+      const params = { results: 5, sort, reverse }
+
+      let res
+      switch (search.type) {
+        case 'releases':
+          res = await getReleaseList(apiFilters, params)
+          break
+        case 'vn':
+          res = await getVnList(apiFilters, params)
+          break
+        case 'characters':
+          res = await getCharacterList(apiFilters, params)
+          break
+        case 'producers':
+          res = await getProducerList(apiFilters, params)
+          break
+        case 'staff':
+          res = await getStaffList(apiFilters, params)
+          break
+      }
+
+      savedSearchResults.value[search.id] = res?.results || []
+    } catch (err) {
+      console.error(`获取搜索结果失败 [${search.name}]:`, err)
+      savedSearchResults.value[search.id] = []
+    } finally {
+      savedSearchLoading.value[search.id] = false
+    }
+  }
+}
+
+// 获取结果项的显示信息
+function getResultDisplay(search, item) {
+  const type = search.type
+  if (type === 'releases') {
+    return {
+      image: item.images?.[0]?.url || null,
+      title: item.alttitle || item.title,
+      subtitle: item.released || '',
+      badges: (item.languages || []).slice(0, 2).map(l => typeof l === 'string' ? l : l.lang),
+      blur: shouldBlurReleaseCover(item),
+      placeholderIcon: 'lucide:package'
+    }
+  }
+  if (type === 'vn') {
+    const nsfwLevel = item?.image?.sexual?.[0] || 0
+    const action = getCardAction('vn', nsfwLevel)
+    return {
+      image: item.image?.url || null,
+      title: item.alttitle || item.title,
+      subtitle: item.released || '',
+      badges: (item.languages || []).slice(0, 2).map(l => typeof l === 'string' ? l : l.lang),
+      blur: action === 'blur' || action === 'blur_card',
+      placeholderIcon: 'lucide:gamepad-2'
+    }
+  }
+  if (type === 'characters') {
+    return {
+      image: item.image?.url || null,
+      title: item.name,
+      subtitle: item.role || '',
+      badges: [],
+      blur: false,
+      placeholderIcon: 'lucide:user-circle'
+    }
+  }
+  if (type === 'producers') {
+    return {
+      image: null,
+      title: item.name,
+      subtitle: item.type || '',
+      badges: (item.languages || []).slice(0, 2),
+      blur: false,
+      placeholderIcon: 'lucide:building-2'
+    }
+  }
+  if (type === 'staff') {
+    return {
+      image: null,
+      title: item.name,
+      subtitle: item.langs?.[0] || '',
+      badges: [],
+      blur: false,
+      placeholderIcon: 'lucide:users'
+    }
+  }
+  return { image: null, title: '', subtitle: '', badges: [], blur: false, placeholderIcon: 'lucide:search' }
+}
+
+// 点击结果项跳转
+function handleSavedSearchItemClick(search, item) {
+  const routes = {
+    releases: '/release/',
+    vn: '/vn/',
+    characters: '/character/',
+    producers: '/producer/',
+    staff: '/staff/'
+  }
+  const prefix = routes[search.type]
+  if (prefix) {
+    router.push(`${prefix}${item.id}`)
+  }
+}
 
 onMounted(async () => {
   const today = new Date().toISOString().split('T')[0]
@@ -54,6 +282,9 @@ onMounted(async () => {
     }).catch(err => {
       console.error('获取即将发布失败:', err)
     })
+
+  // 3. 获取已保存搜索的结果预览
+  fetchSavedSearchResults()
 
   loadingSections.value.random = false
   loading.value = false
@@ -105,6 +336,120 @@ const filteredJustReleased = computed(() => {
 const filteredUpcomingReleases = computed(() => {
   return upcomingReleases.value.filter(item => !isReleaseHidden(item))
 })
+
+// ============ Bottom Sheet 状态 ============
+const showBottomSheet = ref(false)
+const bottomSheetSearch = ref(null)
+
+// ============ 删除确认弹窗状态 ============
+const showDeleteConfirm = ref(false)
+const deleteConfirmSearch = ref(null)
+
+// 刷新单个已保存搜索的结果
+async function refreshSingleSearch(search) {
+  savedSearchLoading.value[search.id] = true
+  try {
+    const { filters: apiFilters, sort, reverse } = buildFiltersFromSaved(search)
+    const params = { results: 5, sort, reverse }
+    let res
+    switch (search.type) {
+      case 'releases':
+        res = await getReleaseList(apiFilters, params)
+        break
+      case 'vn':
+        res = await getVnList(apiFilters, params)
+        break
+      case 'characters':
+        res = await getCharacterList(apiFilters, params)
+        break
+      case 'producers':
+        res = await getProducerList(apiFilters, params)
+        break
+      case 'staff':
+        res = await getStaffList(apiFilters, params)
+        break
+    }
+    savedSearchResults.value[search.id] = res?.results || []
+  } catch (err) {
+    console.error(`刷新搜索结果失败 [${search.name}]:`, err)
+    savedSearchResults.value[search.id] = []
+  } finally {
+    savedSearchLoading.value[search.id] = false
+  }
+}
+
+// 打开更多操作菜单
+function openMoreActions(search) {
+  bottomSheetSearch.value = search
+  showBottomSheet.value = true
+}
+
+// 关闭 bottom sheet
+function closeBottomSheet() {
+  showBottomSheet.value = false
+}
+
+// 处理 bottom sheet 操作
+async function handleBottomSheetAction(action) {
+  const search = bottomSheetSearch.value
+  showBottomSheet.value = false
+
+  if (search && action === 'viewAll') {
+    navigateToSavedSearch(search)
+  } else if (search && action === 'delete') {
+    deleteConfirmSearch.value = search
+    showDeleteConfirm.value = true
+  }
+
+  bottomSheetSearch.value = null
+}
+
+// 关闭删除确认弹窗
+function closeDeleteConfirm() {
+  showDeleteConfirm.value = false
+  deleteConfirmSearch.value = null
+}
+
+// 确认删除
+function confirmDelete() {
+  const search = deleteConfirmSearch.value
+  if (search) {
+    removeSavedSearch(search.id)
+    delete savedSearchLoading.value[search.id]
+    delete savedSearchResults.value[search.id]
+  }
+  closeDeleteConfirm()
+}
+
+// 已保存搜索：最多显示前 5 个
+const displayedSavedSearches = computed(() => {
+  return savedSearches.value.slice(0, 5)
+})
+
+function navigateToSavedSearch(item) {
+  const typeInfo = SEARCH_TYPE_MAP[item.type]
+  if (typeInfo) {
+    router.push(`${typeInfo.path}?savedId=${item.id}`)
+  }
+}
+
+// 获取保存搜索的筛选条件摘要
+function getFilterSummary(item) {
+  const parts = []
+  const f = item.filters || {}
+  if (f.query) parts.push(f.query)
+  if (f.selectedLang) {
+    const langMap = { 'ja': '日文', 'en': '英文', 'zh-Hans': '简体中文', 'zh-Hant': '繁体中文', 'ko': '韩文' }
+    parts.push(langMap[f.selectedLang] || f.selectedLang)
+  }
+  if (f.sortBy === 'released') parts.push('最新发布')
+  if (f.reverse === false) parts.push('最早发布')
+  if (f.selectedDateTo === 'today') parts.push('今天之前')
+  else if (f.selectedDateTo) parts.push(f.selectedDateTo + '之前')
+  if (f.selectedOfficial === 'no') parts.push('非官方')
+  if (f.selectedOfficial === 'yes') parts.push('官方')
+  return parts.join(' · ')
+}
 </script>
 
 <template>
@@ -255,7 +600,217 @@ const filteredUpcomingReleases = computed(() => {
       </div>
       <Icon icon="lucide:chevron-right" class="h-4 w-4 text-neutral-400" />
     </button>
+
+    <!-- 已保存的搜索结果预览 -->
+    <template v-for="search in displayedSavedSearches" :key="search.id">
+      <div class="rounded-xl border border-neutral-200 bg-white p-4 shadow-xs">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-neutral-800 flex items-center gap-2">
+            <Icon :icon="SEARCH_TYPE_MAP[search.type]?.icon || 'lucide:search'" class="h-4 w-4 text-amber-500" />
+            {{ search.name }}
+            <span class="text-[8px] px-1.5 py-0.5 rounded-full bg-neutral-100 text-neutral-500 font-normal">
+              {{ SEARCH_TYPE_MAP[search.type]?.label || search.type }}
+            </span>
+          </h2>
+          <div class="flex items-center gap-1">
+            <button
+              @click.stop="refreshSingleSearch(search)"
+              class="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition"
+              :class="{ 'animate-spin': savedSearchLoading[search.id] }"
+            >
+              <Icon icon="lucide:refresh-cw" class="h-3.5 w-3.5" />
+            </button>
+            <button
+              @click.stop="openMoreActions(search)"
+              class="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition"
+            >
+              <Icon icon="lucide:ellipsis" class="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+
+        <!-- 加载骨架 -->
+        <div v-if="savedSearchLoading[search.id]" class="space-y-2">
+          <div v-for="i in 3" :key="i" class="animate-pulse h-12 rounded-lg bg-neutral-50"></div>
+        </div>
+
+        <!-- 无结果 -->
+        <div v-else-if="!savedSearchResults[search.id]?.length" class="text-xs text-neutral-400 py-2">
+          {{ t('home.no_results') }}
+        </div>
+
+        <!-- 结果列表 -->
+        <div v-else class="space-y-2">
+          <div
+            v-for="item in savedSearchResults[search.id]"
+            :key="item.id"
+            @click="handleSavedSearchItemClick(search, item)"
+            class="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-50 transition cursor-pointer group"
+          >
+            <div class="h-10 w-8 rounded bg-neutral-100 overflow-hidden shrink-0 border border-neutral-200/50 relative">
+              <img
+                v-if="getResultDisplay(search, item).image"
+                :src="getResultDisplay(search, item).image"
+                class="h-full w-full object-cover"
+                :class="{ 'blur-md': getResultDisplay(search, item).blur }"
+              />
+              <div
+                v-if="!getResultDisplay(search, item).image || getResultDisplay(search, item).blur"
+                class="absolute inset-0 flex items-center justify-center bg-neutral-100"
+              >
+                <Icon
+                  :icon="getResultDisplay(search, item).blur ? 'lucide:eye-off' : getResultDisplay(search, item).placeholderIcon"
+                  class="h-4 w-4"
+                  :class="getResultDisplay(search, item).blur ? 'text-neutral-400' : 'text-neutral-300'"
+                />
+              </div>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="text-xs font-medium text-neutral-800 truncate group-hover:text-neutral-950">
+                {{ getResultDisplay(search, item).title }}
+              </div>
+              <div class="flex items-center gap-2">
+                <div v-if="getResultDisplay(search, item).subtitle" class="text-[10px] text-neutral-400">
+                  {{ getResultDisplay(search, item).subtitle }}
+                </div>
+                <div class="flex flex-wrap gap-1">
+                  <span
+                    v-for="badge in getResultDisplay(search, item).badges"
+                    :key="badge"
+                    class="text-[8px] px-1 rounded bg-neutral-100 text-neutral-500 whitespace-nowrap"
+                  >
+                    {{ t(`settings.lang_names.${badge}`, badge) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
   </div>
+
+  <!-- Notion 风格 Bottom Sheet -->
+  <Teleport to="body">
+    <Transition name="fade">
+      <div
+        v-if="showBottomSheet"
+        class="fixed inset-0 z-50 bg-black/40"
+        @click="closeBottomSheet"
+      ></div>
+    </Transition>
+    <Transition name="slide-up">
+      <div
+        v-if="showBottomSheet"
+        class="fixed bottom-0 inset-x-0 z-50 rounded-t-2xl bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-xl"
+      >
+        <div class="mx-auto mb-4 h-1 w-10 rounded-full bg-neutral-300" aria-hidden="true"></div>
+        <div class="grid gap-2">
+          <button
+            class="flex items-center gap-3 rounded-xl p-3 text-sm text-neutral-700 hover:bg-neutral-50 active:bg-neutral-100"
+            type="button"
+            @click="handleBottomSheetAction('viewAll')"
+          >
+            <Icon icon="lucide:external-link" class="h-5 w-5 text-neutral-500" />
+            {{ t('home.view_all') }}
+          </button>
+          <button
+            class="flex items-center gap-3 rounded-xl p-3 text-sm text-red-500 hover:bg-red-50 active:bg-red-100"
+            type="button"
+            @click="handleBottomSheetAction('delete')"
+          >
+            <Icon icon="lucide:trash-2" class="h-5 w-5" />
+            {{ t('home.delete') }}
+          </button>
+        </div>
+        <button
+          class="mt-4 w-full rounded-xl border border-neutral-200 bg-neutral-50 py-3 text-sm font-medium text-neutral-700 active:bg-neutral-100"
+          type="button"
+          @click="closeBottomSheet"
+        >
+          {{ t('common.cancel') }}
+        </button>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <!-- Notion 风格删除确认弹窗 -->
+  <Teleport to="body">
+    <Transition name="fade">
+      <div
+        v-if="showDeleteConfirm"
+        class="fixed inset-0 z-[60] bg-black/40"
+        @click="closeDeleteConfirm"
+      ></div>
+    </Transition>
+    <Transition name="scale">
+      <div
+        v-if="showDeleteConfirm"
+        class="fixed inset-0 z-[60] flex items-center justify-center p-6"
+      >
+        <div
+          class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
+          @click.stop
+        >
+          <h3 class="text-base font-semibold text-neutral-900">
+            {{ t('home.delete_confirm_title') }}
+          </h3>
+          <p class="mt-2 text-sm text-neutral-500">
+            {{ t('home.delete_confirm_message', { name: deleteConfirmSearch?.name }) }}
+          </p>
+          <div class="mt-6 flex gap-3">
+            <button
+              class="flex-1 rounded-xl border border-neutral-200 bg-neutral-50 py-2.5 text-sm font-medium text-neutral-700 active:bg-neutral-100"
+              type="button"
+              @click="closeDeleteConfirm"
+            >
+              {{ t('common.cancel') }}
+            </button>
+            <button
+              class="flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-medium text-white active:bg-red-600"
+              type="button"
+              @click="confirmDelete"
+            >
+              {{ t('home.delete') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+
   </ion-content>
   </ion-page>
 </template>
+
+<style scoped>
+/* Bottom Sheet 过渡动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(100%);
+}
+
+/* 弹窗缩放过渡动画 */
+.scale-enter-active,
+.scale-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.scale-enter-from,
+.scale-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+</style>

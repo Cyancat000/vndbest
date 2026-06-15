@@ -9,7 +9,8 @@
     "loading": "Loading...",
     "error": "Error",
     "sort_by": "Sort by",
-    "go_back": "Go Back"
+    "go_back": "Go Back",
+    "cancel": "Cancel"
   },
   "settings": {
     "title": "Settings",
@@ -105,7 +106,16 @@
     "staff": "Staff",
     "quick_explore": "Quick Explore",
     "search_vn": "Search Visual Novels",
-    "my_list": "My Collection"
+    "my_list": "My Collection",
+    "just_released": "Just Released",
+    "upcoming_releases": "Upcoming Releases",
+    "random_vn": "Random VN",
+    "view_all": "View All",
+    "no_results": "No search results",
+    "saved_searches": "Saved Searches",
+    "delete": "Delete",
+    "delete_confirm_title": "Confirm Delete",
+    "delete_confirm_message": "Are you sure you want to delete \"{name}\"?"
   },
   "search": {
     "title": "Search",
