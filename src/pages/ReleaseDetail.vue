@@ -5,9 +5,11 @@ import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { getReleaseDetail } from '@/api/vndb'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
-import { IonPage, IonContent } from '@ionic/vue'
+import { useImageLoader } from '@/composables/useImageLoader'
+import { IonPage, IonContent, IonImg, IonSpinner } from '@ionic/vue'
 
 const { getDetailAction, getCardAction } = usePrivacy()
+const imageLoader = useImageLoader()
 
 const { t } = useI18n()
 const route = useRoute()
@@ -193,11 +195,28 @@ watch(
           class="relative flex-shrink-0 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm w-full max-w-[180px] aspect-[3/4]"
         >
           <!-- 正常图片 -->
-          <img
+          <ion-img
             v-if="release.images?.length > 0 && !(coverAction === 'hide' && !revealedItems.has('cover'))"
+            :key="`release-cover-${imageLoader.getRetryCount('release-cover')}`"
             :src="release.images[0].url"
-            class="h-full w-full object-cover"
+            class="h-full w-full object-cover transition-opacity duration-500"
+            :class="{ 'opacity-0': !imageLoader.isSuccess('release-cover') }"
+            @ionImgDidLoad="imageLoader.onLoad('release-cover')"
+            @ionError="imageLoader.onError('release-cover')"
           />
+          <ion-spinner
+            v-if="release.images?.length > 0 && !(coverAction === 'hide' && !revealedItems.has('cover')) && imageLoader.isLoading('release-cover')"
+            name="crescent"
+            class="absolute inset-0 m-auto z-20 text-neutral-400"
+            style="width: 24px; height: 24px;"
+          />
+          <div
+            v-if="release.images?.length > 0 && !(coverAction === 'hide' && !revealedItems.has('cover')) && imageLoader.isError('release-cover')"
+            @click="imageLoader.retry('release-cover')"
+            class="absolute inset-0 flex items-center justify-center bg-neutral-50 z-20 cursor-pointer"
+          >
+            <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
+          </div>
           <!-- 图标占位 -->
           <div v-if="coverAction === 'hide' && !revealedItems.has('cover')" class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10">
             <Icon icon="lucide:eye-off" class="h-10 w-10 text-neutral-400" />
@@ -311,8 +330,28 @@ watch(
           <div v-for="(img, idx) in filteredImages" :key="idx"
             class="shrink-0 snap-start h-48 rounded-lg overflow-hidden border border-neutral-200 bg-neutral-50 shadow-xs relative group"
           >
-            <img :src="img.url" class="h-full w-full object-contain" :class="{ 'blur-md': shouldBlurCoverImg(img) }" />
-            <div v-if="shouldBlurCoverImg(img)" class="absolute inset-0 flex items-center justify-center bg-neutral-100/80 z-10">
+            <ion-img
+              :key="`rel-img-${idx}-${imageLoader.getRetryCount(`rel-img-${idx}`)}`"
+              :src="img.url"
+              class="h-full w-full object-contain transition-opacity duration-500"
+              :class="{ 'blur-md': shouldBlurCoverImg(img), 'opacity-0': !imageLoader.isSuccess(`rel-img-${idx}`) }"
+              @ionImgDidLoad="imageLoader.onLoad(`rel-img-${idx}`)"
+              @ionError="imageLoader.onError(`rel-img-${idx}`)"
+            />
+            <ion-spinner
+              v-if="imageLoader.isLoading(`rel-img-${idx}`)"
+              name="crescent"
+              class="absolute inset-0 m-auto z-20 text-neutral-400"
+              style="width: 20px; height: 20px;"
+            />
+            <div
+              v-if="imageLoader.isError(`rel-img-${idx}`)"
+              @click="imageLoader.retry(`rel-img-${idx}`)"
+              class="absolute inset-0 flex items-center justify-center bg-neutral-50 z-20 cursor-pointer"
+            >
+              <Icon icon="lucide:refresh-cw" class="h-4 w-4 text-neutral-400" />
+            </div>
+            <div v-if="shouldBlurCoverImg(img)" class="absolute inset-0 flex items-center justify-center bg-neutral-100/80 z-10 pointer-events-none">
               <Icon icon="lucide:eye-off" class="h-6 w-6 text-neutral-400" />
             </div>
             <div class="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-black/50 backdrop-blur-sm text-white text-[8px] font-black uppercase tracking-widest z-20">
@@ -334,8 +373,28 @@ watch(
             class="p-2.5 rounded-xl border border-neutral-100 bg-white flex items-center gap-3 shadow-xs hover:border-neutral-200 transition cursor-pointer active:scale-[0.98]"
           >
             <div class="h-16 w-12 shrink-0 rounded-lg overflow-hidden border border-neutral-100 bg-neutral-50 relative">
-              <img :src="vn.image?.thumbnail || vn.image?.url" class="h-full w-full object-cover" :class="{ 'blur-md': shouldBlurVnCard(vn) }" />
-              <div v-if="shouldBlurVnCard(vn)" class="absolute inset-0 flex items-center justify-center bg-neutral-100/80 z-10">
+              <ion-img
+                :key="`vn-card-${vn.id}-${imageLoader.getRetryCount(`vn-card-${vn.id}`)}`"
+                :src="vn.image?.thumbnail || vn.image?.url"
+                class="h-full w-full object-cover transition-opacity duration-500"
+                :class="{ 'blur-md': shouldBlurVnCard(vn), 'opacity-0': !imageLoader.isSuccess(`vn-card-${vn.id}`) }"
+                @ionImgDidLoad="imageLoader.onLoad(`vn-card-${vn.id}`)"
+                @ionError="imageLoader.onError(`vn-card-${vn.id}`)"
+              />
+              <ion-spinner
+                v-if="imageLoader.isLoading(`vn-card-${vn.id}`)"
+                name="crescent"
+                class="absolute inset-0 m-auto z-20 text-neutral-400"
+                style="width: 16px; height: 16px;"
+              />
+              <div
+                v-if="imageLoader.isError(`vn-card-${vn.id}`)"
+                @click="imageLoader.retry(`vn-card-${vn.id}`)"
+                class="absolute inset-0 flex items-center justify-center bg-neutral-50 z-20 cursor-pointer"
+              >
+                <Icon icon="lucide:refresh-cw" class="h-3.5 w-3.5 text-neutral-400" />
+              </div>
+              <div v-if="shouldBlurVnCard(vn)" class="absolute inset-0 flex items-center justify-center bg-neutral-100/80 z-10 pointer-events-none">
                 <Icon icon="lucide:eye-off" class="h-4 w-4 text-neutral-400" />
               </div>
             </div>

@@ -8,12 +8,14 @@ import { Icon } from '@iconify/vue'
 import { getStats, getReleaseList, getRandomVn, getVnList, getCharacterList, getProducerList, getStaffList } from '@/api/vndb'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { useSavedSearches, SEARCH_TYPE_MAP } from '@/composables/useSavedSearches'
-import { IonPage, IonContent } from '@ionic/vue'
+import { IonPage, IonContent, IonImg, IonSpinner } from '@ionic/vue'
+import { useImageLoader } from '@/composables/useImageLoader'
 
 const router = useRouter()
 const { t } = useI18n()
 const { getCardAction } = usePrivacy()
 const { list: savedSearches, remove: removeSavedSearch } = useSavedSearches()
+const imageLoader = useImageLoader()
 
 const stats = ref(null)
 const justReleased = ref([])
@@ -522,8 +524,29 @@ function getFilterSummary(item) {
             class="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-50 transition cursor-pointer group"
           >
             <div class="h-10 w-8 rounded bg-neutral-100 overflow-hidden shrink-0 border border-neutral-200/50 relative">
-              <img v-if="item.images?.[0]?.url" :src="item.images[0].url" class="h-full w-full object-cover" :class="{ 'blur-md': shouldBlurReleaseCover(item) }" />
-              <div v-if="!item.images?.[0]?.url || shouldBlurReleaseCover(item)" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
+              <ion-img
+                v-if="item.images?.[0]?.url"
+                :key="`jr-${item.id}-${imageLoader.getRetryCount(`jr-${item.id}`)}`"
+                :src="item.images[0].url"
+                class="h-full w-full object-cover transition-opacity duration-500"
+                :class="{ 'blur-md': shouldBlurReleaseCover(item), 'opacity-0': !imageLoader.isSuccess(`jr-${item.id}`) }"
+                @ionImgDidLoad="imageLoader.onLoad(`jr-${item.id}`)"
+                @ionError="imageLoader.onError(`jr-${item.id}`)"
+              />
+              <ion-spinner
+                v-if="item.images?.[0]?.url && imageLoader.isLoading(`jr-${item.id}`)"
+                name="crescent"
+                class="absolute inset-0 m-auto z-10 text-neutral-400"
+                style="width: 16px; height: 16px;"
+              />
+              <div
+                v-if="item.images?.[0]?.url && imageLoader.isError(`jr-${item.id}`)"
+                @click="imageLoader.retry(`jr-${item.id}`)"
+                class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
+              >
+                <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400" />
+              </div>
+              <div v-if="!item.images?.[0]?.url || shouldBlurReleaseCover(item)" class="absolute inset-0 flex items-center justify-center bg-neutral-100 pointer-events-none">
                 <Icon :icon="shouldBlurReleaseCover(item) ? 'lucide:eye-off' : 'lucide:package'" class="h-4 w-4" :class="shouldBlurReleaseCover(item) ? 'text-neutral-400' : 'text-neutral-300'" />
               </div>
             </div>
@@ -562,8 +585,29 @@ function getFilterSummary(item) {
             class="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-50 transition cursor-pointer group"
           >
             <div class="h-10 w-8 rounded bg-neutral-100 overflow-hidden shrink-0 border border-neutral-200/50 relative">
-              <img v-if="item.images?.[0]?.url" :src="item.images[0].url" class="h-full w-full object-cover" :class="{ 'blur-md': shouldBlurReleaseCover(item) }" />
-              <div v-if="!item.images?.[0]?.url || shouldBlurReleaseCover(item)" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
+              <ion-img
+                v-if="item.images?.[0]?.url"
+                :key="`ur-${item.id}-${imageLoader.getRetryCount(`ur-${item.id}`)}`"
+                :src="item.images[0].url"
+                class="h-full w-full object-cover transition-opacity duration-500"
+                :class="{ 'blur-md': shouldBlurReleaseCover(item), 'opacity-0': !imageLoader.isSuccess(`ur-${item.id}`) }"
+                @ionImgDidLoad="imageLoader.onLoad(`ur-${item.id}`)"
+                @ionError="imageLoader.onError(`ur-${item.id}`)"
+              />
+              <ion-spinner
+                v-if="item.images?.[0]?.url && imageLoader.isLoading(`ur-${item.id}`)"
+                name="crescent"
+                class="absolute inset-0 m-auto z-10 text-neutral-400"
+                style="width: 16px; height: 16px;"
+              />
+              <div
+                v-if="item.images?.[0]?.url && imageLoader.isError(`ur-${item.id}`)"
+                @click="imageLoader.retry(`ur-${item.id}`)"
+                class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
+              >
+                <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400" />
+              </div>
+              <div v-if="!item.images?.[0]?.url || shouldBlurReleaseCover(item)" class="absolute inset-0 flex items-center justify-center bg-neutral-100 pointer-events-none">
                 <Icon :icon="shouldBlurReleaseCover(item) ? 'lucide:eye-off' : 'lucide:package'" class="h-4 w-4" :class="shouldBlurReleaseCover(item) ? 'text-neutral-400' : 'text-neutral-300'" />
               </div>
             </div>
@@ -648,15 +692,31 @@ function getFilterSummary(item) {
             class="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-50 transition cursor-pointer group"
           >
             <div class="h-10 w-8 rounded bg-neutral-100 overflow-hidden shrink-0 border border-neutral-200/50 relative">
-              <img
+              <ion-img
                 v-if="getResultDisplay(search, item).image"
+                :key="`sv-${search.id}-${item.id}-${imageLoader.getRetryCount(`sv-${search.id}-${item.id}`)}`"
                 :src="getResultDisplay(search, item).image"
-                class="h-full w-full object-cover"
-                :class="{ 'blur-md': getResultDisplay(search, item).blur }"
+                class="h-full w-full object-cover transition-opacity duration-500"
+                :class="{ 'blur-md': getResultDisplay(search, item).blur, 'opacity-0': !imageLoader.isSuccess(`sv-${search.id}-${item.id}`) }"
+                @ionImgDidLoad="imageLoader.onLoad(`sv-${search.id}-${item.id}`)"
+                @ionError="imageLoader.onError(`sv-${search.id}-${item.id}`)"
+              />
+              <ion-spinner
+                v-if="getResultDisplay(search, item).image && imageLoader.isLoading(`sv-${search.id}-${item.id}`)"
+                name="crescent"
+                class="absolute inset-0 m-auto z-10 text-neutral-400"
+                style="width: 16px; height: 16px;"
               />
               <div
+                v-if="getResultDisplay(search, item).image && imageLoader.isError(`sv-${search.id}-${item.id}`)"
+                @click="imageLoader.retry(`sv-${search.id}-${item.id}`)"
+                class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
+              >
+                <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400" />
+              </div>
+              <div
                 v-if="!getResultDisplay(search, item).image || getResultDisplay(search, item).blur"
-                class="absolute inset-0 flex items-center justify-center bg-neutral-100"
+                class="absolute inset-0 flex items-center justify-center bg-neutral-100 pointer-events-none"
               >
                 <Icon
                   :icon="getResultDisplay(search, item).blur ? 'lucide:eye-off' : getResultDisplay(search, item).placeholderIcon"

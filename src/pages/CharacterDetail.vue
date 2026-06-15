@@ -6,12 +6,14 @@ import { Icon } from '@iconify/vue'
 import { getCharacterDetail } from '@/api/vndb'
 import VnList from '@/components/VnList.vue'
 import { useTranslation } from '@/composables/useTranslation'
-import { IonPage, IonContent } from '@ionic/vue'
+import { useImageLoader } from '@/composables/useImageLoader'
+import { IonPage, IonContent, IonImg, IonSpinner } from '@ionic/vue'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const { translateTraitName } = useTranslation()
+const imageLoader = useImageLoader()
 const characterId = ref(route.params.id)
 
 const character = ref(null)
@@ -199,13 +201,30 @@ watch(
     <div v-else class="space-y-6">
       <!-- 角色基本信息卡片 -->
       <div class="flex flex-col sm:flex-row items-start gap-5 p-4 rounded-2xl border border-neutral-200 bg-neutral-50 shadow-xs">
-        <div class="w-full sm:w-32 aspect-[3/4] sm:h-44 rounded-xl overflow-hidden flex-shrink-0 border border-neutral-200 bg-white shadow-sm">
-          <img
+        <div class="w-full sm:w-32 aspect-[3/4] sm:h-44 rounded-xl overflow-hidden flex-shrink-0 border border-neutral-200 bg-white shadow-sm relative">
+          <ion-img
             v-if="character.image?.url"
+            :key="`char-img-${imageLoader.getRetryCount('char-main')}`"
             :src="character.image.url"
-            class="w-full h-full object-cover object-top"
+            class="w-full h-full object-cover object-top transition-opacity duration-500"
+            :class="{ 'opacity-0': !imageLoader.isSuccess('char-main') }"
+            @ionImgDidLoad="imageLoader.onLoad('char-main')"
+            @ionError="imageLoader.onError('char-main')"
           />
-          <div v-else class="w-full h-full flex items-center justify-center bg-neutral-100 text-neutral-300">
+          <ion-spinner
+            v-if="character.image?.url && imageLoader.isLoading('char-main')"
+            name="crescent"
+            class="absolute inset-0 m-auto z-10 text-neutral-400"
+            style="width: 24px; height: 24px;"
+          />
+          <div
+            v-if="character.image?.url && imageLoader.isError('char-main')"
+            @click="imageLoader.retry('char-main')"
+            class="absolute inset-0 flex items-center justify-center bg-neutral-50 z-10 cursor-pointer"
+          >
+            <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
+          </div>
+          <div v-if="!character.image?.url" class="w-full h-full flex items-center justify-center bg-neutral-100 text-neutral-300">
             <Icon icon="lucide:user" class="h-12 w-12" />
           </div>
         </div>

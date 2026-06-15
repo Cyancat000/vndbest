@@ -4,9 +4,12 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import BaseSelect from './BaseSelect.vue'
+import { IonImg, IonSpinner } from '@ionic/vue'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
+import { useImageLoader } from '@/composables/useImageLoader'
 
 const { getCardAction } = usePrivacy()
+const imageLoader = useImageLoader()
 
 const props = defineProps({
   items: {
@@ -301,15 +304,30 @@ onUnmounted(() => {
                 </div>
               </template>
               <template v-else>
-                <img
-                  v-if="hasCover(item)"
-                  :src="getImage(item).thumbnail || getImage(item).url"
-                  alt="cover"
-                  class="h-full w-full object-cover"
-                  loading="lazy"
-                />
-                <div v-else class="h-full w-full flex items-center justify-center text-neutral-200">
-                  <Icon icon="lucide:package" :class="isCompact ? 'h-4 w-4' : 'h-6 w-6'" />
+                <div class="relative h-full w-full">
+                  <ion-img
+                    v-if="hasCover(item)"
+                    :key="`list-${item.id}-${imageLoader.getRetryCount('list-' + item.id)}`"
+                    :src="getImage(item).thumbnail || getImage(item).url"
+                    alt="cover"
+                    class="h-full w-full object-cover transition-opacity duration-500"
+                    :class="{ 'opacity-0': !imageLoader.isSuccess('list-' + item.id) }"
+                    @ionImgDidLoad="imageLoader.onLoad('list-' + item.id)"
+                    @ionError="imageLoader.onError('list-' + item.id)"
+                  />
+                  <div v-else class="h-full w-full flex items-center justify-center text-neutral-200">
+                    <Icon icon="lucide:package" :class="isCompact ? 'h-4 w-4' : 'h-6 w-6'" />
+                  </div>
+                  <div v-if="imageLoader.isLoading('list-' + item.id) && !imageLoader.isError('list-' + item.id)" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
+                    <ion-spinner name="crescent" class="h-5 w-5 text-neutral-400" />
+                  </div>
+                  <button
+                    v-if="imageLoader.isError('list-' + item.id)"
+                    class="absolute inset-0 flex items-center justify-center bg-neutral-100 cursor-pointer"
+                    @click="imageLoader.retry('list-' + item.id)"
+                  >
+                    <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
+                  </button>
                 </div>
               </template>
             </div>
@@ -430,15 +448,30 @@ onUnmounted(() => {
                   </div>
                 </template>
                 <template v-else>
-                  <img
-                    v-if="hasCover(item)"
-                    :src="getImage(item).thumbnail || getImage(item).url"
-                    alt="cover"
-                    class="absolute inset-0 w-full h-full object-cover border-b border-neutral-100"
-                    loading="lazy"
-                  />
-                  <div v-else class="absolute inset-0 flex items-center justify-center bg-neutral-50 text-neutral-200 border-b border-neutral-100">
-                    <Icon icon="lucide:package" class="h-10 w-10" />
+                  <div class="absolute inset-0">
+                    <ion-img
+                      v-if="hasCover(item)"
+                      :key="`card-${item.id}-${imageLoader.getRetryCount('card-' + item.id)}`"
+                      :src="getImage(item).thumbnail || getImage(item).url"
+                      alt="cover"
+                      class="absolute inset-0 w-full h-full object-cover border-b border-neutral-100 transition-opacity duration-500"
+                      :class="{ 'opacity-0': !imageLoader.isSuccess('card-' + item.id) }"
+                      @ionImgDidLoad="imageLoader.onLoad('card-' + item.id)"
+                      @ionError="imageLoader.onError('card-' + item.id)"
+                    />
+                    <div v-else class="absolute inset-0 flex items-center justify-center bg-neutral-50 text-neutral-200 border-b border-neutral-100">
+                      <Icon icon="lucide:package" class="h-10 w-10" />
+                    </div>
+                    <div v-if="imageLoader.isLoading('card-' + item.id) && !imageLoader.isError('card-' + item.id)" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
+                      <ion-spinner name="crescent" class="h-5 w-5 text-neutral-400" />
+                    </div>
+                    <button
+                      v-if="imageLoader.isError('card-' + item.id)"
+                      class="absolute inset-0 flex items-center justify-center bg-neutral-100 cursor-pointer"
+                      @click="imageLoader.retry('card-' + item.id)"
+                    >
+                      <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
+                    </button>
                   </div>
                 </template>
                 <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[8px] font-bold"
@@ -502,15 +535,30 @@ onUnmounted(() => {
                   </div>
                 </template>
                 <template v-else>
-                  <img
-                    v-if="hasCover(item)"
-                    :src="getImage(item).thumbnail || getImage(item).url"
-                    alt="cover"
-                    class="absolute inset-0 w-full h-full object-cover border-b border-neutral-100"
-                    loading="lazy"
-                  />
-                  <div v-else class="absolute inset-0 flex items-center justify-center bg-neutral-50 text-neutral-200 border-b border-neutral-100">
-                    <Icon icon="lucide:package" class="h-10 w-10" />
+                  <div class="absolute inset-0">
+                    <ion-img
+                      v-if="hasCover(item)"
+                      :key="`mag-${item.id}-${imageLoader.getRetryCount('mag-' + item.id)}`"
+                      :src="getImage(item).thumbnail || getImage(item).url"
+                      alt="cover"
+                      class="absolute inset-0 w-full h-full object-cover border-b border-neutral-100 transition-opacity duration-500"
+                      :class="{ 'opacity-0': !imageLoader.isSuccess('mag-' + item.id) }"
+                      @ionImgDidLoad="imageLoader.onLoad('mag-' + item.id)"
+                      @ionError="imageLoader.onError('mag-' + item.id)"
+                    />
+                    <div v-else class="absolute inset-0 flex items-center justify-center bg-neutral-50 text-neutral-200 border-b border-neutral-100">
+                      <Icon icon="lucide:package" class="h-10 w-10" />
+                    </div>
+                    <div v-if="imageLoader.isLoading('mag-' + item.id) && !imageLoader.isError('mag-' + item.id)" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
+                      <ion-spinner name="crescent" class="h-5 w-5 text-neutral-400" />
+                    </div>
+                    <button
+                      v-if="imageLoader.isError('mag-' + item.id)"
+                      class="absolute inset-0 flex items-center justify-center bg-neutral-100 cursor-pointer"
+                      @click="imageLoader.retry('mag-' + item.id)"
+                    >
+                      <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
+                    </button>
                   </div>
                 </template>
                 <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[8px] font-bold"

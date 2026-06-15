@@ -10,13 +10,15 @@ import BaseSelect from '@/components/BaseSelect.vue'
 import TraitChip from '@/components/TraitChip.vue'
 import TraitFilterModal from '@/components/TraitFilterModal.vue'
 import { getCharacterList } from '@/api/vndb'
-import { IonPage, IonContent } from '@ionic/vue'
+import { IonPage, IonContent, IonImg, IonSpinner } from '@ionic/vue'
 import { useSavedSearches } from '@/composables/useSavedSearches'
+import { useImageLoader } from '@/composables/useImageLoader'
 
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { getById } = useSavedSearches()
+const imageLoader = useImageLoader()
 const searchBaseRef = ref(null)
 const openSaveDialog = () => searchBaseRef.value?.openSaveDialog()
 
@@ -427,14 +429,30 @@ const getSexClass = (sex) => {
           class="group relative flex items-start p-3 rounded-xl border border-neutral-100 bg-white shadow-xs active:scale-[0.99] transition-all cursor-pointer hover:border-neutral-200 hover:shadow-sm overflow-hidden"
         >
           <!-- Avatar/Image -->
-          <div class="shrink-0 w-16 h-20 rounded-lg bg-neutral-50 overflow-hidden border border-neutral-100 mr-3">
-            <img 
-              v-if="item.image?.url" 
-              :src="item.image.url" 
-              class="w-full h-full object-cover"
-              loading="lazy"
+          <div class="shrink-0 w-16 h-20 rounded-lg bg-neutral-50 overflow-hidden border border-neutral-100 mr-3 relative">
+            <ion-img
+              v-if="item.image?.url"
+              :key="`char-img-${item.id}-${imageLoader.getRetryCount(`char-${item.id}`)}`"
+              :src="item.image.url"
+              class="w-full h-full object-cover transition-opacity duration-500"
+              :class="{ 'opacity-0': !imageLoader.isSuccess(`char-${item.id}`) }"
+              @ionImgDidLoad="imageLoader.onLoad(`char-${item.id}`)"
+              @ionError="imageLoader.onError(`char-${item.id}`)"
             />
-            <div v-else class="w-full h-full flex items-center justify-center">
+            <ion-spinner
+              v-if="item.image?.url && imageLoader.isLoading(`char-${item.id}`)"
+              name="crescent"
+              class="absolute inset-0 m-auto z-10 text-neutral-400"
+              style="width: 20px; height: 20px;"
+            />
+            <div
+              v-if="item.image?.url && imageLoader.isError(`char-${item.id}`)"
+              @click="imageLoader.retry(`char-${item.id}`)"
+              class="absolute inset-0 flex items-center justify-center bg-neutral-50 z-10 cursor-pointer"
+            >
+              <Icon icon="lucide:refresh-cw" class="h-4 w-4 text-neutral-400" />
+            </div>
+            <div v-if="!item.image?.url" class="w-full h-full flex items-center justify-center">
               <Icon icon="lucide:user" class="h-6 w-6 text-neutral-200" />
             </div>
           </div>

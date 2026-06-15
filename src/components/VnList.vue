@@ -4,9 +4,12 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import BaseSelect from './BaseSelect.vue'
+import { IonImg, IonSpinner } from '@ionic/vue'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
+import { useImageLoader } from '@/composables/useImageLoader'
 
 const { getCardAction } = usePrivacy()
+const imageLoader = useImageLoader()
 
 const props = defineProps({
   items: {
@@ -324,15 +327,30 @@ function toggleReverse() {
               </div>
             </template>
             <template v-else>
-              <img
-                v-if="getImage(item)?.thumbnail || getImage(item)?.url"
-                :src="getImage(item).thumbnail || getImage(item).url"
-                alt="cover"
-                class="h-full w-full object-cover"
-                loading="lazy"
-              />
-              <div v-else class="h-full w-full flex items-center justify-center bg-neutral-50 text-neutral-300">
-                <Icon icon="lucide:image" class="h-6 w-6" />
+              <div class="relative h-full w-full">
+                <ion-img
+                  v-if="getImage(item)?.thumbnail || getImage(item)?.url"
+                  :key="`list-${item.id}-${imageLoader.getRetryCount('list-' + item.id)}`"
+                  :src="getImage(item).thumbnail || getImage(item).url"
+                  alt="cover"
+                  class="h-full w-full object-cover transition-opacity duration-500"
+                  :class="{ 'opacity-0': !imageLoader.isSuccess('list-' + item.id) }"
+                  @ionImgDidLoad="imageLoader.onLoad('list-' + item.id)"
+                  @ionError="imageLoader.onError('list-' + item.id)"
+                />
+                <div v-else class="h-full w-full flex items-center justify-center bg-neutral-50 text-neutral-300">
+                  <Icon icon="lucide:image" class="h-6 w-6" />
+                </div>
+                <div v-if="imageLoader.isLoading('list-' + item.id) && !imageLoader.isError('list-' + item.id)" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
+                  <ion-spinner name="crescent" class="h-5 w-5 text-neutral-400" />
+                </div>
+                <button
+                  v-if="imageLoader.isError('list-' + item.id)"
+                  class="absolute inset-0 flex items-center justify-center bg-neutral-100 cursor-pointer"
+                  @click="imageLoader.retry('list-' + item.id)"
+                >
+                  <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
+                </button>
               </div>
             </template>
           </div>
@@ -431,15 +449,30 @@ function toggleReverse() {
                 </div>
               </template>
               <template v-else>
-                <img
-                  v-if="getImage(item)?.url"
-                  :src="getImage(item).url"
-                  alt="cover"
-                  class="w-full h-auto object-cover max-h-72 border-b border-neutral-100"
-                  loading="lazy"
-                />
-                <div v-else class="w-full h-32 flex items-center justify-center bg-neutral-50 text-neutral-300 border-b border-neutral-100">
-                  <Icon icon="lucide:image" class="h-6 w-6" />
+                <div class="relative">
+                  <ion-img
+                    v-if="getImage(item)?.url"
+                    :key="`card-left-${item.id}-${imageLoader.getRetryCount('card-left-' + item.id)}`"
+                    :src="getImage(item).url"
+                    alt="cover"
+                    class="w-full h-auto object-cover max-h-72 border-b border-neutral-100 transition-opacity duration-500"
+                    :class="{ 'opacity-0': !imageLoader.isSuccess('card-left-' + item.id) }"
+                    @ionImgDidLoad="imageLoader.onLoad('card-left-' + item.id)"
+                    @ionError="imageLoader.onError('card-left-' + item.id)"
+                  />
+                  <div v-else class="w-full h-32 flex items-center justify-center bg-neutral-50 text-neutral-300 border-b border-neutral-100">
+                    <Icon icon="lucide:image" class="h-6 w-6" />
+                  </div>
+                  <div v-if="imageLoader.isLoading('card-left-' + item.id) && !imageLoader.isError('card-left-' + item.id)" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
+                    <ion-spinner name="crescent" class="h-5 w-5 text-neutral-400" />
+                  </div>
+                  <button
+                    v-if="imageLoader.isError('card-left-' + item.id)"
+                    class="absolute inset-0 flex items-center justify-center bg-neutral-100 cursor-pointer"
+                    @click="imageLoader.retry('card-left-' + item.id)"
+                  >
+                    <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
+                  </button>
                 </div>
               </template>
               <!-- 瀑布流中的评分浮层 (可选) -->
@@ -484,15 +517,30 @@ function toggleReverse() {
                 </div>
               </template>
               <template v-else>
-                <img
-                  v-if="getImage(item)?.url"
-                  :src="getImage(item).url"
-                  alt="cover"
-                  class="w-full h-auto object-cover max-h-72 border-b border-neutral-100"
-                  loading="lazy"
-                />
-                <div v-else class="w-full h-32 flex items-center justify-center bg-neutral-50 text-neutral-300 border-b border-neutral-100">
-                  <Icon icon="lucide:image" class="h-6 w-6" />
+                <div class="relative">
+                  <ion-img
+                    v-if="getImage(item)?.url"
+                    :key="`card-right-${item.id}-${imageLoader.getRetryCount('card-right-' + item.id)}`"
+                    :src="getImage(item).url"
+                    alt="cover"
+                    class="w-full h-auto object-cover max-h-72 border-b border-neutral-100 transition-opacity duration-500"
+                    :class="{ 'opacity-0': !imageLoader.isSuccess('card-right-' + item.id) }"
+                    @ionImgDidLoad="imageLoader.onLoad('card-right-' + item.id)"
+                    @ionError="imageLoader.onError('card-right-' + item.id)"
+                  />
+                  <div v-else class="w-full h-32 flex items-center justify-center bg-neutral-50 text-neutral-300 border-b border-neutral-100">
+                    <Icon icon="lucide:image" class="h-6 w-6" />
+                  </div>
+                  <div v-if="imageLoader.isLoading('card-right-' + item.id) && !imageLoader.isError('card-right-' + item.id)" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
+                    <ion-spinner name="crescent" class="h-5 w-5 text-neutral-400" />
+                  </div>
+                  <button
+                    v-if="imageLoader.isError('card-right-' + item.id)"
+                    class="absolute inset-0 flex items-center justify-center bg-neutral-100 cursor-pointer"
+                    @click="imageLoader.retry('card-right-' + item.id)"
+                  >
+                    <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
+                  </button>
                 </div>
               </template>
               <div v-if="!shouldBlurCard(item) && (getRating(item) || getUserVote(item))" class="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/60 text-white text-[9px] font-bold backdrop-blur-xs flex items-center gap-0.5">

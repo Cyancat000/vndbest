@@ -7,9 +7,11 @@ import { getVnDetail, getVnReleases, getVnCharacters, getVnQuotes } from '@/api/
 import VnList from '@/components/VnList.vue'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { useTranslation } from '@/composables/useTranslation'
-import { IonPage, IonContent } from '@ionic/vue'
+import { useImageLoader } from '@/composables/useImageLoader'
+import { IonPage, IonContent, IonImg, IonSpinner } from '@ionic/vue'
 
 const { getDetailAction, getScreenshotAction, getCardAction } = usePrivacy()
+const imageLoader = useImageLoader()
 
 const route = useRoute()
 const router = useRouter()
@@ -534,12 +536,29 @@ watch(
           ]"
         >
           <!-- 正常图片 -->
-          <img
+          <ion-img
             v-if="vn.image?.url && !(coverAction === 'hide' && !revealedItems.has('cover'))"
+            :key="`vn-cover-${imageLoader.getRetryCount('vn-cover')}`"
             :src="vn.image.url"
             :alt="vn.title"
-            class="h-full w-full object-cover"
+            class="h-full w-full object-cover transition-opacity duration-500"
+            :class="{ 'opacity-0': !imageLoader.isSuccess('vn-cover') }"
+            @ionImgDidLoad="imageLoader.onLoad('vn-cover')"
+            @ionError="imageLoader.onError('vn-cover')"
           />
+          <ion-spinner
+            v-if="vn.image?.url && imageLoader.isLoading('vn-cover')"
+            name="crescent"
+            class="absolute inset-0 m-auto z-10 text-neutral-400"
+            style="width: 24px; height: 24px;"
+          />
+          <div
+            v-if="vn.image?.url && imageLoader.isError('vn-cover')"
+            @click="imageLoader.retry('vn-cover')"
+            class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
+          >
+            <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
+          </div>
           <!-- 图标占位 -->
           <div v-if="coverAction === 'hide' && !revealedItems.has('cover')" class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10">
             <Icon icon="lucide:eye-off" class="h-10 w-10 text-neutral-400" />
@@ -741,7 +760,30 @@ watch(
               class="p-2 rounded-lg border border-neutral-200 bg-neutral-50 hover:bg-neutral-100 transition cursor-pointer flex flex-col justify-between items-center text-center space-y-2"
             >
               <div class="h-40 w-full overflow-hidden rounded border border-neutral-200 bg-white flex items-center justify-center relative">
-                <img :src="cover.url" class="max-h-full max-w-full object-contain" :class="{ 'blur-md': shouldBlurCover(cover) }" loading="lazy" />
+                <ion-img
+                  :key="`cover-${idx}-${imageLoader.getRetryCount('cover-' + idx)}`"
+                  :src="cover.url"
+                  class="max-h-full max-w-full object-contain transition-opacity duration-500"
+                  :class="{
+                    'blur-md': shouldBlurCover(cover),
+                    'opacity-0': !imageLoader.isSuccess('cover-' + idx)
+                  }"
+                  @ionImgDidLoad="imageLoader.onLoad('cover-' + idx)"
+                  @ionError="imageLoader.onError('cover-' + idx)"
+                />
+                <ion-spinner
+                  v-if="imageLoader.isLoading('cover-' + idx)"
+                  name="crescent"
+                  class="absolute inset-0 m-auto z-10 text-neutral-400"
+                  style="width: 20px; height: 20px;"
+                />
+                <div
+                  v-if="imageLoader.isError('cover-' + idx)"
+                  @click.stop="imageLoader.retry('cover-' + idx)"
+                  class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
+                >
+                  <Icon icon="lucide:refresh-cw" class="h-4 w-4 text-neutral-400" />
+                </div>
                 <div v-if="shouldBlurCover(cover)" class="absolute inset-0 flex items-center justify-center bg-neutral-100/80">
                   <Icon icon="lucide:eye-off" class="h-6 w-6 text-neutral-400" />
                 </div>
@@ -774,12 +816,28 @@ watch(
                 @click="router.push(`/character/${char.id}`)"
                 class="w-16 h-20 rounded-lg overflow-hidden flex-shrink-0 border border-neutral-200 bg-neutral-50 cursor-pointer hover:opacity-80 transition"
               >
-                <img
+                <ion-img
                   v-if="char.image?.url"
+                  :key="`char-${char.id}-${imageLoader.getRetryCount('char-' + char.id)}`"
                   :src="char.image.url"
-                  class="w-full h-full object-cover object-top"
-                  loading="lazy"
+                  class="w-full h-full object-cover object-top transition-opacity duration-500"
+                  :class="{ 'opacity-0': !imageLoader.isSuccess('char-' + char.id) }"
+                  @ionImgDidLoad="imageLoader.onLoad('char-' + char.id)"
+                  @ionError="imageLoader.onError('char-' + char.id)"
                 />
+                <ion-spinner
+                  v-if="char.image?.url && imageLoader.isLoading('char-' + char.id)"
+                  name="crescent"
+                  class="absolute inset-0 m-auto z-10 text-neutral-400"
+                  style="width: 16px; height: 16px;"
+                />
+                <div
+                  v-if="char.image?.url && imageLoader.isError('char-' + char.id)"
+                  @click.stop="imageLoader.retry('char-' + char.id)"
+                  class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
+                >
+                  <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400" />
+                </div>
                 <div v-else class="w-full h-full flex items-center justify-center">
                   <Icon icon="lucide:user" class="h-6 w-6 text-neutral-300" />
                 </div>
@@ -926,11 +984,28 @@ watch(
                   class="h-10 w-10 flex-shrink-0 rounded-full overflow-hidden border border-neutral-200 bg-neutral-100 cursor-pointer"
                   @click="actor.character?.id && router.push(`/character/${actor.character.id}`)"
                 >
-                  <img
+                  <ion-img
                     v-if="actor.character?.image?.url"
+                    :key="`va-char-${idx}-${imageLoader.getRetryCount('va-char-' + idx)}`"
                     :src="actor.character.image.url"
-                    class="h-full w-full object-cover object-top"
+                    class="h-full w-full object-cover object-top transition-opacity duration-500"
+                    :class="{ 'opacity-0': !imageLoader.isSuccess('va-char-' + idx) }"
+                    @ionImgDidLoad="imageLoader.onLoad('va-char-' + idx)"
+                    @ionError="imageLoader.onError('va-char-' + idx)"
                   />
+                  <ion-spinner
+                    v-if="actor.character?.image?.url && imageLoader.isLoading('va-char-' + idx)"
+                    name="crescent"
+                    class="absolute inset-0 m-auto z-10 text-neutral-400"
+                    style="width: 16px; height: 16px;"
+                  />
+                  <div
+                    v-if="actor.character?.image?.url && imageLoader.isError('va-char-' + idx)"
+                    @click.stop="imageLoader.retry('va-char-' + idx)"
+                    class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
+                  >
+                    <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400" />
+                  </div>
                   <div v-else class="h-full w-full flex items-center justify-center">
                     <Icon icon="lucide:user" class="h-5 w-5 text-neutral-300" />
                   </div>
@@ -1038,22 +1113,54 @@ watch(
               </template>
               <!-- 缩略图规避（模糊覆盖，仍可点击打开大图） -->
               <template v-else-if="getScreenshotAction(getImageNsfwLevel(scr)) === 'blur'">
-                <img
+                <ion-img
+                  :key="`scr-${idx}-${imageLoader.getRetryCount('scr-' + idx)}`"
                   :src="scr.thumbnail || scr.url"
-                  class="h-full w-full object-cover blur-xl"
-                  loading="lazy"
+                  class="h-full w-full object-cover blur-xl transition-opacity duration-500"
+                  :class="{ 'opacity-0': !imageLoader.isSuccess('scr-' + idx) }"
+                  @ionImgDidLoad="imageLoader.onLoad('scr-' + idx)"
+                  @ionError="imageLoader.onError('scr-' + idx)"
                 />
+                <ion-spinner
+                  v-if="imageLoader.isLoading('scr-' + idx)"
+                  name="crescent"
+                  class="absolute inset-0 m-auto z-10 text-neutral-400"
+                  style="width: 20px; height: 20px;"
+                />
+                <div
+                  v-if="imageLoader.isError('scr-' + idx)"
+                  @click.stop="imageLoader.retry('scr-' + idx)"
+                  class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
+                >
+                  <Icon icon="lucide:refresh-cw" class="h-4 w-4 text-neutral-400" />
+                </div>
                 <div class="absolute inset-0 bg-white/40 flex items-center justify-center pointer-events-none">
                   <Icon icon="lucide:eye-off" class="h-5 w-5 text-neutral-500" />
                 </div>
               </template>
               <!-- 正常截图 -->
               <template v-else>
-                <img
+                <ion-img
+                  :key="`scr-${idx}-${imageLoader.getRetryCount('scr-' + idx)}`"
                   :src="scr.thumbnail || scr.url"
-                  class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                  loading="lazy"
+                  class="h-full w-full object-cover transition duration-300 group-hover:scale-105 transition-opacity duration-500"
+                  :class="{ 'opacity-0': !imageLoader.isSuccess('scr-' + idx) }"
+                  @ionImgDidLoad="imageLoader.onLoad('scr-' + idx)"
+                  @ionError="imageLoader.onError('scr-' + idx)"
                 />
+                <ion-spinner
+                  v-if="imageLoader.isLoading('scr-' + idx)"
+                  name="crescent"
+                  class="absolute inset-0 m-auto z-10 text-neutral-400"
+                  style="width: 20px; height: 20px;"
+                />
+                <div
+                  v-if="imageLoader.isError('scr-' + idx)"
+                  @click.stop="imageLoader.retry('scr-' + idx)"
+                  class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
+                >
+                  <Icon icon="lucide:refresh-cw" class="h-4 w-4 text-neutral-400" />
+                </div>
               </template>
             </div>
           </div>
@@ -1182,11 +1289,31 @@ watch(
           >
             <!-- 大图容器（overflow-hidden 防止模糊溢出） -->
             <div class="relative max-w-full max-h-[72vh] overflow-hidden rounded-lg border border-neutral-800 shadow-2xl">
-              <img
+              <ion-img
+                :key="`lb-${idx}-${imageLoader.getRetryCount('lb-' + idx)}`"
                 :src="img.url"
-                class="max-w-full max-h-[72vh] object-contain pointer-events-none transition-all duration-300"
-                :class="{ 'blur-xl': getScreenshotAction(getImageNsfwLevel(img)) === 'blur' && !revealedItems.has(`lb-${idx}`) }"
+                class="max-w-full max-h-[72vh] object-contain pointer-events-none transition-all duration-300 transition-opacity duration-500"
+                :class="{
+                  'blur-xl': getScreenshotAction(getImageNsfwLevel(img)) === 'blur' && !revealedItems.has(`lb-${idx}`),
+                  'opacity-0': !imageLoader.isSuccess('lb-' + idx)
+                }"
+                @ionImgDidLoad="imageLoader.onLoad('lb-' + idx)"
+                @ionError="imageLoader.onError('lb-' + idx)"
               />
+              <ion-spinner
+                v-if="imageLoader.isLoading('lb-' + idx)"
+                name="crescent"
+                class="absolute inset-0 m-auto z-20"
+                style="width: 28px; height: 28px;"
+                color="light"
+              />
+              <div
+                v-if="imageLoader.isError('lb-' + idx)"
+                @click.stop="imageLoader.retry('lb-' + idx)"
+                class="absolute inset-0 flex items-center justify-center bg-neutral-900/50 z-20 cursor-pointer"
+              >
+                <Icon icon="lucide:refresh-cw" class="h-6 w-6 text-neutral-300" />
+              </div>
               <!-- 大图模糊时的眼睛图标 -->
               <button
                 v-if="getScreenshotAction(getImageNsfwLevel(img)) === 'blur' && !revealedItems.has(`lb-${idx}`)"
