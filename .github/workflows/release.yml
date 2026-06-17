@@ -37,8 +37,11 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Install Android SDK platform
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
       - name: Sync Capacitor
-        run: npx cap sync android
+        run: npx cap sync android --verbose
 
       - name: Build APK (Release)
         working-directory: android
