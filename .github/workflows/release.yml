@@ -52,16 +52,16 @@ jobs:
           echo "=== Verifying copy ==="
           ls -la android/app/src/main/assets/public/
 
-      - name: Build APK (Release)
+      - name: Build APK (Debug)
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease
+          ./gradlew assembleDebug
 
       - name: Find APK file
         id: find-apk
         run: |
-          APK_PATH=$(find android/app/build/outputs/apk/release -name "*.apk" | head -1)
+          APK_PATH=$(find android/app/build/outputs/apk/debug -name "*.apk" | head -1)
           APK_NAME=$(basename "$APK_PATH")
           echo "apk_path=$APK_PATH" >> "$GITHUB_OUTPUT"
           echo "apk_name=$APK_NAME" >> "$GITHUB_OUTPUT"
