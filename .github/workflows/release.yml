@@ -54,7 +54,9 @@ jobs:
 
       - name: Build APK (Release)
         working-directory: android
-        run: ./gradlew assembleRelease
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
 
       - name: Find APK file
         id: find-apk
