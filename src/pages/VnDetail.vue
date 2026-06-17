@@ -837,10 +837,16 @@ const _domains = {
   j: _decode('dm5kYi5vcmc='),
 }
 
+// 外链跳转：获取原名（alttitle）用于搜索，兜底使用 title
+const _getTitle = () => {
+  const v = vn.value
+  if (!v) return ''
+  return v.alttitle || v.title || ''
+}
+
 // 外链跳转：资源站链接列表
 const resourceLinks = computed(() => {
-  const title = vn.value?.title || ''
-  const s = encodeURIComponent(title)
+  const s = encodeURIComponent(_getTitle())
   return [
     {
       name: '真红小站',
@@ -862,9 +868,8 @@ const resourceLinks = computed(() => {
 
 // 外链跳转：资料站链接列表
 const infoLinks = computed(() => {
-  const title = vn.value?.title || ''
+  const s = encodeURIComponent(_getTitle())
   const vnId = vn.value?.id || ''
-  const s = encodeURIComponent(title)
   return [
     {
       name: 'Bangumi',
