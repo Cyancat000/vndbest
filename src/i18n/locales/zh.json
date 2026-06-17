@@ -88,6 +88,17 @@
       "option_hide_card": "完全屏蔽卡片",
       "option_blur_thumb": "规避缩略图",
       "option_hide_screenshot": "屏蔽截图"
+    },
+    "about": {
+      "title": "关于",
+      "version": "版本",
+      "developer": "开发者",
+      "github": "GitHub 项目主页",
+      "check_update": "检查更新",
+      "checking": "检查中...",
+      "up_to_date": "已是最新",
+      "check_failed": "检查失败",
+      "download_update": "下载最新版本"
     }
   },
   "nav": {

@@ -88,6 +88,17 @@
       "option_hide_card": "Hide Card",
       "option_blur_thumb": "Blur Thumbnail",
       "option_hide_screenshot": "Hide Screenshot"
+    },
+    "about": {
+      "title": "About",
+      "version": "Version",
+      "developer": "Developer",
+      "github": "GitHub Project",
+      "check_update": "Check for Updates",
+      "checking": "Checking...",
+      "up_to_date": "Up to Date",
+      "check_failed": "Check Failed",
+      "download_update": "Download Latest Version"
     }
   },
   "nav": {

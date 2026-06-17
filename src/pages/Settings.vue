@@ -119,6 +119,59 @@ function saveSettings() {
 function goToLogin() {
   router.push('/login')
 }
+
+// ====== 更新检查 ======
+const APP_VERSION = '1.0.0-beta.1'
+const updateState = ref('idle') // idle | checking | available | up-to-date | error
+const latestVersion = ref('')
+const latestReleaseUrl = ref('')
+const latestReleaseDate = ref('')
+
+function parseVersion(v) {
+  // 去掉 'v' 前缀，拆分版本号
+  const cleaned = v.replace(/^v/i, '')
+  const [main, pre] = cleaned.split('-', 2)
+  const segments = main.split('.').map(Number)
+  return {
+    major: segments[0] || 0,
+    minor: segments[1] || 0,
+    patch: segments[2] || 0,
+    pre: pre || ''
+  }
+}
+
+function isNewer(a, b) {
+  const va = parseVersion(a)
+  const vb = parseVersion(b)
+  if (va.major !== vb.major) return va.major > vb.major
+  if (va.minor !== vb.minor) return va.minor > vb.minor
+  if (va.patch !== vb.patch) return va.patch > vb.patch
+  // 同版本号时，有 pre-release 的版本低于没有 pre-release 的
+  if (va.pre && !vb.pre) return false
+  if (!va.pre && vb.pre) return true
+  return false
+}
+
+async function checkForUpdate() {
+  updateState.value = 'checking'
+  try {
+    const res = await fetch('https://api.github.com/repos/Cyancat000/vndbest/releases/latest')
+    // 404 表示尚无 release 发布，视为已是最新
+    if (res.status === 404) {
+      updateState.value = 'up-to-date'
+      return
+    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    latestVersion.value = data.tag_name
+    latestReleaseUrl.value = data.html_url
+    latestReleaseDate.value = new Date(data.published_at).toLocaleDateString()
+    updateState.value = isNewer(data.tag_name, APP_VERSION) ? 'available' : 'up-to-date'
+  } catch (e) {
+    console.error('检查更新失败:', e)
+    updateState.value = 'error'
+  }
+}
 </script>
 
 <template>
@@ -179,19 +232,17 @@ function goToLogin() {
       <h2 class="text-sm font-semibold text-neutral-800 border-b border-neutral-100 pb-2">{{ t('settings.system_preferences') }}</h2>
 
       <!-- 语言选择 -->
-      <div class="flex items-center justify-between py-2">
-        <div class="space-y-0.5">
-          <label class="text-sm font-medium text-neutral-800">{{ t('settings.language') }}</label>
-        </div>
+      <div class="flex items-center justify-between gap-2 py-2">
+        <label class="text-sm font-medium text-neutral-800 whitespace-nowrap shrink-0">{{ t('settings.language') }}</label>
         <BaseSelect
           v-model="currentLang"
           :options="languageOptions"
         />
       </div>
 
-      <div class="flex items-center justify-between py-2">
-        <div class="space-y-0.5">
-          <label class="text-sm font-medium text-neutral-800">{{ t('settings.use_sandbox') }}</label>
+      <div class="flex items-center justify-between gap-2 py-2">
+        <div class="space-y-0.5 min-w-0">
+          <label class="text-sm font-medium text-neutral-800 whitespace-nowrap">{{ t('settings.use_sandbox') }}</label>
           <p class="text-[10px] text-neutral-400">{{ t('settings.sandbox_desc') }}</p>
         </div>
         <input
@@ -298,9 +349,9 @@ function goToLogin() {
           <div
             v-for="key in ['sexual_vn', 'sexual_release', 'nsfw_cover_vn', 'nsfw_cover_release']"
             :key="'card-' + key"
-            class="flex items-center justify-between py-2 px-3 rounded-lg border border-neutral-100 bg-neutral-50/50"
+            class="flex items-center justify-between gap-2 py-2 px-3 rounded-lg border border-neutral-100 bg-neutral-50/50"
           >
-            <span class="text-xs font-medium text-neutral-700">{{ t(`settings.privacy.label_${key}`) }}</span>
+            <span class="w-20 text-xs font-medium text-neutral-700 whitespace-nowrap shrink-0">{{ t(`settings.privacy.label_${key}`) }}</span>
             <BaseSelect
               v-model="privacyCardList[key]"
               :options="cardListOptions"
@@ -320,9 +371,9 @@ function goToLogin() {
           <div
             v-for="key in ['sexual_vn', 'sexual_release', 'nsfw_cover_vn', 'nsfw_cover_release']"
             :key="'detail-' + key"
-            class="flex items-center justify-between py-2 px-3 rounded-lg border border-neutral-100 bg-neutral-50/50"
+            class="flex items-center justify-between gap-2 py-2 px-3 rounded-lg border border-neutral-100 bg-neutral-50/50"
           >
-            <span class="text-xs font-medium text-neutral-700">{{ t(`settings.privacy.label_${key}`) }}</span>
+            <span class="w-20 text-xs font-medium text-neutral-700 whitespace-nowrap shrink-0">{{ t(`settings.privacy.label_${key}`) }}</span>
             <BaseSelect
               v-model="privacyDetail[key]"
               :options="detailOptions"
@@ -342,9 +393,9 @@ function goToLogin() {
           <div
             v-for="key in ['sexual_screenshot', 'nsfw_screenshot']"
             :key="'screenshot-' + key"
-            class="flex items-center justify-between py-2 px-3 rounded-lg border border-neutral-100 bg-neutral-50/50"
+            class="flex items-center justify-between gap-2 py-2 px-3 rounded-lg border border-neutral-100 bg-neutral-50/50"
           >
-            <span class="text-xs font-medium text-neutral-700">{{ t(`settings.privacy.label_${key}`) }}</span>
+            <span class="w-20 text-xs font-medium text-neutral-700 whitespace-nowrap shrink-0">{{ t(`settings.privacy.label_${key}`) }}</span>
             <BaseSelect
               v-model="privacyScreenshots[key]"
               :options="screenshotOptions"
@@ -352,6 +403,88 @@ function goToLogin() {
             />
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- 关于 -->
+    <div class="rounded-xl border border-neutral-200 bg-white p-4 shadow-xs space-y-3">
+      <h2 class="text-sm font-semibold text-neutral-800 border-b border-neutral-100 pb-2">{{ t('settings.about.title') }}</h2>
+      <div class="space-y-2 text-xs text-neutral-600">
+        <div class="flex justify-between">
+          <span class="text-neutral-500">{{ t('settings.about.version') }}</span>
+          <div class="flex items-center gap-1.5">
+            <span class="font-medium text-neutral-800">{{ APP_VERSION }}</span>
+            <!-- 有新版本时显示红点 -->
+            <span
+              v-if="updateState === 'available'"
+              class="h-1.5 w-1.5 rounded-full bg-red-500 shrink-0"
+            />
+          </div>
+        </div>
+
+        <!-- 更新检查状态 -->
+        <button
+          @click="checkForUpdate"
+          :disabled="updateState === 'checking'"
+          class="flex items-center justify-between w-full py-2 px-3 rounded-lg border border-neutral-100 bg-neutral-50/50 transition hover:bg-neutral-100 active:bg-neutral-150 disabled:opacity-50"
+        >
+          <span class="text-neutral-500">{{ t('settings.about.check_update') }}</span>
+          <div class="flex items-center gap-1.5">
+            <template v-if="updateState === 'idle'">
+              <Icon icon="lucide:refresh-cw" class="h-3.5 w-3.5 text-neutral-400" />
+            </template>
+            <template v-else-if="updateState === 'checking'">
+              <Icon icon="lucide:refresh-cw" class="h-3.5 w-3.5 text-neutral-400 animate-spin" />
+              <span class="text-neutral-400">{{ t('settings.about.checking') }}</span>
+            </template>
+            <template v-else-if="updateState === 'available'">
+              <span class="text-[10px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full border border-green-100">
+                {{ latestVersion }}
+              </span>
+              <Icon icon="lucide:external-link" class="h-3.5 w-3.5 text-green-600" />
+            </template>
+            <template v-else-if="updateState === 'up-to-date'">
+              <Icon icon="lucide:check" class="h-3.5 w-3.5 text-green-600" />
+              <span class="text-green-600">{{ t('settings.about.up_to_date') }}</span>
+            </template>
+            <template v-else-if="updateState === 'error'">
+              <Icon icon="lucide:info" class="h-3.5 w-3.5 text-neutral-400" />
+              <span class="text-neutral-400">{{ t('settings.about.check_failed') }}</span>
+            </template>
+          </div>
+        </button>
+
+        <!-- 有新版本时显示更新链接 -->
+        <a
+          v-if="updateState === 'available'"
+          :href="latestReleaseUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center justify-between py-2 px-3 -mx-3 rounded-lg border border-green-100 bg-green-50/50 transition hover:bg-green-50 active:bg-green-100"
+        >
+          <span class="text-green-700 font-medium">{{ t('settings.about.download_update') }}</span>
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] text-green-600">{{ latestReleaseDate }}</span>
+            <Icon icon="lucide:external-link" class="h-3.5 w-3.5 text-green-600 shrink-0" />
+          </div>
+        </a>
+
+        <div class="flex justify-between">
+          <span class="text-neutral-500">{{ t('settings.about.developer') }}</span>
+          <span class="font-medium text-neutral-800">Heki喵 (Cyancat000)</span>
+        </div>
+        <a
+          href="https://github.com/Cyancat000/vndbest"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center justify-between py-2 px-3 rounded-lg border border-neutral-100 bg-neutral-50/50 transition hover:bg-neutral-100 active:bg-neutral-150"
+        >
+          <span class="text-neutral-500">{{ t('settings.about.github') }}</span>
+          <div class="flex items-center gap-1">
+            <span class="font-medium text-neutral-800 truncate max-w-[180px]">Cyancat000/vndbest</span>
+            <Icon icon="lucide:external-link" class="h-3.5 w-3.5 text-neutral-400 shrink-0" />
+          </div>
+        </a>
       </div>
     </div>
   </div>
