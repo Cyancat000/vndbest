@@ -832,6 +832,9 @@ const _domains = {
   e: _decode('d3d3LnR0bG9saS5jb20='),
   f: _decode('d3d3LnZpa2FjZy5jb20='),
   g: _decode('d3d3LnltZ2FsLmdhbWVz'),
+  h: _decode('YmdtLnR2'),
+  i: _decode('MmRmYW4uY29t'),
+  j: _decode('dm5kYi5vcmc='),
 }
 
 // 外链跳转：资源站链接列表
@@ -865,17 +868,17 @@ const infoLinks = computed(() => {
   return [
     {
       name: 'Bangumi',
-      url: 'https://bgm.tv/subject_search/' + s + '?cat=4',
+      url: 'https://' + _domains.h + '/subject_search/' + s + '?cat=4',
       icon: 'lucide:book-open'
     },
     {
       name: '2dfan',
-      url: 'https://2dfan.com/subjects/search?keyword=' + s,
+      url: 'https://' + _domains.i + '/subjects/search?keyword=' + s,
       icon: 'lucide:book-open'
     },
     {
       name: 'vndb',
-      url: 'https://vndb.org/' + vnId,
+      url: 'https://' + _domains.j + '/' + vnId,
       icon: 'lucide:book-open'
     },
     {
