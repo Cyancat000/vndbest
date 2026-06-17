@@ -42,8 +42,15 @@ jobs:
 
       - name: Copy web assets to Android
         run: |
-          rm -rf android/app/src/main/assets/public/*
-          cp -r dist/* android/app/src/main/assets/public/
+          echo "=== Checking dist directory ==="
+          ls -la dist/
+          echo "=== Cleaning target directory ==="
+          rm -rf android/app/src/main/assets/public
+          mkdir -p android/app/src/main/assets/public
+          echo "=== Copying web assets ==="
+          cp -r dist/. android/app/src/main/assets/public/
+          echo "=== Verifying copy ==="
+          ls -la android/app/src/main/assets/public/
 
       - name: Build APK (Release)
         working-directory: android
