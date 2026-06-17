@@ -36,6 +36,12 @@ const activeTab = ref('releases')
 const spoilerLevel = ref(0)
 const tempSpoilerLevel = ref(0) // 用于弹窗确认过程中的临时变量
 
+// 标签分类筛选（多选）：'cont'=内容, 'ero'=性内容, 'tech'=技术
+const activeTagCategories = ref(['cont', 'tech'])
+
+// 标签搜索模式（单选）：'summary'=摘要, 'all'=全部
+const tagSearchMode = ref('summary')
+
 // 控制剧透警告确认弹窗的展示
 const showSpoilerConfirm = ref(false)
 
@@ -373,8 +379,26 @@ const groupTraits = (traits) => {
 
 const filteredTags = computed(() => {
   if (!vn.value || !vn.value.tags) return []
-  return vn.value.tags.filter(tag => tag.spoiler <= spoilerLevel.value)
+  return vn.value.tags.filter(tag => {
+    // 剧透等级过滤
+    if (tag.spoiler > spoilerLevel.value) return false
+    // 分类过滤（多选）
+    if (!activeTagCategories.value.includes(tag.category)) return false
+    // 搜索模式过滤：summary 只显示高相关性标签（rating >= 2.0）
+    if (tagSearchMode.value === 'summary' && tag.rating < 2.0) return false
+    return true
+  })
 })
+
+// 切换标签分类（多选，允许全部取消）
+const toggleTagCategory = (category) => {
+  const idx = activeTagCategories.value.indexOf(category)
+  if (idx >= 0) {
+    activeTagCategories.value.splice(idx, 1)
+  } else {
+    activeTagCategories.value.push(category)
+  }
+}
 
 // 从 releases 数据中提取所有封面图（保留原始 image 对象用于隐私过滤）
 const allCovers = computed(() => {
@@ -660,6 +684,8 @@ const loadVnDetail = async (id) => {
       // 默认激活版本发行
       activeTab.value = 'releases'
       spoilerLevel.value = 0
+      activeTagCategories.value = ['cont', 'tech']
+      tagSearchMode.value = 'summary'
       collectionEntry.value = null
       
       // 并发异步加载其余所有子选项卡数据，加快响应时间
@@ -1417,6 +1443,58 @@ watch(
             </div>
           </div>
 
+          <!-- 标签分类过滤面板（多选） -->
+          <div class="flex flex-col gap-2 p-3 rounded-lg border border-neutral-200 bg-neutral-50">
+            <span class="text-xs text-neutral-600 font-medium flex items-center gap-1.5">
+              <Icon icon="lucide:layers" class="h-4 w-4 text-neutral-400" />
+              {{ t('vn.tags.category_filter') }}
+            </span>
+            <div class="grid grid-cols-2 gap-1 rounded-lg bg-neutral-200 p-0.5 text-center">
+              <button
+                v-for="cat in [
+                  { val: 'cont', label: t('vn.tags.category_cont') },
+                  { val: 'tech', label: t('vn.tags.category_tech') }
+                ]"
+                :key="cat.val"
+                @click="toggleTagCategory(cat.val)"
+                class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
+                :class="[
+                  activeTagCategories.includes(cat.val)
+                    ? 'bg-white text-neutral-900 shadow-xs font-semibold'
+                    : 'text-neutral-500 hover:text-neutral-800'
+                ]"
+              >
+                {{ cat.label }}
+              </button>
+            </div>
+          </div>
+
+          <!-- 标签范围过滤面板（单选） -->
+          <div class="flex flex-col gap-2 p-3 rounded-lg border border-neutral-200 bg-neutral-50">
+            <span class="text-xs text-neutral-600 font-medium flex items-center gap-1.5">
+              <Icon icon="lucide:filter" class="h-4 w-4 text-neutral-400" />
+              {{ t('vn.tags.search_mode_filter') }}
+            </span>
+            <div class="grid grid-cols-2 gap-1 rounded-lg bg-neutral-200 p-0.5 text-center">
+              <button
+                v-for="mode in [
+                  { val: 'summary', label: t('vn.tags.search_mode_summary') },
+                  { val: 'all', label: t('vn.tags.search_mode_all') }
+                ]"
+                :key="mode.val"
+                @click="tagSearchMode = mode.val"
+                class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
+                :class="[
+                  tagSearchMode === mode.val
+                    ? 'bg-white text-neutral-900 shadow-xs font-semibold'
+                    : 'text-neutral-500 hover:text-neutral-800'
+                ]"
+              >
+                {{ mode.label }}
+              </button>
+            </div>
+          </div>
+
           <div v-if="filteredTags.length === 0" class="text-xs text-neutral-400 py-6 text-center">
             {{ t('vn.tags.empty') }}
           </div>
@@ -1438,9 +1516,6 @@ watch(
               <span>{{ translateTagName(tag.name) }}</span>
               <span class="text-[9px] opacity-60 font-mono">
                 {{ tag.rating.toFixed(1) }}
-              </span>
-              <span v-if="tag.spoiler > 0" class="text-[8px] bg-amber-200 text-amber-900 px-1 rounded-sm">
-                SPOILER
               </span>
             </div>
           </div>

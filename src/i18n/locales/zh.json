@@ -259,7 +259,14 @@
       "spoiler_0": "无剧透",
       "spoiler_1": "轻度剧透",
       "spoiler_2": "严重剧透",
-      "empty": "当前剧透等级下暂无标签信息，可尝试提高剧透过滤等级"
+      "category_filter": "标签分类",
+      "category_cont": "内容",
+      "category_ero": "性内容",
+      "category_tech": "技术",
+      "search_mode_filter": "标签范围",
+      "search_mode_summary": "摘要",
+      "search_mode_all": "全部",
+      "empty": "当前筛选条件下暂无标签信息，可尝试调整过滤等级或分类"
     },
     "screenshots": {
       "empty": "暂无截图画面"

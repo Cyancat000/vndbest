@@ -243,7 +243,14 @@
       "spoiler_0": "None",
       "spoiler_1": "Minor",
       "spoiler_2": "Major",
-      "empty": "No tags found for this spoiler level. Try increasing it."
+      "category_filter": "Tag Category",
+      "category_cont": "Content",
+      "category_ero": "Sexual",
+      "category_tech": "Technical",
+      "search_mode_filter": "Tag Scope",
+      "search_mode_summary": "Summary",
+      "search_mode_all": "All",
+      "empty": "No tags found for current filters. Try adjusting spoiler level or category."
     },
     "screenshots": {
       "empty": "No screenshots found"
