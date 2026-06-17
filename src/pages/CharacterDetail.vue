@@ -3,7 +3,7 @@ import { ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
-import { getCharacterDetail } from '@/api/vndb'
+import { getCharacterDetail, getCharacterQuotes } from '@/api/vndb'
 import VnList from '@/components/VnList.vue'
 import { useTranslation } from '@/composables/useTranslation'
 import { useImageLoader } from '@/composables/useImageLoader'
@@ -19,6 +19,17 @@ const characterId = ref(route.params.id)
 const character = ref(null)
 const loading = ref(true)
 const error = ref(null)
+
+// 角色特征筛选状态
+const traitSpoilerLevel = ref(0)
+const showTraitSexual = ref(false)
+const tempTraitSpoilerLevel = ref(0)
+const showTraitSpoilerConfirm = ref(false)
+
+// 台词数据
+const quotes = ref([])
+const quotesLoading = ref(false)
+const quotesError = ref(null)
 
 // 翻译角色性别（sex 可能为数组 ["f","f"] 或字符串 "f,f"）
 const translateGender = (sex) => {
@@ -70,17 +81,47 @@ const parseBBCode = (text) => {
   return escaped
 }
 
-// 分组展示特征标签
+// 分组展示特征标签（根据剧透等级和性内容过滤）
 const groupTraits = (traits) => {
   if (!traits) return {}
-  // 默认不显示剧透标签，或者根据需要调整
-  const filtered = traits.filter(t => t.spoiler === 0)
+  const filtered = traits.filter(t => {
+    // 剧透级别过滤
+    if (t.spoiler > traitSpoilerLevel.value) return false
+    // 性内容过滤
+    if (!showTraitSexual.value && t.sexual) return false
+    return true
+  })
   return filtered.reduce((acc, trait) => {
     const group = trait.group_name || 'Other'
     if (!acc[group]) acc[group] = []
     acc[group].push(trait)
     return acc
   }, {})
+}
+
+// 经过筛选后的特征数量
+const filteredTraitCount = computed(() => {
+  if (!character.value?.traits) return 0
+  return character.value.traits.filter(t => {
+    if (t.spoiler > traitSpoilerLevel.value) return false
+    if (!showTraitSexual.value && t.sexual) return false
+    return true
+  }).length
+})
+
+// 处理特征剧透等级选择
+const handleSelectTraitSpoiler = (level) => {
+  if (level === 2) {
+    tempTraitSpoilerLevel.value = level
+    showTraitSpoilerConfirm.value = true
+  } else {
+    traitSpoilerLevel.value = level
+  }
+}
+
+const confirmTraitSpoilerLevel = () => {
+  traitSpoilerLevel.value = tempTraitSpoilerLevel.value
+  showTraitSpoilerConfirm.value = false
 }
 
 async function fetchCharacterInfo() {
@@ -90,6 +131,8 @@ async function fetchCharacterInfo() {
     const res = await getCharacterDetail(characterId.value)
     if (res && res.results && res.results.length > 0) {
       character.value = res.results[0]
+      // 自动加载台词
+      fetchQuotes()
     } else {
       error.value = t('vn.not_found')
     }
@@ -98,6 +141,23 @@ async function fetchCharacterInfo() {
     error.value = err.message || t('common.error')
   } finally {
     loading.value = false
+  }
+}
+
+async function fetchQuotes() {
+  if (!characterId.value) return
+  quotesLoading.value = true
+  quotesError.value = null
+  try {
+    const res = await getCharacterQuotes(characterId.value)
+    if (res && res.results) {
+      quotes.value = res.results
+    }
+  } catch (err) {
+    console.error('获取角色台词失败:', err)
+    quotesError.value = err.message
+  } finally {
+    quotesLoading.value = false
   }
 }
 
@@ -300,8 +360,76 @@ watch(
         <div class="flex items-center gap-2 px-1">
           <div class="h-3 w-1 rounded-full bg-neutral-900"></div>
           <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-400">{{ t('library.traits') }}</h3>
+          <span class="text-[10px] font-bold text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-full">
+            {{ filteredTraitCount }}
+          </span>
         </div>
-        <div class="grid grid-cols-1 gap-4">
+
+        <!-- 特征筛选控件 -->
+        <div class="rounded-xl border border-neutral-100 bg-neutral-50/50 p-3 space-y-3">
+          <!-- 剧透等级筛选 -->
+          <span class="text-xs text-neutral-600 font-medium flex items-center gap-1.5">
+            <Icon icon="lucide:shield-alert" class="h-4 w-4 text-neutral-400" />
+            {{ t('vn.characters.trait_spoiler_filter') }}
+          </span>
+          <div class="grid grid-cols-3 gap-1 rounded-lg bg-neutral-200 p-0.5 text-center">
+            <button
+              v-for="level in [
+                { val: 0, label: t('vn.characters.trait_spoiler_0') },
+                { val: 1, label: t('vn.characters.trait_spoiler_1') },
+                { val: 2, label: t('vn.characters.trait_spoiler_2') }
+              ]"
+              :key="level.val"
+              @click="handleSelectTraitSpoiler(level.val)"
+              class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
+              :class="[
+                traitSpoilerLevel === level.val
+                  ? 'bg-white text-neutral-900 shadow-xs font-semibold'
+                  : 'text-neutral-500 hover:text-neutral-800'
+              ]"
+            >
+              {{ level.label }}
+            </button>
+          </div>
+
+          <!-- 性内容过滤 -->
+          <span class="text-xs text-neutral-600 font-medium flex items-center gap-1.5 mt-1">
+            <Icon icon="lucide:layers" class="h-4 w-4 text-neutral-400" />
+            {{ t('vn.characters.trait_sexual_filter') }}
+          </span>
+          <div class="grid grid-cols-2 gap-1 rounded-lg bg-neutral-200 p-0.5 text-center">
+            <button
+              @click="showTraitSexual = false"
+              class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
+              :class="[
+                !showTraitSexual
+                  ? 'bg-white text-neutral-900 shadow-xs font-semibold'
+                  : 'text-neutral-500 hover:text-neutral-800'
+              ]"
+            >
+              {{ t('vn.characters.trait_sexual_hide') }}
+            </button>
+            <button
+              @click="showTraitSexual = true"
+              class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
+              :class="[
+                showTraitSexual
+                  ? 'bg-white text-neutral-900 shadow-xs font-semibold'
+                  : 'text-neutral-500 hover:text-neutral-800'
+              ]"
+            >
+              {{ t('vn.characters.trait_sexual_show') }}
+            </button>
+          </div>
+        </div>
+
+        <!-- 筛选后无结果提示 -->
+        <div v-if="filteredTraitCount === 0" class="text-center py-4 text-xs text-neutral-400">
+          {{ t('vn.characters.trait_empty') }}
+        </div>
+
+        <!-- 特征分组展示 -->
+        <div v-else class="grid grid-cols-1 gap-4">
           <div
             v-for="(traits, group) in groupTraits(character.traits)"
             :key="group"
@@ -315,7 +443,12 @@ watch(
                 v-for="trait in traits"
                 :key="trait.id || trait.name"
                 @click="router.push(`/browse/characters?trait=${trait.id}`)"
-                class="px-2.5 py-1 rounded-lg bg-white text-neutral-700 text-[11px] font-semibold border border-neutral-200 shadow-xs hover:border-neutral-400 transition-colors cursor-pointer active:scale-[0.98]"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-semibold shadow-xs transition-colors cursor-pointer active:scale-[0.98]"
+                :class="[
+                  trait.spoiler === 2 ? 'bg-red-50 text-red-700 border border-red-100 hover:border-red-300'
+                    : trait.spoiler === 1 ? 'bg-amber-50 text-amber-700 border border-amber-100 hover:border-amber-300'
+                    : 'bg-white text-neutral-700 border border-neutral-200 hover:border-neutral-400'
+                ]"
               >
                 {{ translateTraitName(trait.name) }}
               </span>
@@ -324,12 +457,12 @@ watch(
         </div>
       </div>
 
-      <!-- 参与作品 (Visual Novels) -->
+      <!-- Other Instances（其他出场作品） -->
       <div v-if="character.vns && character.vns.length > 0" class="space-y-4 pt-2">
         <div class="flex items-center justify-between px-1">
           <div class="flex items-center gap-2">
             <div class="h-4 w-1 rounded-full bg-neutral-900"></div>
-            <h3 class="text-sm font-bold text-neutral-900 uppercase tracking-wider">{{ t('vn.relations') }}</h3>
+            <h3 class="text-sm font-bold text-neutral-900 uppercase tracking-wider">{{ t('vn.other_instances') }}</h3>
           </div>
           <span class="text-[10px] font-bold text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-full">
             {{ character.vns.length }}
@@ -343,8 +476,110 @@ watch(
           storage-key="vndb_char_vn_layout"
         />
       </div>
+      <div v-else-if="!loading && character" class="space-y-4 pt-2">
+        <div class="flex items-center justify-between px-1">
+          <div class="flex items-center gap-2">
+            <div class="h-4 w-1 rounded-full bg-neutral-200"></div>
+            <h3 class="text-sm font-bold text-neutral-400 uppercase tracking-wider">{{ t('vn.other_instances') }}</h3>
+          </div>
+        </div>
+        <div class="text-center py-8 text-xs text-neutral-400">
+          {{ t('vn.other_instances_empty') }}
+        </div>
+      </div>
+
+      <!-- Quotes（经典台词） -->
+      <div class="space-y-3 pt-2">
+        <div class="flex items-center gap-2 px-1">
+          <div class="h-4 w-1 rounded-full bg-neutral-900"></div>
+          <h3 class="text-sm font-bold text-neutral-900 uppercase tracking-wider">{{ t('vn.char_quotes') }}</h3>
+          <span v-if="quotes.length > 0" class="text-[10px] font-bold text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-full">
+            {{ quotes.length }}
+          </span>
+        </div>
+
+        <!-- 加载中 -->
+        <div v-if="quotesLoading" class="flex justify-center py-8">
+          <Icon icon="lucide:loader-2" class="h-5 w-5 text-neutral-300 animate-spin" />
+        </div>
+
+        <!-- 错误 -->
+        <div v-else-if="quotesError" class="text-center py-6 text-xs text-red-400">
+          {{ quotesError }}
+        </div>
+
+        <!-- 空状态 -->
+        <div v-else-if="quotes.length === 0" class="text-center py-8 text-xs text-neutral-400">
+          {{ t('vn.char_quotes_empty') }}
+        </div>
+
+        <!-- 台词列表 -->
+        <div v-else class="space-y-3">
+          <div
+            v-for="quote in quotes"
+            :key="quote.id"
+            class="rounded-xl border border-neutral-100 bg-neutral-50/50 p-4 space-y-2.5"
+          >
+            <!-- 台词内容 -->
+            <p class="text-sm leading-relaxed text-neutral-700 italic whitespace-pre-wrap">
+              "{{ quote.quote }}"
+            </p>
+            <!-- 台词来源和评分 -->
+            <div class="flex items-center justify-between text-[10px] text-neutral-400">
+              <div class="flex items-center gap-1.5">
+                <Icon icon="lucide:book-open" class="h-3 w-3" />
+                <span class="font-medium">
+                  {{ t('vn.char_quotes_from') }}
+                  <span v-if="quote.vn" class="text-neutral-600 font-semibold">{{ quote.vn.title }}</span>
+                  <span v-else class="text-neutral-500">{{ t('vn.char_quotes_narrator') }}</span>
+                </span>
+              </div>
+              <div v-if="quote.score !== null && quote.score !== undefined" class="flex items-center gap-1">
+                <Icon icon="lucide:star" class="h-3 w-3 text-amber-400" />
+                <span class="font-semibold text-neutral-500">{{ quote.score }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+
+  <!-- Teleport: 角色特征剧透确认框 -->
+  <Teleport to="body">
+    <div 
+      v-if="showTraitSpoilerConfirm"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 animate-fade-in"
+      @click="showTraitSpoilerConfirm = false"
+    >
+      <div 
+        class="w-full max-w-xs rounded-xl border border-neutral-200 bg-white p-5 shadow-xl space-y-4"
+        @click.stop
+      >
+        <div class="flex items-center gap-2 text-red-600">
+          <Icon icon="lucide:info" class="h-4 w-4" />
+          <h3 class="text-xs font-bold uppercase tracking-wider">{{ t('vn.spoiler_alert.title') }}</h3>
+        </div>
+        <p class="text-[11px] leading-relaxed text-neutral-600">
+          {{ t('vn.spoiler_alert.desc') }}
+        </p>
+        <div class="flex gap-2 justify-end text-xs">
+          <button
+            @click="showTraitSpoilerConfirm = false"
+            class="h-7 px-2.5 rounded-lg border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 active:bg-neutral-100"
+          >
+            {{ t('vn.spoiler_alert.cancel') }}
+          </button>
+          <button
+            @click="confirmTraitSpoilerLevel"
+            class="h-7 px-2.5 rounded-lg border border-transparent bg-neutral-900 text-white hover:bg-neutral-800 active:bg-neutral-700"
+          >
+            {{ t('vn.spoiler_alert.confirm') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
   </ion-content>
   </ion-page>
 </template>

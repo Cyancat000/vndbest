@@ -42,6 +42,14 @@ const activeTagCategories = ref(['cont', 'tech'])
 // 标签搜索模式（单选）：'summary'=摘要, 'all'=全部
 const tagSearchMode = ref('summary')
 
+// 角色特征筛选：性内容显示开关
+const showTraitSexual = ref(false)
+
+// 角色特征剧透等级（与标签共享 spoilerLevel）
+const traitSpoilerLevel = ref(0)
+const tempTraitSpoilerLevel = ref(0)
+const showTraitSpoilerConfirm = ref(false)
+
 // 控制剧透警告确认弹窗的展示
 const showSpoilerConfirm = ref(false)
 
@@ -365,16 +373,50 @@ const getCharacterVA = (charId) => {
   return vn.value.va.find(v => v.character?.id === charId)
 }
 
-// 根据当前选择的剧透级别过滤出来的标签列表
+// 根据当前选择的剧透级别和性内容过滤器过滤角色特征
 const groupTraits = (traits) => {
   if (!traits) return {}
-  const filtered = traits.filter(t => t.spoiler <= spoilerLevel.value)
+  const filtered = traits.filter(t => {
+    // 剧透级别过滤
+    if (t.spoiler > traitSpoilerLevel.value) return false
+    // 性内容过滤：sexual 是 Bool 类型
+    if (!showTraitSexual.value && t.sexual) return false
+    return true
+  })
   return filtered.reduce((acc, trait) => {
     const group = trait.group_name || 'Other'
     if (!acc[group]) acc[group] = []
     acc[group].push(trait)
     return acc
   }, {})
+}
+
+// 根据剧透级别过滤角色本身（角色在当前 VN 中的剧透等级）
+const filteredCharacters = computed(() => {
+  if (!characters.value) return []
+  return characters.value.filter(char => {
+    // 获取角色在当前 VN 中的剧透等级
+    const vnEntry = char.vns?.find(v => v.id === vn.value?.id)
+    const charSpoiler = vnEntry?.spoiler ?? 0
+    // 如果角色剧透等级超过当前筛选级别，隐藏整个角色
+    if (charSpoiler > traitSpoilerLevel.value) return false
+    return true
+  })
+})
+
+// 处理角色特征剧透级别切换
+const handleSelectTraitSpoiler = (level) => {
+  if (level === 2) {
+    tempTraitSpoilerLevel.value = level
+    showTraitSpoilerConfirm.value = true
+  } else {
+    traitSpoilerLevel.value = level
+  }
+}
+
+const confirmTraitSpoilerLevel = () => {
+  traitSpoilerLevel.value = tempTraitSpoilerLevel.value
+  showTraitSpoilerConfirm.value = false
 }
 
 const filteredTags = computed(() => {
@@ -1181,12 +1223,74 @@ watch(
             <Icon icon="eos-icons:loading" class="h-6 w-6 text-neutral-300" />
             <span class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">{{ t('release.loading') }}</span>
           </div>
-          <div v-else-if="characters.length === 0" class="text-center py-6 text-xs text-neutral-400">
+
+          <!-- 角色特征筛选面板 -->
+          <div v-else-if="characters.length > 0" class="flex flex-col gap-2 p-3 rounded-lg border border-neutral-200 bg-neutral-50">
+            <!-- 剧透等级过滤 -->
+            <span class="text-xs text-neutral-600 font-medium flex items-center gap-1.5">
+              <Icon icon="lucide:info" class="h-4 w-4 text-neutral-400" />
+              {{ t('vn.characters.trait_spoiler_filter') }}
+            </span>
+            <div class="grid grid-cols-3 gap-1 rounded-lg bg-neutral-200 p-0.5 text-center">
+              <button
+                v-for="level in [
+                  { val: 0, label: t('vn.characters.trait_spoiler_0') },
+                  { val: 1, label: t('vn.characters.trait_spoiler_1') },
+                  { val: 2, label: t('vn.characters.trait_spoiler_2') }
+                ]"
+                :key="level.val"
+                @click="handleSelectTraitSpoiler(level.val)"
+                class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
+                :class="[
+                  traitSpoilerLevel === level.val
+                    ? 'bg-white text-neutral-900 shadow-xs font-semibold'
+                    : 'text-neutral-500 hover:text-neutral-800'
+                ]"
+              >
+                {{ level.label }}
+              </button>
+            </div>
+
+            <!-- 性内容过滤 -->
+            <span class="text-xs text-neutral-600 font-medium flex items-center gap-1.5 mt-1">
+              <Icon icon="lucide:layers" class="h-4 w-4 text-neutral-400" />
+              {{ t('vn.characters.trait_sexual_filter') }}
+            </span>
+            <div class="grid grid-cols-2 gap-1 rounded-lg bg-neutral-200 p-0.5 text-center">
+              <button
+                @click="showTraitSexual = false"
+                class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
+                :class="[
+                  !showTraitSexual
+                    ? 'bg-white text-neutral-900 shadow-xs font-semibold'
+                    : 'text-neutral-500 hover:text-neutral-800'
+                ]"
+              >
+                {{ t('vn.characters.trait_sexual_hide') }}
+              </button>
+              <button
+                @click="showTraitSexual = true"
+                class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
+                :class="[
+                  showTraitSexual
+                    ? 'bg-white text-neutral-900 shadow-xs font-semibold'
+                    : 'text-neutral-500 hover:text-neutral-800'
+                ]"
+              >
+                {{ t('vn.characters.trait_sexual_show') }}
+              </button>
+            </div>
+          </div>
+
+          <div v-if="!charactersLoading && characters.length === 0" class="text-center py-6 text-xs text-neutral-400">
             {{ t('vn.characters.empty') }}
           </div>
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div v-else-if="!charactersLoading && characters.length > 0 && filteredCharacters.length === 0" class="text-center py-6 text-xs text-neutral-400">
+            {{ t('vn.characters.filtered_empty') }}
+          </div>
+          <div v-else-if="!charactersLoading && filteredCharacters.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div
-              v-for="char in characters"
+              v-for="char in filteredCharacters"
               :key="char.id"
               class="p-3 rounded-xl border border-neutral-200 bg-white flex items-start gap-3 shadow-xs hover:border-neutral-300 transition"
             >
@@ -1289,8 +1393,12 @@ watch(
                           <span
                             v-for="trait in traits"
                             :key="trait.name"
-                            class="px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600 text-[8px] font-medium transition-colors"
-                            :class="[trait.spoiler > 0 ? 'bg-amber-50 text-amber-700 border border-amber-100' : 'border border-transparent']"
+                            class="px-1.5 py-0.5 rounded text-[8px] font-medium transition-colors"
+                             :class="[
+                               trait.spoiler === 2 ? 'bg-red-50 text-red-700 border border-red-100'
+                                 : trait.spoiler === 1 ? 'bg-amber-50 text-amber-700 border border-amber-100'
+                                 : 'bg-neutral-100 text-neutral-600 border border-transparent'
+                             ]"
                           >
                             {{ translateTraitName(trait.name) }}
                           </span>
@@ -1416,8 +1524,9 @@ watch(
 
         <!-- 5. 标签 Tab -->
         <div v-else-if="activeTab === 'tags'" class="space-y-4">
-          <!-- 剧透等级过滤面板 -->
+          <!-- 标签筛选面板（合并） -->
           <div class="flex flex-col gap-2 p-3 rounded-lg border border-neutral-200 bg-neutral-50">
+            <!-- 剧透等级过滤 -->
             <span class="text-xs text-neutral-600 font-medium flex items-center gap-1.5">
               <Icon icon="lucide:info" class="h-4 w-4 text-neutral-400" />
               {{ t('vn.tags.spoiler_filter') }}
@@ -1433,19 +1542,17 @@ watch(
                 @click="handleSelectSpoiler(level.val)"
                 class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
                 :class="[
-                  spoilerLevel === level.val 
-                    ? 'bg-white text-neutral-900 shadow-xs font-semibold' 
+                  spoilerLevel === level.val
+                    ? 'bg-white text-neutral-900 shadow-xs font-semibold'
                     : 'text-neutral-500 hover:text-neutral-800'
                 ]"
               >
                 {{ level.label }}
               </button>
             </div>
-          </div>
 
-          <!-- 标签分类过滤面板（多选） -->
-          <div class="flex flex-col gap-2 p-3 rounded-lg border border-neutral-200 bg-neutral-50">
-            <span class="text-xs text-neutral-600 font-medium flex items-center gap-1.5">
+            <!-- 标签分类过滤（多选） -->
+            <span class="text-xs text-neutral-600 font-medium flex items-center gap-1.5 mt-1">
               <Icon icon="lucide:layers" class="h-4 w-4 text-neutral-400" />
               {{ t('vn.tags.category_filter') }}
             </span>
@@ -1467,11 +1574,9 @@ watch(
                 {{ cat.label }}
               </button>
             </div>
-          </div>
 
-          <!-- 标签范围过滤面板（单选） -->
-          <div class="flex flex-col gap-2 p-3 rounded-lg border border-neutral-200 bg-neutral-50">
-            <span class="text-xs text-neutral-600 font-medium flex items-center gap-1.5">
+            <!-- 标签范围过滤（单选） -->
+            <span class="text-xs text-neutral-600 font-medium flex items-center gap-1.5 mt-1">
               <Icon icon="lucide:filter" class="h-4 w-4 text-neutral-400" />
               {{ t('vn.tags.search_mode_filter') }}
             </span>
@@ -1662,6 +1767,42 @@ watch(
             </button>
             <button
               @click="confirmSpoilerLevel"
+              class="h-7 px-2.5 rounded-lg border border-transparent bg-neutral-900 text-white hover:bg-neutral-800 active:bg-neutral-700"
+            >
+              {{ t('vn.spoiler_alert.confirm') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Teleport: 角色特征剧透确认框 -->
+    <Teleport to="body">
+      <div
+        v-if="showTraitSpoilerConfirm"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 animate-fade-in"
+        @click="showTraitSpoilerConfirm = false"
+      >
+        <div
+          class="w-full max-w-xs rounded-xl border border-neutral-200 bg-white p-5 shadow-xl space-y-4"
+          @click.stop
+        >
+          <div class="flex items-center gap-2 text-red-600">
+            <Icon icon="lucide:info" class="h-4 w-4" />
+            <h3 class="text-xs font-bold uppercase tracking-wider">{{ t('vn.spoiler_alert.title') }}</h3>
+          </div>
+          <p class="text-[11px] leading-relaxed text-neutral-600">
+            {{ t('vn.spoiler_alert.desc') }}
+          </p>
+          <div class="flex gap-2 justify-end text-xs">
+            <button
+              @click="showTraitSpoilerConfirm = false"
+              class="h-7 px-2.5 rounded-lg border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 active:bg-neutral-100"
+            >
+              {{ t('vn.spoiler_alert.cancel') }}
+            </button>
+            <button
+              @click="confirmTraitSpoilerLevel"
               class="h-7 px-2.5 rounded-lg border border-transparent bg-neutral-900 text-white hover:bg-neutral-800 active:bg-neutral-700"
             >
               {{ t('vn.spoiler_alert.confirm') }}

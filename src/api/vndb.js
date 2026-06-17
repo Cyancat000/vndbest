@@ -226,7 +226,7 @@ export async function getVnCharacters(vnId) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['vn', '=', ['id', '=', vnId]],
-      fields: 'id, name, original, description, image{url,dims,sexual,violence}, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday, vns{role,spoiler}, traits{name,spoiler,group_name}',
+      fields: 'id, name, original, description, image{url,dims,sexual,violence}, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday, vns{id,role,spoiler}, traits{name,spoiler,sexual,group_name}',
       results: 100
     })
   })
@@ -250,6 +250,23 @@ export async function getVnQuotes(vnId) {
 }
 
 /**
+ * 3.3b 获取角色台词摘录 (Character Quotes)
+ * POST /quote
+ */
+export async function getCharacterQuotes(characterId) {
+  return request('/quote', {
+    method: 'POST',
+    body: JSON.stringify({
+      filters: ['character', '=', ['id', '=', characterId]],
+      fields: 'id, quote, score, vn{id,title}, character{id,name,original}',
+      sort: 'score',
+      reverse: true,
+      results: 100
+    })
+  })
+}
+
+/**
  * 3.4 获取特定角色的详细信息
  * POST /character
  */
@@ -258,7 +275,7 @@ export async function getCharacterDetail(id) {
     method: 'POST',
     body: JSON.stringify({
       filters: ['id', '=', id],
-      fields: 'id, name, original, description, image{url,dims,sexual,violence}, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday, vns{id,role,spoiler,title,alttitle,image{url,dims,thumbnail,sexual},rating,released,olang}, traits{id,name,spoiler,group_name}',
+      fields: 'id, name, original, description, image{url,dims,sexual,violence}, sex, blood_type, height, weight, bust, waist, hips, cup, age, birthday, vns{id,role,spoiler,title,alttitle,image{url,dims,thumbnail,sexual},rating,released,olang}, traits{id,name,spoiler,sexual,group_name}',
     })
   })
 }
