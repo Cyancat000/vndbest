@@ -115,7 +115,13 @@
     "saved_searches": "已保存的搜索",
     "delete": "删除",
     "delete_confirm_title": "确认删除",
-    "delete_confirm_message": "确定要删除「{name}」吗？"
+    "delete_confirm_message": "确定要删除「{name}」吗？",
+    "birthday": "角色生日",
+    "birthday_greeting": "今天有角色过生日哦，祝他们生日快乐！",
+    "birthday_today": "今日生日",
+    "birthday_tomorrow": "明日生日",
+    "no_birthday": "暂无角色过生日",
+    "birthday_age": "{age}岁"
   },
   "library": {
     "title": "库",

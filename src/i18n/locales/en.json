@@ -115,7 +115,13 @@
     "saved_searches": "Saved Searches",
     "delete": "Delete",
     "delete_confirm_title": "Confirm Delete",
-    "delete_confirm_message": "Are you sure you want to delete \"{name}\"?"
+    "delete_confirm_message": "Are you sure you want to delete \"{name}\"?",
+    "birthday": "Character Birthdays",
+    "birthday_greeting": "Some characters have birthdays today, happy birthday to them!",
+    "birthday_today": "Today's Birthdays",
+    "birthday_tomorrow": "Tomorrow's Birthdays",
+    "no_birthday": "No characters have birthdays today",
+    "birthday_age": "Age {age}"
   },
   "search": {
     "title": "Search",

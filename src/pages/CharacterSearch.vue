@@ -39,6 +39,18 @@ const selectedSex = ref('all')
 const selectedBloodType = ref('all')
 const selectedRole = ref('all')
 
+// URL 参数中的 birthday (格式: "month,day")
+function getBirthdayFilter() {
+  const b = route.query.birthday
+  if (typeof b === 'string' && b.includes(',')) {
+    const parts = b.split(',').map(Number)
+    if (parts.length === 2 && parts[0] >= 1 && parts[0] <= 12 && parts[1] >= 0 && parts[1] <= 31) {
+      return parts
+    }
+  }
+  return null
+}
+
 function getSelectedTrait() {
   return typeof route.query.trait === 'string' ? route.query.trait : ''
 }
@@ -74,6 +86,7 @@ function hasActiveFilters() {
     || selectedSex.value !== 'all'
     || selectedBloodType.value !== 'all'
     || selectedRole.value !== 'all'
+    || getBirthdayFilter() !== null
 }
 
 // 清除所有筛选
@@ -111,6 +124,12 @@ async function fetchData(q = '', reset = true) {
     const routeTrait = getSelectedTrait()
     if (routeTrait) {
       filters.push(['trait', '=', routeTrait])
+    }
+
+    // URL 参数中的 birthday
+    const birthdayFilter = getBirthdayFilter()
+    if (birthdayFilter) {
+      filters.push(['birthday', '=', birthdayFilter])
     }
 
     // 选择的特征（多选用 or）

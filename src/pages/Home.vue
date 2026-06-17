@@ -20,12 +20,15 @@ const imageLoader = useImageLoader()
 const stats = ref(null)
 const justReleased = ref([])
 const upcomingReleases = ref([])
+const todayBirthdays = ref([])
+const tomorrowBirthdays = ref([])
 
 const loading = ref(true)
 const loadingSections = ref({
   stats: true,
   releases: true,
-  random: true
+  random: true,
+  birthday: true
 })
 
 // ============ 已保存搜索结果预览 ============
@@ -254,6 +257,25 @@ function handleSavedSearchItemClick(search, item) {
   }
 }
 
+// 计算今日和明日的 [month, day]
+function getBirthdayParams(offsetDays = 0) {
+  const d = new Date()
+  d.setDate(d.getDate() + offsetDays)
+  return [d.getMonth() + 1, d.getDate()]
+}
+
+// 角色去重：按原名优先、名称次之去重
+function deduplicateCharacters(chars) {
+  const seen = new Map()
+  for (const char of chars) {
+    const key = char.original || char.name
+    if (!seen.has(key)) {
+      seen.set(key, char)
+    }
+  }
+  return Array.from(seen.values())
+}
+
 onMounted(async () => {
   const today = new Date().toISOString().split('T')[0]
 
@@ -285,6 +307,22 @@ onMounted(async () => {
       console.error('获取即将发布失败:', err)
     })
 
+  // 2.5 获取今日和明日生日角色
+  const [todayMonth, todayDay] = getBirthdayParams(0)
+  const [tomorrowMonth, tomorrowDay] = getBirthdayParams(1)
+
+  Promise.all([
+    getCharacterList(['birthday', '=', [todayMonth, todayDay]], { sort: 'name', results: 50 }),
+    getCharacterList(['birthday', '=', [tomorrowMonth, tomorrowDay]], { sort: 'name', results: 50 })
+  ]).then(([todayRes, tomorrowRes]) => {
+    todayBirthdays.value = deduplicateCharacters(todayRes.results || [])
+    tomorrowBirthdays.value = deduplicateCharacters(tomorrowRes.results || [])
+  }).catch(err => {
+    console.error('获取生日角色失败:', err)
+  }).finally(() => {
+    loadingSections.value.birthday = false
+  })
+
   // 3. 获取已保存搜索的结果预览
   fetchSavedSearchResults()
 
@@ -310,6 +348,16 @@ async function handleRandomClick() {
 
 function handleReleaseClick(release) {
   router.push(`/release/${release.id}`)
+}
+
+// 角色生日点击跳转
+function handleCharacterClick(character) {
+  router.push(`/character/${character.id}`)
+}
+
+// 跳转到角色搜索页（带生日筛选）
+function navigateToBirthdaySearch(month, day) {
+  router.push({ path: '/browse/characters', query: { birthday: `${month},${day}` } })
 }
 
 // 隐私过滤：获取 release 封面的 NSFW 等级
@@ -497,6 +545,147 @@ function getFilterSummary(item) {
           <div class="text-lg font-bold text-neutral-950 mt-0.5">{{ stats.staff?.toLocaleString() || '0' }}</div>
         </div>
       </div>
+    </div>
+
+    <!-- 角色生日板块 -->
+    <div v-if="todayBirthdays.length > 0 || tomorrowBirthdays.length > 0 || loadingSections.birthday" class="rounded-xl border border-neutral-200 bg-white p-4 shadow-xs">
+      <h2 class="text-sm font-semibold text-neutral-800 flex items-center gap-2">
+        <Icon icon="lucide:cake" class="h-4 w-4 text-pink-500" />
+        {{ t('home.birthday') }}
+      </h2>
+      <p class="text-[11px] text-neutral-400 mt-1 mb-3">ヾ(✿ﾟ▽ﾟ)ノ {{ t('home.birthday_greeting') }}</p>
+
+      <div v-if="loadingSections.birthday" class="space-y-3">
+        <div class="text-xs font-medium text-neutral-500">{{ t('home.birthday_today') }}</div>
+        <div class="flex gap-2 overflow-x-auto pb-1">
+          <div v-for="i in 4" :key="i" class="animate-pulse shrink-0 w-16 text-center">
+            <div class="w-12 h-12 mx-auto rounded-xl bg-neutral-100 mb-1"></div>
+            <div class="h-2.5 w-10 mx-auto rounded bg-neutral-100"></div>
+          </div>
+        </div>
+      </div>
+
+      <template v-else>
+        <!-- 今日生日 -->
+        <div class="mb-3">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-xs font-medium text-neutral-500 flex items-center gap-1.5">
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-pink-400"></span>
+              {{ t('home.birthday_today') }}
+              <span class="text-neutral-400 font-normal">({{ todayBirthdays.length }})</span>
+            </div>
+            <button
+              v-if="todayBirthdays.length > 0"
+              @click="navigateToBirthdaySearch(...getBirthdayParams(0))"
+              class="text-[10px] text-neutral-400 hover:text-neutral-600 transition"
+            >
+              {{ t('home.view_all') }}
+            </button>
+          </div>
+
+          <div v-if="todayBirthdays.length === 0" class="text-[11px] text-neutral-400 py-1">
+            {{ t('home.no_birthday') }}
+          </div>
+          <div v-else class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            <div
+              v-for="char in todayBirthdays.slice(0, 10)"
+              :key="char.id"
+              @click="handleCharacterClick(char)"
+              class="shrink-0 w-16 text-center cursor-pointer group"
+            >
+              <div class="w-12 h-12 mx-auto rounded-xl bg-neutral-100 overflow-hidden border-2 border-pink-200 mb-1 relative">
+                <ion-img
+                  v-if="char.image?.url"
+                  :key="`bt-${char.id}-${imageLoader.getRetryCount('bt-' + char.id)}`"
+                  :src="char.image.url"
+                  class="h-full w-full object-cover transition-opacity duration-500"
+                  :class="{ 'opacity-0': !imageLoader.isSuccess('bt-' + char.id) }"
+                  @ionImgDidLoad="imageLoader.onLoad('bt-' + char.id)"
+                  @ionError="imageLoader.onError('bt-' + char.id)"
+                />
+                <ion-spinner
+                  v-if="char.image?.url && imageLoader.isLoading('bt-' + char.id)"
+                  name="crescent"
+                  class="absolute inset-0 m-auto z-10 text-neutral-400"
+                  style="width: 14px; height: 14px;"
+                />
+                <div
+                  v-if="char.image?.url && imageLoader.isError('bt-' + char.id)"
+                  @click.stop="imageLoader.retry('bt-' + char.id)"
+                  class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
+                >
+                  <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400" />
+                </div>
+                <div v-if="!char.image?.url" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
+                  <Icon icon="lucide:user" class="h-5 w-5 text-neutral-300" />
+                </div>
+              </div>
+              <div class="text-[10px] font-medium text-neutral-700 truncate group-hover:text-neutral-950">{{ char.original || char.name }}</div>
+              <div v-if="char.birthday" class="text-[9px] text-neutral-400">{{ char.birthday[0] }}月{{ char.birthday[1] }}日</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 明日生日 -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-xs font-medium text-neutral-500 flex items-center gap-1.5">
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+              {{ t('home.birthday_tomorrow') }}
+              <span class="text-neutral-400 font-normal">({{ tomorrowBirthdays.length }})</span>
+            </div>
+            <button
+              v-if="tomorrowBirthdays.length > 0"
+              @click="navigateToBirthdaySearch(...getBirthdayParams(1))"
+              class="text-[10px] text-neutral-400 hover:text-neutral-600 transition"
+            >
+              {{ t('home.view_all') }}
+            </button>
+          </div>
+
+          <div v-if="tomorrowBirthdays.length === 0" class="text-[11px] text-neutral-400 py-1">
+            {{ t('home.no_birthday') }}
+          </div>
+          <div v-else class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            <div
+              v-for="char in tomorrowBirthdays.slice(0, 10)"
+              :key="char.id"
+              @click="handleCharacterClick(char)"
+              class="shrink-0 w-16 text-center cursor-pointer group"
+            >
+              <div class="w-12 h-12 mx-auto rounded-xl bg-neutral-100 overflow-hidden border-2 border-blue-200 mb-1 relative">
+                <ion-img
+                  v-if="char.image?.url"
+                  :key="`btt-${char.id}-${imageLoader.getRetryCount('btt-' + char.id)}`"
+                  :src="char.image.url"
+                  class="h-full w-full object-cover transition-opacity duration-500"
+                  :class="{ 'opacity-0': !imageLoader.isSuccess('btt-' + char.id) }"
+                  @ionImgDidLoad="imageLoader.onLoad('btt-' + char.id)"
+                  @ionError="imageLoader.onError('btt-' + char.id)"
+                />
+                <ion-spinner
+                  v-if="char.image?.url && imageLoader.isLoading('btt-' + char.id)"
+                  name="crescent"
+                  class="absolute inset-0 m-auto z-10 text-neutral-400"
+                  style="width: 14px; height: 14px;"
+                />
+                <div
+                  v-if="char.image?.url && imageLoader.isError('btt-' + char.id)"
+                  @click.stop="imageLoader.retry('btt-' + char.id)"
+                  class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
+                >
+                  <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400" />
+                </div>
+                <div v-if="!char.image?.url" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
+                  <Icon icon="lucide:user" class="h-5 w-5 text-neutral-300" />
+                </div>
+              </div>
+              <div class="text-[10px] font-medium text-neutral-700 truncate group-hover:text-neutral-950">{{ char.original || char.name }}</div>
+              <div v-if="char.birthday" class="text-[9px] text-neutral-400">{{ char.birthday[0] }}月{{ char.birthday[1] }}日</div>
+            </div>
+          </div>
+        </div>
+      </template>
     </div>
 
     <!-- 刚刚发布 & 即将发布 -->
