@@ -233,7 +233,12 @@
       "covers": "封面",
       "screenshots": "截图",
       "reviews": "评论",
-      "quotes": "摘录"
+      "quotes": "摘录",
+      "links": "外链"
+    },
+    "links": {
+      "resource_sites": "资源站",
+      "info_sites": "资料站"
     },
     "releases": {
       "loading": "正在加载版本发行数据...",

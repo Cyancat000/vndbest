@@ -825,6 +825,56 @@ const isLoggedIn = computed(() => {
   return !!(token && token.trim())
 })
 
+// 外链跳转：资源站链接列表
+const resourceLinks = computed(() => {
+  const title = vn.value?.title || ''
+  return [
+    {
+      name: '真红小站',
+      url: `https://www.shinnku.com/search?q=${encodeURIComponent(title)}`,
+      icon: 'lucide:globe'
+    },
+    {
+      name: '忧郁的弟弟',
+      url: `https://www.ttloli.com/?s=${encodeURIComponent(title)}&submit=`,
+      icon: 'lucide:globe'
+    },
+    {
+      name: 'vikacg',
+      url: `https://www.vikacg.com/search?s=${encodeURIComponent(title)}`,
+      icon: 'lucide:globe'
+    }
+  ]
+})
+
+// 外链跳转：资料站链接列表
+const infoLinks = computed(() => {
+  const title = vn.value?.title || ''
+  const vnId = vn.value?.id || ''
+  return [
+    {
+      name: 'Bangumi',
+      url: `https://bgm.tv/subject_search/${encodeURIComponent(title)}?cat=4`,
+      icon: 'lucide:book-open'
+    },
+    {
+      name: '2dfan',
+      url: `https://2dfan.com/subjects/search?keyword=${encodeURIComponent(title)}`,
+      icon: 'lucide:book-open'
+    },
+    {
+      name: 'vndb',
+      url: `https://vndb.org/${vnId}`,
+      icon: 'lucide:book-open'
+    },
+    {
+      name: '月幕',
+      url: `https://www.ymgal.games/search?type=article&keyword=${encodeURIComponent(title)}`,
+      icon: 'lucide:book-open'
+    }
+  ]
+})
+
 // 当前已加载的 VN ID，用于避免从子页面返回时重复加载
 const currentLoadedId = ref(null)
 
@@ -1106,6 +1156,7 @@ watch(
               { id: 'covers', name: t('vn.tabs.covers') },
               { id: 'screenshots', name: t('vn.tabs.screenshots') },
               { id: 'quotes', name: t('vn.tabs.quotes') },
+              { id: 'links', name: t('vn.tabs.links') },
             ]"
             :key="tab.id"
             @click="activeTab = tab.id"
@@ -1733,6 +1784,47 @@ watch(
                   {{ t('vn.quotes.score') }}: <strong class="text-neutral-700">{{ q.score }}</strong>
                 </span>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. 外链跳转 Tab (Links) -->
+        <div v-else-if="activeTab === 'links'" class="space-y-4" v-if="vn">
+          <!-- 资源站 -->
+          <div>
+            <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-2 px-1">{{ t('vn.links.resource_sites') }}</h4>
+            <div class="space-y-1.5">
+              <a
+                v-for="link in resourceLinks"
+                :key="link.name"
+                :href="link.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 bg-neutral-50 hover:bg-neutral-100 active:bg-neutral-200 transition-colors"
+              >
+                <Icon :icon="link.icon" class="h-4 w-4 text-neutral-500 shrink-0" />
+                <span class="text-xs font-medium text-neutral-700">{{ link.name }}</span>
+                <Icon icon="lucide:external-link" class="h-3 w-3 text-neutral-300 ml-auto shrink-0" />
+              </a>
+            </div>
+          </div>
+
+          <!-- 资料站 -->
+          <div>
+            <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-2 px-1">{{ t('vn.links.info_sites') }}</h4>
+            <div class="space-y-1.5">
+              <a
+                v-for="link in infoLinks"
+                :key="link.name"
+                :href="link.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 bg-neutral-50 hover:bg-neutral-100 active:bg-neutral-200 transition-colors"
+              >
+                <Icon :icon="link.icon" class="h-4 w-4 text-neutral-500 shrink-0" />
+                <span class="text-xs font-medium text-neutral-700">{{ link.name }}</span>
+                <Icon icon="lucide:external-link" class="h-3 w-3 text-neutral-300 ml-auto shrink-0" />
+              </a>
             </div>
           </div>
         </div>

@@ -217,7 +217,12 @@
       "covers": "Covers",
       "screenshots": "Screenshots",
       "reviews": "Reviews",
-      "quotes": "Quotes"
+      "quotes": "Quotes",
+      "links": "Links"
+    },
+    "links": {
+      "resource_sites": "Resource Sites",
+      "info_sites": "Info Sites"
     },
     "releases": {
       "loading": "Loading releases...",
