@@ -6,11 +6,20 @@
 const BASE_URL = 'https://api.vndb.org/kana'
 const SANDBOX_URL = 'https://beta.vndb.org/api/kana'
 
+// 开发环境使用 Vite 代理路径，避免 CORS 问题（PATCH/DELETE 方法）
+const DEV_PROXY = '/api/vndb'
+const DEV_SANDBOX_PROXY = '/api/vndb-sandbox'
+
 /**
  * 获取当前的 API Endpoint
+ * 开发环境通过 Vite proxy 转发请求，生产环境（Capacitor）直接访问
  */
 function getEndpoint() {
   const useSandbox = JSON.parse(localStorage.getItem('vndb_use_sandbox') || 'false')
+  const isDev = import.meta.env.DEV
+  if (isDev) {
+    return useSandbox ? DEV_SANDBOX_PROXY : DEV_PROXY
+  }
   return useSandbox ? SANDBOX_URL : BASE_URL
 }
 
@@ -532,5 +541,44 @@ export async function getTraitList(filters = [], params = {}) {
   return request('/trait', {
     method: 'POST',
     body: JSON.stringify(payload)
+  })
+}
+
+/**
+ * 11. 获取用户收藏列表中某个 VN 的条目
+ * POST /ulist
+ */
+export async function getVnListItem(vnId) {
+  const userId = localStorage.getItem('vndb_user_id')
+  if (!userId) return null
+  return request('/ulist', {
+    method: 'POST',
+    body: JSON.stringify({
+      user: userId,
+      fields: 'id, vote, added, lastmod, started, finished, notes, labels{id,label}',
+      filters: ['id', '=', vnId],
+      results: 1
+    })
+  })
+}
+
+/**
+ * 12. 更新/添加用户收藏列表中的 VN 条目
+ * PATCH /ulist/<id>
+ */
+export async function patchVnListItem(vnId, data) {
+  return request(`/ulist/${vnId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data)
+  })
+}
+
+/**
+ * 13. 删除用户收藏列表中的 VN 条目
+ * DELETE /ulist/<id>
+ */
+export async function deleteVnListItem(vnId) {
+  return request(`/ulist/${vnId}`, {
+    method: 'DELETE'
   })
 }

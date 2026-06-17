@@ -87,11 +87,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="relative inline-block" ref="containerRef">
+  <div class="relative block w-full" ref="containerRef">
     <button
       type="button"
       @click="toggleMenu"
-      class="flex w-full items-center justify-between gap-1.5 px-2 py-1 rounded-md hover:bg-neutral-100 transition text-xs font-medium text-neutral-600 hover:text-neutral-900 cursor-pointer"
+      class="flex w-full items-center justify-between gap-1.5 px-2 py-1 rounded-md border border-neutral-200 bg-white hover:bg-neutral-50 transition text-xs font-medium text-neutral-600 hover:text-neutral-900 cursor-pointer"
     >
       <slot name="prefix"></slot>
       <span>{{ currentLabel }}</span>

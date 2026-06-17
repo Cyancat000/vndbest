@@ -3,8 +3,9 @@ import { ref, watch, computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
-import { getVnDetail, getVnReleases, getVnCharacters, getVnQuotes } from '@/api/vndb'
+import { getVnDetail, getVnReleases, getVnCharacters, getVnQuotes, getVnListItem, patchVnListItem, deleteVnListItem } from '@/api/vndb'
 import VnList from '@/components/VnList.vue'
+import BaseSelect from '@/components/BaseSelect.vue'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { useTranslation } from '@/composables/useTranslation'
 import { useImageLoader } from '@/composables/useImageLoader'
@@ -47,6 +48,9 @@ const scrollContainer = ref(null) // 滚动容器的 DOM 引用
 // 控制简介展开/收起
 const isDescriptionExpanded = ref(false)
 
+// 控制笔记展开/收起
+const notesExpanded = ref(false)
+
 // 控制角色详情展开/收起 (存储展开的角色 ID)
 const expandedCharIds = ref(new Set())
 
@@ -61,6 +65,278 @@ function toggleReveal(key) {
   }
   // 触发响应式更新
   revealedItems.value = new Set(revealedItems.value)
+}
+
+// ==================== 收藏状态管理 ====================
+
+// 用户收藏列表条目（null 表示不在列表中）
+const collectionEntry = ref(null)
+const statusLoading = ref(false)
+
+// 预定义标签 ID 到原名的映射（VNDB 默认标签，用户可自定义）
+const LABEL_NAMES = {
+  1: 'Playing',
+  2: 'Finished',
+  3: 'Stalled',
+  4: 'Dropped',
+  5: 'Wishlisted',
+  6: 'Backlog'
+}
+
+// 当前 VN 的状态标签 ID 数组
+const currentLabelIds = computed(() => {
+  if (!collectionEntry.value?.labels) return []
+  return collectionEntry.value.labels.map(l => l.id)
+})
+
+// 获取当前主要状态（取最高优先级的标签）
+const currentStatusLabel = computed(() => {
+  if (currentLabelIds.value.length === 0) return null
+  // 按优先级排序：Playing > Finished > Stalled > Dropped > Wishlisted > Backlog
+  const priority = [1, 2, 3, 4, 5, 6]
+  for (const id of priority) {
+    if (currentLabelIds.value.includes(id)) {
+      // 优先使用 API 返回的 name，否则用预定义名
+      const apiLabel = collectionEntry.value.labels.find(l => l.id === id)
+      const name = apiLabel?.name || LABEL_NAMES[id] || `Label ${id}`
+      return { id, name }
+    }
+  }
+  return null
+})
+
+// 状态选项列表（供 BaseSelect 使用）
+const statusOptions = computed(() => {
+  // 从 API 返回的标签构建选项（支持自定义标签）
+  if (collectionEntry.value?.labels && collectionEntry.value.labels.length > 0) {
+    const options = collectionEntry.value.labels
+      .filter(l => l.id >= 1 && l.id <= 6)
+      .map(l => ({ value: l.id, label: l.name || LABEL_NAMES[l.id] || `Label ${l.id}` }))
+    // 确保所有预定义标签都在选项中
+    const existingIds = new Set(options.map(o => o.value))
+    for (const [id, name] of Object.entries(LABEL_NAMES)) {
+      if (!existingIds.has(Number(id))) {
+        options.push({ value: Number(id), label: name })
+      }
+    }
+    return options
+  }
+  // 无 API 数据时使用预定义标签
+  return Object.entries(LABEL_NAMES).map(([id, name]) => ({
+    value: Number(id),
+    label: name
+  }))
+})
+
+// 当前选中的值（0 表示"无"）
+const currentStatusValue = computed(() => currentStatusLabel.value?.id || 0)
+
+// 加载当前 VN 的收藏状态
+const loadCollectionStatus = async (vnId) => {
+  const token = localStorage.getItem('vndb_api_token')
+  if (!token) return
+  try {
+    const data = await getVnListItem(vnId)
+    if (data && data.results && data.results.length > 0) {
+      collectionEntry.value = data.results[0]
+    } else {
+      collectionEntry.value = null
+    }
+  } catch (err) {
+    console.error('获取收藏状态失败:', err)
+  }
+}
+
+// 处理状态变更（通过 BaseSelect）
+const handleStatusChange = async (newLabelId) => {
+  if (!vn.value?.id) return
+
+  const token = localStorage.getItem('vndb_api_token')
+  if (!token) {
+    router.push('/login')
+    return
+  }
+
+  statusLoading.value = true
+  try {
+    if (!newLabelId) {
+      // 选择"无" → 从列表移除
+      if (collectionEntry.value) {
+        await deleteVnListItem(collectionEntry.value.id)
+        collectionEntry.value = null
+      }
+    } else if (collectionEntry.value) {
+      // 已在列表中 → 先移除旧的状态标签，再设置新的
+      const oldLabelIds = currentLabelIds.value.filter(id => id >= 1 && id <= 6)
+      const data = {}
+      if (oldLabelIds.length > 0) {
+        data.labels_unset = oldLabelIds
+      }
+      if (!oldLabelIds.includes(newLabelId)) {
+        data.labels_set = [newLabelId]
+      }
+      if (Object.keys(data).length > 0) {
+        await patchVnListItem(collectionEntry.value.id, data)
+      }
+    } else {
+      // 不在列表中 → 创建新条目
+      await patchVnListItem(vn.value.id, { labels: [newLabelId] })
+    }
+
+    // 重新加载状态
+    await loadCollectionStatus(vn.value.id)
+  } catch (err) {
+    console.error('更新收藏状态失败:', err)
+  } finally {
+    statusLoading.value = false
+  }
+}
+
+// ==================== 收藏编辑弹窗 ====================
+
+const showEditModal = ref(false)
+const editSaving = ref(false)
+
+// 弹窗表单数据
+const editForm = ref({
+  statusLabelId: 0,    // 状态标签 ID（0 = 无）
+  vote: '',            // 评分 1-10，空字符串表示未评分
+  notes: '',           // 笔记
+  started: '',         // 开始日期 YYYY-MM-DD
+  finished: ''         // 结束日期 YYYY-MM-DD
+})
+
+// 星星悬停预览
+const hoverVote = ref(null)
+
+// 设置评分（点击星星）
+const setVote = (val) => {
+  if (editForm.value.vote === val) {
+    // 再次点击同一个星星 = 取消评分
+    editForm.value.vote = ''
+  } else {
+    editForm.value.vote = val
+  }
+}
+
+// 清除评分
+const clearVote = () => {
+  editForm.value.vote = ''
+}
+
+// 格式化评分显示
+const formattedVote = computed(() => {
+  const vote = collectionEntry.value?.vote
+  if (!vote) return null
+  return vote / 10  // API 返回 10-100，显示为 1.0-10.0
+})
+
+// 打开编辑弹窗，用当前收藏数据填充表单
+const openEditModal = () => {
+  const rawVote = collectionEntry.value?.vote
+  editForm.value = {
+    statusLabelId: currentStatusLabel.value?.id || 0,
+    vote: rawVote ? Math.round(rawVote / 10) : '',
+    notes: collectionEntry.value?.notes || '',
+    started: collectionEntry.value?.started || '',
+    finished: collectionEntry.value?.finished || ''
+  }
+  hoverVote.value = null
+  showEditModal.value = true
+  document.body.style.overflow = 'hidden'
+}
+
+// 关闭编辑弹窗
+const closeEditModal = () => {
+  showEditModal.value = false
+  document.body.style.overflow = ''
+}
+
+// 保存编辑弹窗表单
+const saveEditForm = async () => {
+  if (!vn.value?.id) return
+
+  const token = localStorage.getItem('vndb_api_token')
+  if (!token) {
+    router.push('/login')
+    return
+  }
+
+  editSaving.value = true
+  try {
+    const form = editForm.value
+
+    // 处理状态标签变更
+    const newLabelId = form.statusLabelId || 0
+    const oldLabelIds = currentLabelIds.value.filter(id => id >= 1 && id <= 6)
+
+    if (!collectionEntry.value) {
+      // 不在列表中 → 创建新条目
+      const patchData = {}
+      if (newLabelId > 0) {
+        patchData.labels = [newLabelId]
+      }
+      if (form.vote !== '') {
+        patchData.vote = Math.round(Number(form.vote) * 10)
+      }
+      if (form.notes) {
+        patchData.notes = form.notes
+      }
+      if (form.started) {
+        patchData.started = form.started
+      }
+      if (form.finished) {
+        patchData.finished = form.finished
+      }
+      if (Object.keys(patchData).length > 0) {
+        await patchVnListItem(vn.value.id, patchData)
+      }
+    } else {
+      // 已在列表中 → 更新
+      const patchData = {}
+
+      // 状态标签变更
+      if (newLabelId === 0 && oldLabelIds.length > 0) {
+        // 移除所有状态标签
+        patchData.labels_unset = oldLabelIds
+      } else if (newLabelId > 0) {
+        const labelsToUnset = oldLabelIds.filter(id => id !== newLabelId)
+        if (labelsToUnset.length > 0) {
+          patchData.labels_unset = labelsToUnset
+        }
+        if (!oldLabelIds.includes(newLabelId)) {
+          patchData.labels_set = [newLabelId]
+        }
+      }
+
+      // 评分变更
+      if (form.vote !== '') {
+        patchData.vote = Math.round(Number(form.vote) * 10)
+      } else {
+        patchData.vote = null  // 清除评分
+      }
+
+      // 笔记变更
+      patchData.notes = form.notes || null
+
+      // 日期变更
+      patchData.started = form.started || null
+      patchData.finished = form.finished || null
+
+      if (Object.keys(patchData).length > 0) {
+        await patchVnListItem(collectionEntry.value.id, patchData)
+      }
+    }
+
+    // 重新加载状态
+    await loadCollectionStatus(vn.value.id)
+    showEditModal.value = false
+    document.body.style.overflow = ''
+  } catch (err) {
+    console.error('保存收藏信息失败:', err)
+  } finally {
+    editSaving.value = false
+  }
 }
 
 // 详情页封面过滤动作
@@ -384,11 +660,13 @@ const loadVnDetail = async (id) => {
       // 默认激活版本发行
       activeTab.value = 'releases'
       spoilerLevel.value = 0
+      collectionEntry.value = null
       
       // 并发异步加载其余所有子选项卡数据，加快响应时间
       loadReleases(id)
       loadCharacters(id)
       loadQuotes(id)
+      loadCollectionStatus(id)
     } else {
       vn.value = null
       error.value = t('vn.not_found')
@@ -472,6 +750,12 @@ function getAltTitle(v) {
   if (v.title && v.title !== mainTitle) return v.title
   return ''
 }
+
+// 登录状态检查
+const isLoggedIn = computed(() => {
+  const token = localStorage.getItem('vndb_api_token')
+  return !!(token && token.trim())
+})
 
 // 当前已加载的 VN ID，用于避免从子页面返回时重复加载
 const currentLoadedId = ref(null)
@@ -623,13 +907,82 @@ watch(
 
             <span class="text-neutral-400">{{ t('vn.length') }}</span>
             <span class="text-neutral-800">{{ formatLength(vn) }}</span>
-            
+
             <template v-if="vn.rating">
               <span class="text-neutral-400">{{ t('vn.rating') }}</span>
               <span class="text-neutral-800 font-semibold flex items-center gap-1">
                 <Icon icon="lucide:star" class="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
                 {{ vn.rating }} ({{ t('vn.votes', { count: vn.votecount }) }})
               </span>
+            </template>
+
+            <!-- 收藏状态 -->
+            <template v-if="isLoggedIn">
+              <span class="text-neutral-400">{{ t('vn.status.title') }}</span>
+              <div class="flex items-center gap-2">
+                <BaseSelect
+                  :modelValue="currentStatusValue"
+                  @update:modelValue="handleStatusChange"
+                  :options="[{ value: 0, label: t('vn.status.none') }, ...statusOptions]"
+                />
+                <Icon
+                  v-if="statusLoading"
+                  icon="lucide:loader-2"
+                  class="h-4 w-4 animate-spin text-neutral-400 flex-shrink-0"
+                />
+              </div>
+
+              <!-- 我的评分 -->
+              <span class="text-neutral-400">{{ t('vn.status.my_vote') }}</span>
+              <span class="text-neutral-800" :class="{ 'text-neutral-400': !formattedVote }">
+                {{ formattedVote != null ? `${formattedVote.toFixed(1)} / 10` : t('vn.status.no_vote') }}
+              </span>
+
+              <!-- 笔记 -->
+              <span class="text-neutral-400">{{ t('vn.status.notes') }}</span>
+              <div
+                v-if="collectionEntry?.notes"
+                class="rounded-md border border-neutral-200 bg-neutral-50 pl-3 pr-2 py-2 mt-0.5"
+              >
+                <p
+                  class="text-xs text-neutral-700 whitespace-pre-wrap break-words leading-relaxed"
+                  :class="[notesExpanded ? '' : 'line-clamp-5']"
+                >{{ collectionEntry.notes }}</p>
+                <button
+                  v-if="collectionEntry.notes.length > 100"
+                  @click="notesExpanded = !notesExpanded"
+                  class="mt-1 flex items-center gap-1 text-[10px] text-neutral-400 hover:text-neutral-600 transition cursor-pointer"
+                >
+                  <Icon :icon="notesExpanded ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="h-3 w-3" />
+                  {{ notesExpanded ? '收起' : '展开全文' }}
+                </button>
+              </div>
+              <span
+                v-else
+                class="text-neutral-400 italic"
+              >{{ t('vn.status.no_notes') }}</span>
+
+              <!-- 开始日期 -->
+              <span class="text-neutral-400">{{ t('vn.status.started') }}</span>
+              <span class="text-neutral-800" :class="{ 'text-neutral-400': !collectionEntry?.started }">
+                {{ collectionEntry?.started || '—' }}
+              </span>
+
+              <!-- 结束日期 -->
+              <span class="text-neutral-400">{{ t('vn.status.finished_date') }}</span>
+              <span class="text-neutral-800" :class="{ 'text-neutral-400': !collectionEntry?.finished }">
+                {{ collectionEntry?.finished || '—' }}
+              </span>
+
+              <!-- 编辑按钮 -->
+              <span></span>
+              <button
+                @click="openEditModal"
+                class="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-neutral-700 transition cursor-pointer w-fit"
+              >
+                <Icon icon="lucide:pencil" class="h-3.5 w-3.5" />
+                {{ t('vn.status.edit') }}
+              </button>
             </template>
           </div>
         </div>
@@ -1334,6 +1687,135 @@ watch(
         </div>
       </div>
     </Teleport>
+
+    <!-- 收藏编辑弹窗 -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="showEditModal"
+          class="fixed inset-0 z-[200] flex items-end sm:items-center justify-center"
+        >
+          <!-- 背景遮罩 -->
+          <div class="absolute inset-0 bg-black/40" @click="closeEditModal"></div>
+
+          <!-- 弹窗内容 -->
+          <div class="relative z-10 w-full sm:w-[420px] max-h-[85vh] bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200">
+            <!-- 顶部栏 -->
+            <div class="flex items-center justify-between px-4 pt-4 pb-2">
+              <h3 class="text-base font-bold text-neutral-900">{{ t('vn.status.edit_collection') }}</h3>
+              <button
+                @click="closeEditModal"
+                class="p-1.5 rounded-full hover:bg-neutral-100 transition-colors cursor-pointer"
+              >
+                <Icon icon="lucide:x" class="h-4 w-4 text-neutral-400" />
+              </button>
+            </div>
+
+            <!-- 表单内容 -->
+            <div class="px-4 pb-4 space-y-4 overflow-y-auto flex-1">
+              <!-- 状态选择 -->
+              <div class="space-y-2.5">
+                <label class="text-xs font-medium text-neutral-500">{{ t('vn.status.title') }}</label>
+                <BaseSelect
+                  v-model="editForm.statusLabelId"
+                  :options="[{ value: 0, label: t('vn.status.none') }, ...statusOptions]"
+                />
+              </div>
+
+              <!-- 评分 -->
+              <div class="space-y-2.5">
+                <label class="text-xs font-medium text-neutral-500">{{ t('vn.status.my_vote') }}</label>
+                <div class="flex items-center justify-center gap-1">
+                  <!-- 取消评分按钮 -->
+                  <button
+                    @click="clearVote"
+                    type="button"
+                    class="inline-flex items-center justify-center p-0.5 transition-transform hover:scale-110 cursor-pointer"
+                    :title="t('vn.status.no_vote')"
+                  >
+                    <Icon
+                      icon="solar:star-broken"
+                      class="h-5 w-5 transition-colors"
+                      :class="editForm.vote === '' ? 'text-red-400' : 'text-neutral-300 hover:text-neutral-500'"
+                    />
+                  </button>
+                  <!-- 评分星星 -->
+                  <button
+                    v-for="n in 10"
+                    :key="n"
+                    type="button"
+                    @click="setVote(n)"
+                    @mouseenter="hoverVote = n"
+                    @mouseleave="hoverVote = null"
+                    class="inline-flex items-center justify-center p-0.5 transition-transform hover:scale-110 cursor-pointer"
+                  >
+                    <Icon
+                      icon="solar:star-bold"
+                      class="h-6 w-6 transition-colors"
+                      :class="(hoverVote !== null ? n <= hoverVote : n <= editForm.vote)
+                        ? 'text-amber-400'
+                        : 'text-neutral-200'"
+                      :style="(hoverVote !== null ? n <= hoverVote : n <= editForm.vote)
+                        ? { fill: '#fbbf24' }
+                        : { fill: '#e5e5e5' }"
+                    />
+                  </button>
+                </div>
+              </div>
+
+              <!-- 笔记 -->
+              <div class="space-y-2.5">
+                <label class="text-xs font-medium text-neutral-500">{{ t('vn.status.notes') }}</label>
+                <textarea
+                  v-model="editForm.notes"
+                  rows="5"
+                  :placeholder="t('vn.status.no_notes')"
+                  class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs leading-relaxed outline-none transition focus:border-neutral-400 focus:bg-white placeholder-neutral-400 resize-none"
+                ></textarea>
+              </div>
+
+              <!-- 开始日期 -->
+              <div class="space-y-1.5">
+                <label class="text-xs font-medium text-neutral-500">{{ t('vn.status.started') }}</label>
+                <input
+                  v-model="editForm.started"
+                  type="date"
+                  class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm outline-none transition focus:border-neutral-400 focus:bg-white"
+                />
+              </div>
+
+              <!-- 结束日期 -->
+              <div class="space-y-1.5">
+                <label class="text-xs font-medium text-neutral-500">{{ t('vn.status.finished_date') }}</label>
+                <input
+                  v-model="editForm.finished"
+                  type="date"
+                  class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm outline-none transition focus:border-neutral-400 focus:bg-white"
+                />
+              </div>
+            </div>
+
+            <!-- 底部按钮 -->
+            <div class="flex items-center justify-end gap-2 px-4 py-3 border-t border-neutral-100">
+              <button
+                @click="closeEditModal"
+                class="px-4 py-2 text-sm text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition cursor-pointer"
+              >
+                {{ t('vn.status.cancel') }}
+              </button>
+              <button
+                @click="saveEditForm"
+                :disabled="editSaving"
+                class="px-4 py-2 text-sm font-medium text-white bg-neutral-900 hover:bg-neutral-800 rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+              >
+                <Icon v-if="editSaving" icon="lucide:loader-2" class="h-3.5 w-3.5 animate-spin" />
+                {{ t('vn.status.save') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
   </ion-content>
   </ion-page>
@@ -1342,4 +1824,14 @@ watch(
 <style scoped>
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* 弹窗过渡动画 */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.2s ease;
+}
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
 </style>

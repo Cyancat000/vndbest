@@ -11,4 +11,19 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    proxy: {
+      // 代理 VNDB API 请求，解决 CORS 问题（PATCH/DELETE 方法）
+      '/api/vndb': {
+        target: 'https://api.vndb.org/kana',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/vndb/, ''),
+      },
+      '/api/vndb-sandbox': {
+        target: 'https://beta.vndb.org/api/kana',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/vndb-sandbox/, ''),
+      },
+    },
+  },
 })
