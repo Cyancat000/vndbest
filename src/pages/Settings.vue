@@ -121,7 +121,7 @@ function goToLogin() {
 }
 
 // ====== 更新检查 ======
-const APP_VERSION = '1.0.0-beta.1'
+const APP_VERSION = '1.0.0-beta.2'
 const updateState = ref('idle') // idle | checking | available | up-to-date | error
 const latestVersion = ref('')
 const latestReleaseUrl = ref('')
