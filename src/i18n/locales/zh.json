@@ -347,7 +347,9 @@
       "no_vote": "未评分",
       "save": "保存",
       "cancel": "取消",
-      "no_notes": "暂无笔记"
+      "no_notes": "暂无笔记",
+      "save_success": "保存成功",
+      "save_error": "保存失败，请重试"
     }
   },
   "release": {

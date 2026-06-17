@@ -331,7 +331,9 @@
       "no_vote": "No vote",
       "save": "Save",
       "cancel": "Cancel",
-      "no_notes": "No notes yet"
+      "no_notes": "No notes yet",
+      "save_success": "Saved successfully",
+      "save_error": "Failed to save, please try again"
     }
   },
   "release": {

@@ -42,13 +42,48 @@ function getHeaders() {
  */
 export async function request(path, options = {}) {
   const url = `${getEndpoint()}${path}`
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      ...getHeaders(),
-      ...options.headers,
-    },
-  })
+  const { timeout, ...fetchOptions } = options
+
+  let signal
+  let timer
+  if (timeout) {
+    const controller = new AbortController()
+    signal = controller.signal
+    timer = setTimeout(() => controller.abort(), timeout)
+  }
+
+  try {
+    const response = await fetch(url, {
+      ...fetchOptions,
+      headers: {
+        ...getHeaders(),
+        ...fetchOptions.headers,
+      },
+      ...(signal ? { signal } : {}),
+    })
+
+    if (!response.ok) {
+      let errorMsg = `HTTP error! status: ${response.status}`
+      try {
+        const errData = await response.json()
+        if (errData && errData.message) {
+          errorMsg = errData.message
+        }
+      } catch (_) {}
+      throw new Error(errorMsg)
+    }
+
+    // 某些接口如 DELETE 或 PATCH 可能返回空，需要安全解析 JSON
+    const text = await response.text()
+    return text ? JSON.parse(text) : {}
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('请求超时，请检查网络后重试')
+    }
+    throw err
+  } finally {
+    if (timer) clearTimeout(timer)
+  }
 
   if (!response.ok) {
     let errorMsg = `HTTP error! status: ${response.status}`
@@ -583,10 +618,11 @@ export async function getVnListItem(vnId) {
  * 12. 更新/添加用户收藏列表中的 VN 条目
  * PATCH /ulist/<id>
  */
-export async function patchVnListItem(vnId, data) {
+export async function patchVnListItem(vnId, data, options = {}) {
   return request(`/ulist/${vnId}`, {
     method: 'PATCH',
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
+    ...options
   })
 }
 

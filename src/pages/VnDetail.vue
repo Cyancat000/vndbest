@@ -85,7 +85,27 @@ function toggleReveal(key) {
 
 // 用户收藏列表条目（null 表示不在列表中）
 const collectionEntry = ref(null)
+const collectionLoading = ref(true)
 const statusLoading = ref(false)
+
+// 收藏状态加载标记：用于区分"尚未加载"和"加载完毕但无数据"
+const collectionLoaded = ref(false)
+
+// Toast 提示
+const toastVisible = ref(false)
+const toastMessage = ref('')
+const toastType = ref('success') // 'success' | 'error'
+let toastTimer = null
+
+const showToast = (message, type = 'success') => {
+  toastMessage.value = message
+  toastType.value = type
+  toastVisible.value = true
+  if (toastTimer) clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => {
+    toastVisible.value = false
+  }, 2500)
+}
 
 // 预定义标签 ID 到原名的映射（VNDB 默认标签，用户可自定义）
 const LABEL_NAMES = {
@@ -148,7 +168,12 @@ const currentStatusValue = computed(() => currentStatusLabel.value?.id || 0)
 // 加载当前 VN 的收藏状态
 const loadCollectionStatus = async (vnId) => {
   const token = localStorage.getItem('vndb_api_token')
-  if (!token) return
+  if (!token) {
+    collectionLoading.value = false
+    collectionLoaded.value = true
+    return
+  }
+  collectionLoading.value = true
   try {
     const data = await getVnListItem(vnId)
     if (data && data.results && data.results.length > 0) {
@@ -158,6 +183,9 @@ const loadCollectionStatus = async (vnId) => {
     }
   } catch (err) {
     console.error('获取收藏状态失败:', err)
+  } finally {
+    collectionLoading.value = false
+    collectionLoaded.value = true
   }
 }
 
@@ -303,15 +331,15 @@ const saveEditForm = async () => {
         patchData.finished = form.finished
       }
       if (Object.keys(patchData).length > 0) {
-        await patchVnListItem(vn.value.id, patchData)
+        await patchVnListItem(vn.value.id, patchData, { timeout: 15000 })
       }
     } else {
-      // 已在列表中 → 更新
+      // 已在列表中 → 更新（仅发送实际变更的字段）
+      const entry = collectionEntry.value
       const patchData = {}
 
       // 状态标签变更
       if (newLabelId === 0 && oldLabelIds.length > 0) {
-        // 移除所有状态标签
         patchData.labels_unset = oldLabelIds
       } else if (newLabelId > 0) {
         const labelsToUnset = oldLabelIds.filter(id => id !== newLabelId)
@@ -323,22 +351,36 @@ const saveEditForm = async () => {
         }
       }
 
-      // 评分变更
-      if (form.vote !== '') {
-        patchData.vote = Math.round(Number(form.vote) * 10)
-      } else {
-        patchData.vote = null  // 清除评分
+      // 评分变更（仅在实际变更时发送）
+      const oldVote = entry.vote  // 原始值为整数 10-100 或 null
+      const newVote = form.vote !== '' ? Math.round(Number(form.vote) * 10) : null
+      if (oldVote !== newVote) {
+        patchData.vote = newVote
       }
 
-      // 笔记变更
-      patchData.notes = form.notes || null
+      // 笔记变更（仅在实际变更时发送）
+      const oldNotes = entry.notes || null
+      const newNotes = form.notes || null
+      if (oldNotes !== newNotes) {
+        patchData.notes = newNotes
+      }
 
-      // 日期变更
-      patchData.started = form.started || null
-      patchData.finished = form.finished || null
+      // 开始日期变更（仅在实际变更时发送）
+      const oldStarted = entry.started || null
+      const newStarted = form.started || null
+      if (oldStarted !== newStarted) {
+        patchData.started = newStarted
+      }
+
+      // 完成日期变更（仅在实际变更时发送）
+      const oldFinished = entry.finished || null
+      const newFinished = form.finished || null
+      if (oldFinished !== newFinished) {
+        patchData.finished = newFinished
+      }
 
       if (Object.keys(patchData).length > 0) {
-        await patchVnListItem(collectionEntry.value.id, patchData)
+        await patchVnListItem(entry.id, patchData, { timeout: 15000 })
       }
     }
 
@@ -346,8 +388,10 @@ const saveEditForm = async () => {
     await loadCollectionStatus(vn.value.id)
     showEditModal.value = false
     document.body.style.overflow = ''
+    showToast(t('vn.status.save_success'), 'success')
   } catch (err) {
     console.error('保存收藏信息失败:', err)
+    showToast(t('vn.status.save_error'), 'error')
   } finally {
     editSaving.value = false
   }
@@ -729,6 +773,8 @@ const loadVnDetail = async (id) => {
       activeTagCategories.value = ['cont', 'tech']
       tagSearchMode.value = 'summary'
       collectionEntry.value = null
+      collectionLoaded.value = false
+      collectionLoading.value = true
       
       // 并发异步加载其余所有子选项卡数据，加快响应时间
       loadReleases(id)
@@ -1055,71 +1101,93 @@ watch(
 
             <!-- 收藏状态 -->
             <template v-if="isLoggedIn">
-              <span class="text-neutral-400">{{ t('vn.status.title') }}</span>
-              <div class="flex items-center gap-2">
-                <BaseSelect
-                  :modelValue="currentStatusValue"
-                  @update:modelValue="handleStatusChange"
-                  :options="[{ value: 0, label: t('vn.status.none') }, ...statusOptions]"
-                />
-                <Icon
-                  v-if="statusLoading"
-                  icon="lucide:loader-2"
-                  class="h-4 w-4 animate-spin text-neutral-400 flex-shrink-0"
-                />
-              </div>
+              <!-- 骨架屏：加载中 -->
+              <template v-if="collectionLoading">
+                <span class="text-neutral-400">{{ t('vn.status.title') }}</span>
+                <div class="h-5 w-20 rounded bg-neutral-100 animate-pulse"></div>
 
-              <!-- 我的评分 -->
-              <span class="text-neutral-400">{{ t('vn.status.my_vote') }}</span>
-              <span class="text-neutral-800" :class="{ 'text-neutral-400': !formattedVote }">
-                {{ formattedVote != null ? `${formattedVote.toFixed(1)} / 10` : t('vn.status.no_vote') }}
-              </span>
+                <span class="text-neutral-400">{{ t('vn.status.my_vote') }}</span>
+                <div class="h-4 w-16 rounded bg-neutral-100 animate-pulse"></div>
 
-              <!-- 笔记 -->
-              <span class="text-neutral-400">{{ t('vn.status.notes') }}</span>
-              <div
-                v-if="collectionEntry?.notes"
-                class="rounded-md border border-neutral-200 bg-neutral-50 pl-3 pr-2 py-2 mt-0.5"
-              >
-                <p
-                  class="text-xs text-neutral-700 whitespace-pre-wrap break-words leading-relaxed"
-                  :class="[notesExpanded ? '' : 'line-clamp-5']"
-                >{{ collectionEntry.notes }}</p>
+                <span class="text-neutral-400">{{ t('vn.status.notes') }}</span>
+                <div class="h-10 w-full rounded bg-neutral-100 animate-pulse"></div>
+
+                <span class="text-neutral-400">{{ t('vn.status.started') }}</span>
+                <div class="h-4 w-20 rounded bg-neutral-100 animate-pulse"></div>
+
+                <span class="text-neutral-400">{{ t('vn.status.finished_date') }}</span>
+                <div class="h-4 w-20 rounded bg-neutral-100 animate-pulse"></div>
+
+                <span></span>
+                <div class="h-5 w-14 rounded bg-neutral-100 animate-pulse"></div>
+              </template>
+
+              <!-- 已加载 -->
+              <template v-else>
+                <span class="text-neutral-400">{{ t('vn.status.title') }}</span>
+                <div class="flex items-center gap-2">
+                  <BaseSelect
+                    :modelValue="currentStatusValue"
+                    @update:modelValue="handleStatusChange"
+                    :options="[{ value: 0, label: t('vn.status.none') }, ...statusOptions]"
+                  />
+                  <Icon
+                    v-if="statusLoading"
+                    icon="lucide:loader-2"
+                    class="h-4 w-4 animate-spin text-neutral-400 flex-shrink-0"
+                  />
+                </div>
+
+                <!-- 我的评分 -->
+                <span class="text-neutral-400">{{ t('vn.status.my_vote') }}</span>
+                <span class="text-neutral-800" :class="{ 'text-neutral-400': !formattedVote }">
+                  {{ formattedVote != null ? `${formattedVote.toFixed(1)} / 10` : '—' }}
+                </span>
+
+                <!-- 笔记 -->
+                <span class="text-neutral-400">{{ t('vn.status.notes') }}</span>
+                <template v-if="collectionEntry?.notes">
+                  <div
+                    class="rounded-md border border-neutral-200 bg-neutral-50 pl-3 pr-2 py-2 mt-0.5"
+                  >
+                    <p
+                      class="text-xs text-neutral-700 whitespace-pre-wrap break-words leading-relaxed"
+                      :class="[notesExpanded ? '' : 'line-clamp-5']"
+                    >{{ collectionEntry.notes }}</p>
+                    <button
+                      v-if="collectionEntry.notes.length > 100"
+                      @click="notesExpanded = !notesExpanded"
+                      class="mt-1 flex items-center gap-1 text-[10px] text-neutral-400 hover:text-neutral-600 transition cursor-pointer"
+                    >
+                      <Icon :icon="notesExpanded ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="h-3 w-3" />
+                      {{ notesExpanded ? '收起' : '展开全文' }}
+                    </button>
+                  </div>
+                </template>
+                <span v-else class="text-neutral-400">—</span>
+
+                <!-- 开始日期 -->
+                <span class="text-neutral-400">{{ t('vn.status.started') }}</span>
+                <span class="text-neutral-800" :class="{ 'text-neutral-400': !collectionEntry?.started }">
+                  {{ collectionEntry?.started || '—' }}
+                </span>
+
+                <!-- 结束日期 -->
+                <span class="text-neutral-400">{{ t('vn.status.finished_date') }}</span>
+                <span class="text-neutral-800" :class="{ 'text-neutral-400': !collectionEntry?.finished }">
+                  {{ collectionEntry?.finished || '—' }}
+                </span>
+
+                <!-- 编辑按钮 -->
+                <span></span>
                 <button
-                  v-if="collectionEntry.notes.length > 100"
-                  @click="notesExpanded = !notesExpanded"
-                  class="mt-1 flex items-center gap-1 text-[10px] text-neutral-400 hover:text-neutral-600 transition cursor-pointer"
+                  @click="openEditModal"
+                  class="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-neutral-700 transition cursor-pointer w-fit"
                 >
-                  <Icon :icon="notesExpanded ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="h-3 w-3" />
-                  {{ notesExpanded ? '收起' : '展开全文' }}
+                  <Icon icon="lucide:pencil" class="h-3.5 w-3.5" />
+                  {{ t('vn.status.edit') }}
                 </button>
-              </div>
-              <span
-                v-else
-                class="text-neutral-400 italic"
-              >{{ t('vn.status.no_notes') }}</span>
-
-              <!-- 开始日期 -->
-              <span class="text-neutral-400">{{ t('vn.status.started') }}</span>
-              <span class="text-neutral-800" :class="{ 'text-neutral-400': !collectionEntry?.started }">
-                {{ collectionEntry?.started || '—' }}
-              </span>
-
-              <!-- 结束日期 -->
-              <span class="text-neutral-400">{{ t('vn.status.finished_date') }}</span>
-              <span class="text-neutral-800" :class="{ 'text-neutral-400': !collectionEntry?.finished }">
-                {{ collectionEntry?.finished || '—' }}
-              </span>
-
-              <!-- 编辑按钮 -->
-              <span></span>
-              <button
-                @click="openEditModal"
-                class="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-neutral-700 transition cursor-pointer w-fit"
-              >
-                <Icon icon="lucide:pencil" class="h-3.5 w-3.5" />
-                {{ t('vn.status.edit') }}
-              </button>
+              </template>
             </template>
           </div>
         </div>
@@ -2143,6 +2211,25 @@ watch(
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Toast 提示 -->
+    <Teleport to="body">
+      <Transition name="toast">
+        <div
+          v-if="toastVisible"
+          class="toast-box fixed top-12 z-[300] flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg border text-xs font-medium pointer-events-none"
+          :class="toastType === 'success'
+            ? 'bg-green-50 border-green-200 text-green-700'
+            : 'bg-red-50 border-red-200 text-red-700'"
+        >
+          <Icon
+            :icon="toastType === 'success' ? 'lucide:check-circle' : 'lucide:x-circle'"
+            class="h-4 w-4 flex-shrink-0"
+          />
+          {{ toastMessage }}
+        </div>
+      </Transition>
+    </Teleport>
   </div>
   </ion-content>
   </ion-page>
@@ -2160,5 +2247,29 @@ watch(
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
+}
+
+/* Toast 水平居中 */
+.toast-box {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Toast 过渡动画 */
+.toast-enter-active {
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.toast-leave-active {
+  transition: opacity 0.2s ease-in,
+              transform 0.2s ease-in;
+}
+.toast-enter-from {
+  opacity: 0;
+  transform: translate(-50%, -12px);
+}
+.toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -8px);
 }
 </style>
