@@ -298,6 +298,11 @@
     "screenshots": {
       "empty": "No screenshots found"
     },
+    "lightbox": {
+      "save_not_supported": "Saving images is not supported on this platform",
+      "save_success": "Image saved to device",
+      "save_failed": "Failed to save image, please try again"
+    },
     "quotes": {
       "loading": "Loading quotes...",
       "empty": "No quotes found",

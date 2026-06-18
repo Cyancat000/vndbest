@@ -314,6 +314,11 @@
     "screenshots": {
       "empty": "暂无截图画面"
     },
+    "lightbox": {
+      "save_not_supported": "当前平台不支持保存图片",
+      "save_success": "图片已保存到设备",
+      "save_failed": "图片保存失败，请重试"
+    },
     "quotes": {
       "loading": "正在载入名台词摘录...",
       "empty": "暂无经典台词摘录数据",

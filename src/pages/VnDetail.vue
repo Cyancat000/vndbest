@@ -9,7 +9,9 @@ import BaseSelect from '@/components/BaseSelect.vue'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { useTranslation } from '@/composables/useTranslation'
 import { useImageLoader } from '@/composables/useImageLoader'
-import { IonPage, IonContent, IonImg, IonSpinner } from '@ionic/vue'
+import { IonPage, IonContent, IonImg, IonSpinner, IonToast } from '@ionic/vue'
+import { Filesystem, Directory } from '@capacitor/filesystem'
+import { Capacitor } from '@capacitor/core'
 
 const { getDetailAction, getScreenshotAction, getCardAction } = usePrivacy()
 const imageLoader = useImageLoader()
@@ -583,6 +585,9 @@ const openLightbox = (index, imagesArray) => {
   lightboxImageIndex.value = index
   showImageLightbox.value = true
   
+  // 锁定背景滚动
+  document.body.style.overflow = 'hidden'
+  
   // 绑定键盘监听
   window.addEventListener('keydown', handleKeyDown)
   
@@ -595,7 +600,61 @@ const openLightbox = (index, imagesArray) => {
 // 关闭大图查看器
 const closeLightbox = () => {
   showImageLightbox.value = false
+  // 恢复背景滚动
+  document.body.style.overflow = ''
   window.removeEventListener('keydown', handleKeyDown)
+}
+
+// 保存当前截图到手机
+const savingImage = ref(false)
+const saveImageToPhone = async () => {
+  const url = currentLightboxImageUrl.value
+  if (!url || savingImage.value) return
+
+  // 仅在原生平台（Android/iOS）上可用
+  if (!Capacitor.isNativePlatform()) {
+    showToast(t('vn.lightbox.save_not_supported'), 'error')
+    return
+  }
+
+  savingImage.value = true
+  try {
+    // 1. 获取图片数据
+    const response = await fetch(url)
+    if (!response.ok) throw new Error('fetch failed')
+    const blob = await response.blob()
+
+    // 2. 转为 base64
+    const reader = new FileReader()
+    const base64Data = await new Promise((resolve, reject) => {
+      reader.onloadend = () => {
+        // 去掉 data:image/...;base64, 前缀
+        const result = reader.result
+        const base64 = result.includes(',') ? result.split(',')[1] : result
+        resolve(base64)
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(blob)
+    })
+
+    // 3. 从 URL 提取文件名
+    const urlPath = new URL(url).pathname
+    const fileName = urlPath.split('/').pop() || `screenshot_${Date.now()}.jpg`
+
+    // 4. 写入设备 Documents 目录
+    const result = await Filesystem.writeFile({
+      path: `VNDBest/${fileName}`,
+      data: base64Data,
+      directory: Directory.Documents,
+    })
+
+    showToast(t('vn.lightbox.save_success'), 'success')
+  } catch (err) {
+    console.error('保存图片失败:', err)
+    showToast(t('vn.lightbox.save_failed'), 'error')
+  } finally {
+    savingImage.value = false
+  }
 }
 
 // 将容器滚动到对应的图片索引
@@ -2055,11 +2114,22 @@ watch(
         @touchmove="handleTouchMove"
         @touchend="handleTouchEnd"
       >
-        <button 
-          @click.stop="closeLightbox" 
+        <button
+          @click.stop="closeLightbox"
           class="absolute top-4 right-4 z-50 inline-flex h-10 w-10 items-center justify-center rounded-full bg-neutral-800/80 text-white hover:bg-neutral-700 hover:scale-105 active:scale-95 transition cursor-pointer"
         >
           <Icon icon="lucide:x" class="h-5 w-5" />
+        </button>
+
+        <!-- 保存到手机按钮 -->
+        <button
+          v-if="Capacitor.isNativePlatform()"
+          @click.stop="saveImageToPhone"
+          :disabled="savingImage"
+          class="absolute top-4 right-16 z-50 inline-flex h-10 w-10 items-center justify-center rounded-full bg-neutral-800/80 text-white hover:bg-neutral-700 hover:scale-105 active:scale-95 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Icon v-if="!savingImage" icon="lucide:download" class="h-5 w-5" />
+          <Icon v-else icon="lucide:loader" class="h-5 w-5 animate-spin" />
         </button>
 
         <button 
