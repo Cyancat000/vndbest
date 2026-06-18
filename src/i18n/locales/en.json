@@ -171,7 +171,9 @@
       "finished": "Date Finished",
       "vote": "Rating",
       "title": "Title"
-    }
+    },
+    "expand_n": "Expand all {count} items",
+    "collapse": "Collapse"
   },
   "login": {
     "title": "VNDB Account",
@@ -208,6 +210,9 @@
     "votes_count": "Vote Count",
     "description": "Description",
     "relations": "Relations",
+    "relations_empty_title": "No related works",
+    "relations_empty_desc": "This work has no related titles",
+    "show_doujin": "Doujin",
     "official": "Official",
     "tabs": {
       "releases": "Releases",

@@ -187,7 +187,9 @@
       "finished": "完成时间",
       "vote": "评分",
       "title": "标题"
-    }
+    },
+    "expand_n": "展开全部 {count} 项",
+    "collapse": "收起"
   },
   "login": {
     "title": "VNDB 账户",
@@ -224,6 +226,9 @@
     "votes_count": "投票数",
     "description": "简介",
     "relations": "相关作品",
+    "relations_empty_title": "暂无相关作品",
+    "relations_empty_desc": "该作品没有相关联的其他作品",
+    "show_doujin": "同人作",
     "official": "官方",
     "tabs": {
       "releases": "版本",

@@ -65,6 +65,16 @@ const isDescriptionExpanded = ref(false)
 // 控制笔记展开/收起
 const notesExpanded = ref(false)
 
+// 相关作品：同人作开关（默认隐藏非官方关联）
+const showDoujin = ref(false)
+
+// 过滤后的相关作品（根据同人作开关）
+const filteredRelations = computed(() => {
+  if (!vn.value?.relations) return []
+  if (showDoujin.value) return vn.value.relations
+  return vn.value.relations.filter(r => r.relation_official !== false)
+})
+
 // 控制角色详情展开/收起 (存储展开的角色 ID)
 const expandedCharIds = ref(new Set())
 
@@ -1234,12 +1244,33 @@ watch(
 
       <!-- 3. 相关作品 (固定在选项卡上方) -->
       <div class="space-y-1.5" v-if="vn.relations && vn.relations.length > 0">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">{{ t('vn.relations') }}</h3>
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400">{{ t('vn.relations') }}</h3>
+          <!-- 同人作开关 -->
+          <label class="flex items-center gap-1.5 cursor-pointer select-none">
+            <span class="text-[10px] text-neutral-400">{{ t('vn.show_doujin', '同人作') }}</span>
+            <button
+              @click="showDoujin = !showDoujin"
+              class="relative inline-flex h-4 w-7 items-center rounded-full transition-colors cursor-pointer"
+              :class="showDoujin ? 'bg-neutral-800' : 'bg-neutral-300'"
+              role="switch"
+              :aria-checked="showDoujin"
+            >
+              <span
+                class="inline-block h-3 w-3 transform rounded-full bg-white transition-transform"
+                :class="showDoujin ? 'translate-x-3.5' : 'translate-x-0.5'"
+              />
+            </button>
+          </label>
+        </div>
         <VnList
-          :items="vn.relations"
+          :items="filteredRelations"
           :show-sort="false"
           :compact="true"
           :show-footer-status="false"
+          :max-items="8"
+          :empty-title="t('vn.relations_empty_title', '暂无相关作品')"
+          :empty-desc="t('vn.relations_empty_desc', '该作品没有相关联的其他作品')"
           default-layout="text"
           storage-key="vndb_vn_relations_layout"
         />

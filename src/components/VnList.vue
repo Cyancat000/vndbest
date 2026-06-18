@@ -68,6 +68,21 @@ const props = defineProps({
   showFooterStatus: {
     type: Boolean,
     default: true
+  },
+  // 折叠展开：最大可见条目数（null 表示不限制）
+  maxItems: {
+    type: Number,
+    default: null
+  },
+  // 自定义空状态标题（null 使用默认 i18n）
+  emptyTitle: {
+    type: String,
+    default: null
+  },
+  // 自定义空状态描述（null 使用默认 i18n）
+  emptyDesc: {
+    type: String,
+    default: null
   }
 })
 
@@ -101,6 +116,30 @@ const filteredItems = computed(() => {
   })
 })
 
+// ==================== 折叠展开 ====================
+const isCollapsed = ref(true)
+
+// 实际展示的条目（受折叠状态与 maxItems 约束）
+const displayItems = computed(() => {
+  if (!props.maxItems || !isCollapsed.value) return filteredItems.value
+  return filteredItems.value.slice(0, props.maxItems)
+})
+
+// 是否需要显示折叠/展开按钮
+const hasOverflow = computed(() => {
+  return props.maxItems != null && filteredItems.value.length > props.maxItems
+})
+
+// 被折叠隐藏的条目数
+const hiddenCount = computed(() => {
+  if (!props.maxItems) return 0
+  return Math.max(0, filteredItems.value.length - props.maxItems)
+})
+
+function toggleCollapse() {
+  isCollapsed.value = !isCollapsed.value
+}
+
 function getItemAction(item) {
   return getCardAction('vn', getImageNsfwLevel(getImage(item)))
 }
@@ -118,11 +157,11 @@ function isIconPlaceholder(item) {
   return shouldBlurCover(item) && !shouldBlurCard(item)
 }
 
-// 瀑布流双列分配
+// 瀑布流双列分配（使用 displayItems 以支持折叠）
 const waterfallColumns = computed(() => {
   const leftCol = []
   const rightCol = []
-  filteredItems.value.forEach((item, index) => {
+  displayItems.value.forEach((item, index) => {
     if (index % 2 === 0) {
       leftCol.push(item)
     } else {
@@ -309,9 +348,9 @@ function toggleReverse() {
     <!-- 列表容器 -->
     <div class="px-0.5">
       <!-- 1. 列表布局 -->
-      <div v-if="filteredItems.length > 0 && layoutMode === 'list'" class="grid grid-cols-1 gap-3.5">
+      <div v-if="displayItems.length > 0 && layoutMode === 'list'" class="grid grid-cols-1 gap-3.5">
         <div
-          v-for="item in filteredItems"
+          v-for="item in displayItems"
           :key="item.id"
           class="relative flex items-start gap-3 rounded-xl border border-neutral-200 bg-white shadow-xs hover:border-neutral-300 transition cursor-pointer overflow-hidden"
           :class="[compact ? 'p-2.5' : 'p-4']"
@@ -434,7 +473,7 @@ function toggleReverse() {
       </div>
 
       <!-- 2. 双列瀑布流布局 -->
-      <div v-else-if="filteredItems.length > 0 && layoutMode === 'waterfall'" class="grid grid-cols-2 gap-3.5 items-start">
+      <div v-else-if="displayItems.length > 0 && layoutMode === 'waterfall'" class="grid grid-cols-2 gap-3.5 items-start">
         <div class="flex flex-col gap-3.5">
           <div
             v-for="item in waterfallColumns.leftCol"
@@ -572,9 +611,9 @@ function toggleReverse() {
       </div>
 
       <!-- 3. 纯标题文本布局 -->
-      <div v-else-if="filteredItems.length > 0 && layoutMode === 'compact'" class="divide-y divide-neutral-100 bg-white rounded-xl border border-neutral-200 overflow-hidden shadow-xs">
+      <div v-else-if="displayItems.length > 0 && layoutMode === 'compact'" class="divide-y divide-neutral-100 bg-white rounded-xl border border-neutral-200 overflow-hidden shadow-xs">
         <div
-          v-for="item in filteredItems"
+          v-for="item in displayItems"
           :key="item.id"
           class="px-4 py-3 hover:bg-neutral-50 transition cursor-pointer flex items-center justify-between gap-4"
           @click="handleItemClick(item)"
@@ -604,6 +643,21 @@ function toggleReverse() {
       </div>
     </div>
 
+    <!-- 折叠展开按钮 -->
+    <div v-if="hasOverflow" class="flex justify-center pt-1">
+      <button
+        @click="toggleCollapse"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-neutral-200 text-xs font-medium text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700 transition cursor-pointer"
+      >
+        <Icon
+          :icon="isCollapsed ? 'lucide:chevrons-down' : 'lucide:chevrons-up'"
+          class="h-3.5 w-3.5"
+        />
+        <span v-if="isCollapsed">{{ t('list.expand_n', { count: filteredItems.length }, `展开全部 ${filteredItems.length} 项`) }}</span>
+        <span v-else>{{ t('list.collapse', '收起') }}</span>
+      </button>
+    </div>
+
     <!-- 加载中状态 (列表为空时) -->
     <div v-if="items.length === 0 && isLoading" class="rounded-xl border border-neutral-200 bg-white p-12 text-center shadow-xs space-y-3">
       <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-neutral-50 border border-neutral-100">
@@ -618,7 +672,7 @@ function toggleReverse() {
     </div>
 
     <!-- 触底加载哨兵 & 状态 -->
-    <div ref="sentinel" class="py-6 flex justify-center" v-show="filteredItems.length > 0">
+    <div ref="sentinel" class="py-6 flex justify-center" v-show="displayItems.length > 0">
       <template v-if="showFooterStatus">
         <div v-if="isLoading" class="flex items-center gap-2 text-xs text-neutral-400">
           <Icon icon="eos-icons:loading" class="h-4 w-4" />
@@ -636,9 +690,9 @@ function toggleReverse() {
         <Icon icon="lucide:file" class="h-5 w-5 text-neutral-400" />
       </div>
       <div class="space-y-1">
-        <h3 class="text-sm font-semibold text-neutral-800">{{ t('list.empty_title') }}</h3>
+        <h3 class="text-sm font-semibold text-neutral-800">{{ emptyTitle || t('list.empty_title') }}</h3>
         <p class="text-xs text-neutral-400 max-w-xs mx-auto">
-          {{ t('list.empty_desc') }}
+          {{ emptyDesc || t('list.empty_desc') }}
         </p>
       </div>
     </div>
