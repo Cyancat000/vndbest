@@ -60,6 +60,7 @@ const showImageLightbox = ref(false)
 const lightboxImageIndex = ref(0) // 记录当前查看的图片索引
 const lightboxImagesList = ref([]) // 大图画廊的数据列表（可以是截图，也可以是封面等）
 const scrollContainer = ref(null) // 滚动容器的 DOM 引用
+const ionContentRef = ref(null) // ion-content 的 DOM 引用
 
 // 控制简介展开/收起
 const isDescriptionExpanded = ref(false)
@@ -585,8 +586,20 @@ const openLightbox = (index, imagesArray) => {
   lightboxImageIndex.value = index
   showImageLightbox.value = true
   
-  // 锁定背景滚动
+  // 锁定背景滚动（同时处理 body 和 ion-content）
   document.body.style.overflow = 'hidden'
+  // Ionic 的实际滚动容器在 ion-content 内部，需要单独禁用
+  nextTick(() => {
+    const ionContent = ionContentRef.value?.$el || ionContentRef.value
+    if (ionContent) {
+      ionContent.style.setProperty('--overflow', 'hidden')
+      // 同时禁用 ion-content 内部的滚动容器
+      const scrollEl = ionContent.querySelector?.('.inner-scroll, ion-scroll, [class*="scroll"]')
+      if (scrollEl) {
+        scrollEl.style.overflow = 'hidden'
+      }
+    }
+  })
   
   // 绑定键盘监听
   window.addEventListener('keydown', handleKeyDown)
@@ -602,6 +615,14 @@ const closeLightbox = () => {
   showImageLightbox.value = false
   // 恢复背景滚动
   document.body.style.overflow = ''
+  const ionContent = ionContentRef.value?.$el || ionContentRef.value
+  if (ionContent) {
+    ionContent.style.removeProperty('--overflow')
+    const scrollEl = ionContent.querySelector?.('.inner-scroll, ion-scroll, [class*="scroll"]')
+    if (scrollEl) {
+      scrollEl.style.overflow = ''
+    }
+  }
   window.removeEventListener('keydown', handleKeyDown)
 }
 
@@ -735,9 +756,10 @@ const handleTouchMove = (e) => {
   const deltaX = Math.abs(e.touches[0].clientX - touchStartX)
   const deltaY = Math.abs(e.touches[0].clientY - touchStartY)
   if (deltaX > deltaY) {
-    e.preventDefault()
     isScrolling = true
   }
+  // 始终阻止默认触摸行为，防止 Android 上背景页面滚动
+  e.preventDefault()
 }
 
 const handleTouchEnd = (e) => {
@@ -1042,7 +1064,7 @@ watch(
 
 <template>
   <ion-page>
-  <ion-content>
+  <ion-content ref="ionContentRef">
   <div class="page-container space-y-4">
     <!-- 头部导航 -->
     <div class="flex items-center justify-between py-3 sticky top-0 bg-white/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100">
@@ -2109,6 +2131,7 @@ watch(
       <div 
         v-if="showImageLightbox"
         class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 select-none"
+        style="touch-action: none;"
         @click="closeLightbox"
         @touchstart="handleTouchStart"
         @touchmove="handleTouchMove"
