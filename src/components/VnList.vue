@@ -386,7 +386,7 @@ function toggleReverse() {
                 <button
                   v-if="imageLoader.isError('list-' + item.id)"
                   class="absolute inset-0 flex items-center justify-center bg-neutral-100 cursor-pointer"
-                  @click="imageLoader.retry('list-' + item.id)"
+                  @click.stop="imageLoader.retry('list-' + item.id)"
                 >
                   <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
                 </button>
@@ -508,7 +508,7 @@ function toggleReverse() {
                   <button
                     v-if="imageLoader.isError('card-left-' + item.id)"
                     class="absolute inset-0 flex items-center justify-center bg-neutral-100 cursor-pointer"
-                    @click="imageLoader.retry('card-left-' + item.id)"
+                    @click.stop="imageLoader.retry('card-left-' + item.id)"
                   >
                     <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
                   </button>
@@ -576,7 +576,7 @@ function toggleReverse() {
                   <button
                     v-if="imageLoader.isError('card-right-' + item.id)"
                     class="absolute inset-0 flex items-center justify-center bg-neutral-100 cursor-pointer"
-                    @click="imageLoader.retry('card-right-' + item.id)"
+                    @click.stop="imageLoader.retry('card-right-' + item.id)"
                   >
                     <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
                   </button>

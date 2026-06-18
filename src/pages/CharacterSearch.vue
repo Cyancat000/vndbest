@@ -904,7 +904,7 @@ const getSexClass = (sex) => {
             />
             <div
               v-if="item.image?.url && imageLoader.isError(`char-${item.id}`)"
-              @click="imageLoader.retry(`char-${item.id}`)"
+              @click.stop="imageLoader.retry(`char-${item.id}`)"
               class="absolute inset-0 flex items-center justify-center bg-neutral-50 z-10 cursor-pointer"
             >
               <Icon icon="lucide:refresh-cw" class="h-4 w-4 text-neutral-400" />

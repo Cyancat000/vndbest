@@ -324,7 +324,7 @@ onUnmounted(() => {
                   <button
                     v-if="imageLoader.isError('list-' + item.id)"
                     class="absolute inset-0 flex items-center justify-center bg-neutral-100 cursor-pointer"
-                    @click="imageLoader.retry('list-' + item.id)"
+                    @click.stop="imageLoader.retry('list-' + item.id)"
                   >
                     <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
                   </button>
@@ -468,7 +468,7 @@ onUnmounted(() => {
                     <button
                       v-if="imageLoader.isError('card-' + item.id)"
                       class="absolute inset-0 flex items-center justify-center bg-neutral-100 cursor-pointer"
-                      @click="imageLoader.retry('card-' + item.id)"
+                      @click.stop="imageLoader.retry('card-' + item.id)"
                     >
                       <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
                     </button>
@@ -555,7 +555,7 @@ onUnmounted(() => {
                     <button
                       v-if="imageLoader.isError('mag-' + item.id)"
                       class="absolute inset-0 flex items-center justify-center bg-neutral-100 cursor-pointer"
-                      @click="imageLoader.retry('mag-' + item.id)"
+                      @click.stop="imageLoader.retry('mag-' + item.id)"
                     >
                       <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
                     </button>

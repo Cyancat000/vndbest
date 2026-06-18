@@ -730,7 +730,7 @@ function getFilterSummary(item) {
               />
               <div
                 v-if="item.images?.[0]?.url && imageLoader.isError(`jr-${item.id}`)"
-                @click="imageLoader.retry(`jr-${item.id}`)"
+                @click.stop="imageLoader.retry(`jr-${item.id}`)"
                 class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
               >
                 <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400" />
@@ -791,7 +791,7 @@ function getFilterSummary(item) {
               />
               <div
                 v-if="item.images?.[0]?.url && imageLoader.isError(`ur-${item.id}`)"
-                @click="imageLoader.retry(`ur-${item.id}`)"
+                @click.stop="imageLoader.retry(`ur-${item.id}`)"
                 class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
               >
                 <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400" />
@@ -898,7 +898,7 @@ function getFilterSummary(item) {
               />
               <div
                 v-if="getResultDisplay(search, item).image && imageLoader.isError(`sv-${search.id}-${item.id}`)"
-                @click="imageLoader.retry(`sv-${search.id}-${item.id}`)"
+                @click.stop="imageLoader.retry(`sv-${search.id}-${item.id}`)"
                 class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
               >
                 <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400" />

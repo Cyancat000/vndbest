@@ -389,7 +389,7 @@ watch(
               />
               <div
                 v-if="imageLoader.isError(`vn-card-${vn.id}`)"
-                @click="imageLoader.retry(`vn-card-${vn.id}`)"
+                @click.stop="imageLoader.retry(`vn-card-${vn.id}`)"
                 class="absolute inset-0 flex items-center justify-center bg-neutral-50 z-20 cursor-pointer"
               >
                 <Icon icon="lucide:refresh-cw" class="h-3.5 w-3.5 text-neutral-400" />
