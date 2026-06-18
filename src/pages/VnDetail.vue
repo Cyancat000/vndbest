@@ -10,8 +10,9 @@ import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { useTranslation } from '@/composables/useTranslation'
 import { useImageLoader } from '@/composables/useImageLoader'
 import { IonPage, IonContent, IonImg, IonSpinner, IonToast } from '@ionic/vue'
-import { Filesystem, Directory } from '@capacitor/filesystem'
-import { Capacitor } from '@capacitor/core'
+import { Capacitor, registerPlugin } from '@capacitor/core'
+
+const PhotoGallery = registerPlugin('PhotoGallery')
 
 const { getDetailAction, getScreenshotAction, getCardAction } = usePrivacy()
 const imageLoader = useImageLoader()
@@ -626,7 +627,34 @@ const closeLightbox = () => {
   window.removeEventListener('keydown', handleKeyDown)
 }
 
-// 保存当前截图到手机
+const getImageSaveInfo = (url) => {
+  try {
+    const urlPath = new URL(url).pathname
+    const rawName = decodeURIComponent(urlPath.split('/').pop() || '')
+    const hasExtension = /\.(jpe?g|png|webp|gif)$/i.test(rawName)
+    const fileName = hasExtension ? rawName : `vndbest_${Date.now()}.jpg`
+    const extension = fileName.split('.').pop()?.toLowerCase()
+    const mimeTypeMap = {
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      webp: 'image/webp',
+      gif: 'image/gif'
+    }
+
+    return {
+      fileName,
+      mimeType: mimeTypeMap[extension] || 'image/jpeg'
+    }
+  } catch {
+    return {
+      fileName: `vndbest_${Date.now()}.jpg`,
+      mimeType: 'image/jpeg'
+    }
+  }
+}
+
+// 保存当前截图到手机相册
 const savingImage = ref(false)
 const saveImageToPhone = async () => {
   const url = currentLightboxImageUrl.value
@@ -640,33 +668,11 @@ const saveImageToPhone = async () => {
 
   savingImage.value = true
   try {
-    // 1. 获取图片数据
-    const response = await fetch(url)
-    if (!response.ok) throw new Error('fetch failed')
-    const blob = await response.blob()
-
-    // 2. 转为 base64
-    const reader = new FileReader()
-    const base64Data = await new Promise((resolve, reject) => {
-      reader.onloadend = () => {
-        // 去掉 data:image/...;base64, 前缀
-        const result = reader.result
-        const base64 = result.includes(',') ? result.split(',')[1] : result
-        resolve(base64)
-      }
-      reader.onerror = reject
-      reader.readAsDataURL(blob)
-    })
-
-    // 3. 从 URL 提取文件名
-    const urlPath = new URL(url).pathname
-    const fileName = urlPath.split('/').pop() || `screenshot_${Date.now()}.jpg`
-
-    // 4. 写入设备 Documents 目录
-    const result = await Filesystem.writeFile({
-      path: `VNDBest/${fileName}`,
-      data: base64Data,
-      directory: Directory.Documents,
+    const { fileName, mimeType } = getImageSaveInfo(url)
+    await PhotoGallery.saveImage({
+      url,
+      fileName,
+      mimeType
     })
 
     showToast(t('vn.lightbox.save_success'), 'success')
