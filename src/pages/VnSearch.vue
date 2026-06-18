@@ -11,7 +11,7 @@ import TagChip from '@/components/TagChip.vue'
 import TagFilterModal from '@/components/TagFilterModal.vue'
 import DualRangeSlider from '@/components/DualRangeSlider.vue'
 import { Icon } from '@iconify/vue'
-import { getVnList } from '@/api/vndb.js'
+import { getVnList, getTagList } from '@/api/vndb.js'
 import { IonPage, IonContent } from '@ionic/vue'
 import { useSavedSearches } from '@/composables/useSavedSearches'
 
@@ -374,10 +374,21 @@ watch(query, (newVal) => {
 })
 
 // 监听 URL 中 tag 参数变化（从 VnDetail 点击标签导航回来时，组件可能已存在于 Ionic 页面栈中）
-watch(routeTag, (newTag) => {
+watch(routeTag, async (newTag) => {
   if (newTag) {
-    selectedTags.value = [{ id: newTag, name: newTag, category: '', vn_count: 0 }]
     tagInitialized.value = true
+    // 先用 ID 作为占位名称
+    selectedTags.value = [{ id: newTag, name: newTag, category: '', vn_count: 0 }]
+    // 通过 API 获取实际标签名称
+    try {
+      const res = await getTagList(['id', '=', newTag], { results: 1 })
+      if (res && res.results && res.results.length > 0) {
+        const tag = res.results[0]
+        selectedTags.value = [{ id: tag.id, name: tag.name, description: tag.description, category: tag.category, vn_count: tag.vn_count }]
+      }
+    } catch (err) {
+      console.error('获取标签详情失败:', err)
+    }
     // fetchData 会由 selectedTags 的 watcher 自动触发
   }
 })
@@ -419,7 +430,7 @@ function setTodayDateFrom() {
   selectedDateFrom.value = selectedDateFrom.value === 'today' ? '' : 'today'
 }
 
-onMounted(() => {
+onMounted(async () => {
   const savedId = route.query.savedId
   if (savedId) {
     const saved = getById(savedId)
@@ -427,10 +438,19 @@ onMounted(() => {
       applyFilters(saved.filters)
     }
   }
-  // 如果 URL 带了 tag 参数，自动添加到 selectedTags
+  // 如果 URL 带了 tag 参数，先获取标签名称再加载数据
   if (routeTag.value && !tagInitialized.value) {
     tagInitialized.value = true
     selectedTags.value = [{ id: routeTag.value, name: routeTag.value, category: '', vn_count: 0 }]
+    try {
+      const res = await getTagList(['id', '=', routeTag.value], { results: 1 })
+      if (res && res.results && res.results.length > 0) {
+        const tag = res.results[0]
+        selectedTags.value = [{ id: tag.id, name: tag.name, description: tag.description, category: tag.category, vn_count: tag.vn_count }]
+      }
+    } catch (err) {
+      console.error('获取标签详情失败:', err)
+    }
   }
   fetchData()
 })

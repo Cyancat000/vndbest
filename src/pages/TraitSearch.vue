@@ -13,7 +13,7 @@ import { IonPage, IonContent } from '@ionic/vue'
 
 const { t } = useI18n()
 const router = useRouter()
-const { translateTraitName } = useTranslation()
+const { translateTraitName, reverseLookupTraitName } = useTranslation()
 const route = useRoute()
 const { getById } = useSavedSearches()
 
@@ -41,9 +41,11 @@ async function fetchTraits(q = '', reset = true) {
   try {
     let res
     if (q && q.trim() !== '') {
-      res = await searchTraits(q, { 
-        page: page.value, 
-        results: resultsPerPage 
+      // 将中文搜索词转换为英文原文（如果匹配到翻译）
+      const searchQuery = reverseLookupTraitName(q.trim())
+      res = await searchTraits(searchQuery, {
+        page: page.value,
+        results: resultsPerPage
       })
     } else {
       res = await getTraitList([], { 

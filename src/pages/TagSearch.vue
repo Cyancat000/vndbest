@@ -13,7 +13,7 @@ import { IonPage, IonContent } from '@ionic/vue'
 
 const { t } = useI18n()
 const router = useRouter()
-const { translateTagName } = useTranslation()
+const { translateTagName, reverseLookupTagName } = useTranslation()
 const route = useRoute()
 const { getById } = useSavedSearches()
 
@@ -41,9 +41,11 @@ async function fetchTags(q = '', reset = true) {
   try {
     let res
     if (q && q.trim() !== '') {
-      res = await searchTags(q, { 
-        page: page.value, 
-        results: resultsPerPage 
+      // 将中文搜索词转换为英文原文（如果匹配到翻译）
+      const searchQuery = reverseLookupTagName(q.trim())
+      res = await searchTags(searchQuery, {
+        page: page.value,
+        results: resultsPerPage
       })
     } else {
       res = await getTagList([], { 

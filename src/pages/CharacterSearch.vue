@@ -9,7 +9,7 @@ import SearchBase from '@/components/SearchBase.vue'
 import BaseSelect from '@/components/BaseSelect.vue'
 import TraitChip from '@/components/TraitChip.vue'
 import TraitFilterModal from '@/components/TraitFilterModal.vue'
-import { getCharacterList } from '@/api/vndb'
+import { getCharacterList, getTraitList } from '@/api/vndb'
 import { IonPage, IonContent, IonImg, IonSpinner } from '@ionic/vue'
 import { useSavedSearches } from '@/composables/useSavedSearches'
 import { useImageLoader } from '@/composables/useImageLoader'
@@ -255,12 +255,26 @@ function handleRefresh() {
   fetchData(query.value, true)
 }
 
-onMounted(() => {
+onMounted(async () => {
   const savedId = route.query.savedId
   if (savedId) {
     const saved = getById(savedId)
     if (saved && saved.filters) {
       applyFilters(saved.filters)
+    }
+  }
+  // 如果 URL 带了 trait 参数，先获取特征名称再加载数据
+  const routeTrait = getSelectedTrait()
+  if (routeTrait) {
+    selectedTraits.value = [{ id: routeTrait, name: routeTrait, category: '', vn_count: 0 }]
+    try {
+      const res = await getTraitList(['id', '=', routeTrait], { results: 1 })
+      if (res && res.results && res.results.length > 0) {
+        const trait = res.results[0]
+        selectedTraits.value = [{ id: trait.id, name: trait.name, description: trait.description, group_name: trait.group_name, group_id: trait.group_id, char_count: trait.char_count }]
+      }
+    } catch (err) {
+      console.error('获取特征详情失败:', err)
     }
   }
   fetchData(query.value, true)
@@ -282,9 +296,20 @@ watch(selectedTraits, () => {
 
 watch(
   () => route.query.trait,
-  (newTrait) => {
+  async (newTrait) => {
     if (newTrait) {
+      // 先用 ID 作为占位名称
       selectedTraits.value = [{ id: newTrait, name: newTrait, category: '', vn_count: 0 }]
+      // 通过 API 获取实际特征名称
+      try {
+        const res = await getTraitList(['id', '=', newTrait], { results: 1 })
+        if (res && res.results && res.results.length > 0) {
+          const trait = res.results[0]
+          selectedTraits.value = [{ id: trait.id, name: trait.name, description: trait.description, group_name: trait.group_name, group_id: trait.group_id, char_count: trait.char_count }]
+        }
+      } catch (err) {
+        console.error('获取特征详情失败:', err)
+      }
     }
     fetchData(query.value, true)
   }
