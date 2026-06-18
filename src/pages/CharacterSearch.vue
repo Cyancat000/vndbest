@@ -7,6 +7,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import SearchBase from '@/components/SearchBase.vue'
 import BaseSelect from '@/components/BaseSelect.vue'
+import DualRangeSlider from '@/components/DualRangeSlider.vue'
 import TraitChip from '@/components/TraitChip.vue'
 import TraitFilterModal from '@/components/TraitFilterModal.vue'
 import { getCharacterList, getTraitList } from '@/api/vndb'
@@ -39,6 +40,77 @@ const selectedSex = ref('all')
 const selectedBloodType = ref('all')
 const selectedRole = ref('all')
 
+// 身体数据筛选
+const heightRange = ref([100, 200])
+const weightRange = ref([30, 120])
+const bustRange = ref([40, 120])
+const selectedCup = ref('all')
+
+// 生日筛选
+const birthdayMonth = ref(0)
+const birthdayDay = ref(0)
+
+// 身体数据筛选默认值
+const defaultHeight = [100, 200]
+const defaultWeight = [30, 120]
+const defaultBust = [40, 120]
+
+// 是否展开身体数据筛选面板
+const showBodyFilters = ref(false)
+
+// 是否展开生日筛选面板
+const showBirthdayFilters = ref(false)
+
+// 筛选项是否激活
+function isHeightActive() {
+  return heightRange.value[0] > defaultHeight[0] || heightRange.value[1] < defaultHeight[1]
+}
+function isWeightActive() {
+  return weightRange.value[0] > defaultWeight[0] || weightRange.value[1] < defaultWeight[1]
+}
+function isBustActive() {
+  return bustRange.value[0] > defaultBust[0] || bustRange.value[1] < defaultBust[1]
+}
+function isCupActive() {
+  return selectedCup.value !== 'all'
+}
+function isBirthdayActive() {
+  return birthdayMonth.value > 0
+}
+
+// 重置身体数据筛选
+function resetHeight() { heightRange.value = [...defaultHeight] }
+function resetWeight() { weightRange.value = [...defaultWeight] }
+function resetBust() { bustRange.value = [...defaultBust] }
+function resetCup() { selectedCup.value = 'all' }
+function resetBirthday() { birthdayMonth.value = 0; birthdayDay.value = 0 }
+function resetBodyFilters() {
+  resetHeight(); resetWeight(); resetBust(); resetCup()
+  showBodyFilters.value = false
+}
+function resetBirthdayFilters() {
+  resetBirthday()
+  showBirthdayFilters.value = false
+}
+
+// 月份选项
+const monthOptions = [
+  { value: 0, label: '不限' },
+  { value: 1, label: '1月' }, { value: 2, label: '2月' }, { value: 3, label: '3月' },
+  { value: 4, label: '4月' }, { value: 5, label: '5月' }, { value: 6, label: '6月' },
+  { value: 7, label: '7月' }, { value: 8, label: '8月' }, { value: 9, label: '9月' },
+  { value: 10, label: '10月' }, { value: 11, label: '11月' }, { value: 12, label: '12月' }
+]
+
+// 杯型选项
+const cupOptions = [
+  { value: 'all', label: '不限' },
+  { value: 'AA', label: 'AA' }, { value: 'A', label: 'A' }, { value: 'B', label: 'B' },
+  { value: 'C', label: 'C' }, { value: 'D', label: 'D' }, { value: 'E', label: 'E' },
+  { value: 'F', label: 'F' }, { value: 'G', label: 'G' }, { value: 'H', label: 'H' },
+  { value: 'I', label: 'I' }, { value: 'J', label: 'J' }, { value: 'K', label: 'K' }
+]
+
 // URL 参数中的 birthday (格式: "month,day")
 function getBirthdayFilter() {
   const b = route.query.birthday
@@ -53,6 +125,18 @@ function getBirthdayFilter() {
 
 function getSelectedTrait() {
   return typeof route.query.trait === 'string' ? route.query.trait : ''
+}
+
+// 从 URL 解析身体数据筛选
+function parseRangeParam(param, min, max) {
+  const val = route.query[param]
+  if (typeof val === 'string' && val.includes('-')) {
+    const parts = val.split('-').map(Number)
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      return [Math.max(min, Math.min(max, parts[0])), Math.max(min, Math.min(max, parts[1]))]
+    }
+  }
+  return null
 }
 
 // 筛选选项
@@ -87,6 +171,11 @@ function hasActiveFilters() {
     || selectedBloodType.value !== 'all'
     || selectedRole.value !== 'all'
     || getBirthdayFilter() !== null
+    || isHeightActive()
+    || isWeightActive()
+    || isBustActive()
+    || isCupActive()
+    || isBirthdayActive()
 }
 
 // 清除所有筛选
@@ -95,6 +184,13 @@ function clearAllFilters() {
   selectedSex.value = 'all'
   selectedBloodType.value = 'all'
   selectedRole.value = 'all'
+  resetHeight()
+  resetWeight()
+  resetBust()
+  resetCup()
+  resetBirthday()
+  showBodyFilters.value = false
+  showBirthdayFilters.value = false
   fetchData()
 }
 
@@ -126,12 +222,6 @@ async function fetchData(q = '', reset = true) {
       filters.push(['trait', '=', routeTrait])
     }
 
-    // URL 参数中的 birthday
-    const birthdayFilter = getBirthdayFilter()
-    if (birthdayFilter) {
-      filters.push(['birthday', '=', birthdayFilter])
-    }
-
     // 选择的特征（多选用 or）
     if (selectedTraits.value.length > 0) {
       if (selectedTraits.value.length === 1) {
@@ -155,6 +245,40 @@ async function fetchData(q = '', reset = true) {
     // 角色定位
     if (selectedRole.value !== 'all') {
       filters.push(['role', '=', selectedRole.value])
+    }
+
+    // 身高范围
+    if (heightRange.value[0] > defaultHeight[0]) {
+      filters.push(['height', '>=', heightRange.value[0]])
+    }
+    if (heightRange.value[1] < defaultHeight[1]) {
+      filters.push(['height', '<=', heightRange.value[1]])
+    }
+
+    // 体重范围
+    if (weightRange.value[0] > defaultWeight[0]) {
+      filters.push(['weight', '>=', weightRange.value[0]])
+    }
+    if (weightRange.value[1] < defaultWeight[1]) {
+      filters.push(['weight', '<=', weightRange.value[1]])
+    }
+
+    // 胸围范围
+    if (bustRange.value[0] > defaultBust[0]) {
+      filters.push(['bust', '>=', bustRange.value[0]])
+    }
+    if (bustRange.value[1] < defaultBust[1]) {
+      filters.push(['bust', '<=', bustRange.value[1]])
+    }
+
+    // 杯型
+    if (selectedCup.value !== 'all') {
+      filters.push(['cup', '=', selectedCup.value])
+    }
+
+    // 生日筛选
+    if (birthdayMonth.value > 0) {
+      filters.push(['birthday', '=', [birthdayMonth.value, birthdayDay.value]])
     }
 
     const finalFilters = filters.length > 1 ? ['and', ...filters] : (filters[0] || [])
@@ -249,6 +373,19 @@ function applyFilters(filters) {
   if (filters.selectedSex !== undefined) selectedSex.value = filters.selectedSex
   if (filters.selectedBloodType !== undefined) selectedBloodType.value = filters.selectedBloodType
   if (filters.selectedRole !== undefined) selectedRole.value = filters.selectedRole
+  if (filters.heightRange !== undefined) heightRange.value = filters.heightRange
+  if (filters.weightRange !== undefined) weightRange.value = filters.weightRange
+  if (filters.bustRange !== undefined) bustRange.value = filters.bustRange
+  if (filters.selectedCup !== undefined) selectedCup.value = filters.selectedCup
+  if (filters.birthdayMonth !== undefined) birthdayMonth.value = filters.birthdayMonth
+  if (filters.birthdayDay !== undefined) birthdayDay.value = filters.birthdayDay
+  // 如果有身体数据筛选，自动展开面板
+  if (filters.heightRange || filters.weightRange || filters.bustRange || filters.selectedCup) {
+    showBodyFilters.value = true
+  }
+  if (filters.birthdayMonth) {
+    showBirthdayFilters.value = true
+  }
 }
 
 function handleRefresh() {
@@ -256,6 +393,30 @@ function handleRefresh() {
 }
 
 onMounted(async () => {
+  // 从 URL 解析身体数据筛选参数
+  const hRange = parseRangeParam('height', 100, 200)
+  if (hRange) { heightRange.value = hRange; showBodyFilters.value = true }
+
+  const wRange = parseRangeParam('weight', 30, 120)
+  if (wRange) { weightRange.value = wRange; showBodyFilters.value = true }
+
+  const bRange = parseRangeParam('bust', 40, 120)
+  if (bRange) { bustRange.value = bRange; showBodyFilters.value = true }
+
+  const cupParam = route.query.cup
+  if (typeof cupParam === 'string' && cupParam) {
+    selectedCup.value = cupParam.toUpperCase()
+    showBodyFilters.value = true
+  }
+
+  // 从 URL 解析生日筛选
+  const bdFilter = getBirthdayFilter()
+  if (bdFilter) {
+    birthdayMonth.value = bdFilter[0]
+    birthdayDay.value = bdFilter[1]
+    showBirthdayFilters.value = true
+  }
+
   const savedId = route.query.savedId
   if (savedId) {
     const saved = getById(savedId)
@@ -294,6 +455,19 @@ watch(selectedTraits, () => {
   fetchData()
 }, { deep: true })
 
+// 身体数据筛选变化时自动重新搜索
+watch([heightRange, weightRange, bustRange], () => {
+  fetchData()
+}, { deep: true })
+
+watch(selectedCup, () => {
+  fetchData()
+})
+
+watch([birthdayMonth, birthdayDay], () => {
+  fetchData()
+})
+
 watch(
   () => route.query.trait,
   async (newTrait) => {
@@ -312,6 +486,52 @@ watch(
       }
     }
     fetchData(query.value, true)
+  }
+)
+
+// 监听身体数据相关的 URL 参数变化（如从生日/身高链接跳转进来）
+watch(
+  () => route.query,
+  (newQuery) => {
+    // 身高
+    const hRange = parseRangeParam('height', 100, 200)
+    if (hRange) { heightRange.value = hRange; showBodyFilters.value = true }
+    else { resetHeight() }
+
+    // 体重
+    const wRange = parseRangeParam('weight', 30, 120)
+    if (wRange) { weightRange.value = wRange; showBodyFilters.value = true }
+    else { resetWeight() }
+
+    // 胸围
+    const bRange = parseRangeParam('bust', 40, 120)
+    if (bRange) { bustRange.value = bRange; showBodyFilters.value = true }
+    else { resetBust() }
+
+    // 杯型
+    const cupParam = newQuery.cup
+    if (typeof cupParam === 'string' && cupParam) {
+      selectedCup.value = cupParam.toUpperCase()
+      showBodyFilters.value = true
+    } else {
+      selectedCup.value = 'all'
+    }
+
+    // 生日
+    const bdFilter = getBirthdayFilter()
+    if (bdFilter) {
+      birthdayMonth.value = bdFilter[0]
+      birthdayDay.value = bdFilter[1]
+      showBirthdayFilters.value = true
+    } else {
+      birthdayMonth.value = 0
+      birthdayDay.value = 0
+    }
+
+    // 如果没有任何身体数据参数，检查是否需要关闭面板
+    if (!hRange && !wRange && !bRange && !cupParam && !bdFilter) {
+      // 不关闭面板，因为可能有其他筛选
+    }
   }
 )
 
@@ -348,7 +568,7 @@ const getSexClass = (sex) => {
       :title="t('library.characters')"
       icon="lucide:user-circle"
       :loading="isLoading"
-      :filters="{ query, selectedTraits, selectedSex, selectedBloodType, selectedRole }"
+      :filters="{ query, selectedTraits, selectedSex, selectedBloodType, selectedRole, heightRange, weightRange, bustRange, selectedCup, birthdayMonth, birthdayDay }"
       @search="handleSearch"
       @clear="handleClear"
       @refresh="handleRefresh"
@@ -401,64 +621,257 @@ const getSexClass = (sex) => {
             />
           </div>
 
+          <!-- 生日筛选 chip -->
+          <div v-if="isBirthdayActive()" class="flex flex-wrap gap-1.5">
+            <div
+              class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-pink-50 border border-pink-200 text-[11px] font-medium text-pink-700"
+            >
+              <Icon icon="lucide:cake" class="h-3 w-3" />
+              <span>{{ birthdayMonth }}月{{ birthdayDay > 0 ? birthdayDay + '日' : '' }}</span>
+              <button @click="resetBirthdayFilters" class="ml-0.5 p-0.5 rounded-full hover:bg-pink-100 transition cursor-pointer">
+                <Icon icon="lucide:x" class="h-2.5 w-2.5" />
+              </button>
+            </div>
+          </div>
+
+          <!-- 身体数据筛选 chips -->
+          <div v-if="isHeightActive() || isWeightActive() || isBustActive() || isCupActive()" class="flex flex-wrap gap-1.5">
+            <div
+              v-if="isHeightActive()"
+              class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-50 border border-blue-200 text-[11px] font-medium text-blue-700"
+            >
+              <Icon icon="lucide:ruler" class="h-3 w-3" />
+              <span>{{ heightRange[0] }}-{{ heightRange[1] }}cm</span>
+              <button @click="resetHeight" class="ml-0.5 p-0.5 rounded-full hover:bg-blue-100 transition cursor-pointer">
+                <Icon icon="lucide:x" class="h-2.5 w-2.5" />
+              </button>
+            </div>
+            <div
+              v-if="isWeightActive()"
+              class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-50 border border-green-200 text-[11px] font-medium text-green-700"
+            >
+              <Icon icon="lucide:weight" class="h-3 w-3" />
+              <span>{{ weightRange[0] }}-{{ weightRange[1] }}kg</span>
+              <button @click="resetWeight" class="ml-0.5 p-0.5 rounded-full hover:bg-green-100 transition cursor-pointer">
+                <Icon icon="lucide:x" class="h-2.5 w-2.5" />
+              </button>
+            </div>
+            <div
+              v-if="isBustActive()"
+              class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-purple-50 border border-purple-200 text-[11px] font-medium text-purple-700"
+            >
+              <Icon icon="lucide:circle" class="h-3 w-3" />
+              <span>{{ bustRange[0] }}-{{ bustRange[1] }}cm</span>
+              <button @click="resetBust" class="ml-0.5 p-0.5 rounded-full hover:bg-purple-100 transition cursor-pointer">
+                <Icon icon="lucide:x" class="h-2.5 w-2.5" />
+              </button>
+            </div>
+            <div
+              v-if="isCupActive()"
+              class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-medium text-amber-700"
+            >
+              <Icon icon="lucide:heart" class="h-3 w-3" />
+              <span>Cup {{ selectedCup }}</span>
+              <button @click="resetCup" class="ml-0.5 p-0.5 rounded-full hover:bg-amber-100 transition cursor-pointer">
+                <Icon icon="lucide:x" class="h-2.5 w-2.5" />
+              </button>
+            </div>
+          </div>
+
           <!-- 高级筛选面板 -->
           <Transition name="panel">
-            <div v-if="showAdvancedFilters" class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
-              <!-- 特征筛选按钮 -->
-              <button
-                @click="showTraitModal = true"
-                class="flex w-full items-center justify-between gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
-                :class="selectedTraits.length > 0
-                  ? 'bg-violet-600 text-white'
-                  : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
-              >
-                <Icon icon="lucide:scan-search" class="h-3.5 w-3.5" />
-                <span>特征</span>
-                <span
-                  v-if="selectedTraits.length > 0"
-                  class="inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold"
-                  :class="selectedTraits.length > 0 ? 'bg-white/20 text-white' : 'bg-neutral-200 text-neutral-600'"
+            <div v-if="showAdvancedFilters" class="space-y-2 pt-1">
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <!-- 特征筛选按钮 -->
+                <button
+                  @click="showTraitModal = true"
+                  class="flex w-full items-center justify-between gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
+                  :class="selectedTraits.length > 0
+                    ? 'bg-violet-600 text-white'
+                    : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
                 >
-                  {{ selectedTraits.length }}
-                </span>
-                <Icon v-else icon="lucide:chevron-down" class="h-3 w-3 text-neutral-400" />
-              </button>
+                  <Icon icon="lucide:scan-search" class="h-3.5 w-3.5" />
+                  <span>特征</span>
+                  <span
+                    v-if="selectedTraits.length > 0"
+                    class="inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold"
+                    :class="selectedTraits.length > 0 ? 'bg-white/20 text-white' : 'bg-neutral-200 text-neutral-600'"
+                  >
+                    {{ selectedTraits.length }}
+                  </span>
+                  <Icon v-else icon="lucide:chevron-down" class="h-3 w-3 text-neutral-400" />
+                </button>
 
-              <!-- 性别 -->
-              <BaseSelect
-                v-model="selectedSex"
-                :options="sexOptions"
-                :label-renderer="(l) => t(l, l)"
-                class="!bg-neutral-50 rounded-lg border border-neutral-100"
-              >
-                <template #prefix>
-                  <Icon icon="lucide:users" class="h-3.5 w-3.5 text-neutral-400" />
-                </template>
-              </BaseSelect>
+                <!-- 性别 -->
+                <BaseSelect
+                  v-model="selectedSex"
+                  :options="sexOptions"
+                  :label-renderer="(l) => t(l, l)"
+                  class="!bg-neutral-50 rounded-lg border border-neutral-100"
+                >
+                  <template #prefix>
+                    <Icon icon="lucide:users" class="h-3.5 w-3.5 text-neutral-400" />
+                  </template>
+                </BaseSelect>
 
-              <!-- 血型 -->
-              <BaseSelect
-                v-model="selectedBloodType"
-                :options="bloodTypeOptions"
-                :label-renderer="(l) => t(l, l)"
-                class="!bg-neutral-50 rounded-lg border border-neutral-100"
-              >
-                <template #prefix>
-                  <Icon icon="lucide:droplets" class="h-3.5 w-3.5 text-neutral-400" />
-                </template>
-              </BaseSelect>
+                <!-- 血型 -->
+                <BaseSelect
+                  v-model="selectedBloodType"
+                  :options="bloodTypeOptions"
+                  :label-renderer="(l) => t(l, l)"
+                  class="!bg-neutral-50 rounded-lg border border-neutral-100"
+                >
+                  <template #prefix>
+                    <Icon icon="lucide:droplets" class="h-3.5 w-3.5 text-neutral-400" />
+                  </template>
+                </BaseSelect>
 
-              <!-- 角色定位 -->
-              <BaseSelect
-                v-model="selectedRole"
-                :options="roleOptions"
-                :label-renderer="(l) => t(l, l)"
-                class="!bg-neutral-50 rounded-lg border border-neutral-100"
-              >
-                <template #prefix>
-                  <Icon icon="lucide:badge" class="h-3.5 w-3.5 text-neutral-400" />
-                </template>
-              </BaseSelect>
+                <!-- 角色定位 -->
+                <BaseSelect
+                  v-model="selectedRole"
+                  :options="roleOptions"
+                  :label-renderer="(l) => t(l, l)"
+                  class="!bg-neutral-50 rounded-lg border border-neutral-100"
+                >
+                  <template #prefix>
+                    <Icon icon="lucide:badge" class="h-3.5 w-3.5 text-neutral-400" />
+                  </template>
+                </BaseSelect>
+
+                <!-- 生日 -->
+                <button
+                  @click="showBirthdayFilters = !showBirthdayFilters"
+                  class="flex w-full items-center justify-between gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
+                  :class="isBirthdayActive()
+                    ? 'bg-pink-500 text-white'
+                    : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
+                >
+                  <Icon icon="lucide:cake" class="h-3.5 w-3.5" />
+                  <span>生日</span>
+                  <Icon v-if="!isBirthdayActive()" icon="lucide:chevron-down" class="h-3 w-3 text-neutral-400" />
+                  <Icon v-else icon="lucide:x" class="h-3 w-3" />
+                </button>
+
+                <!-- 身体数据 -->
+                <button
+                  @click="showBodyFilters = !showBodyFilters"
+                  class="flex w-full items-center justify-between gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
+                  :class="isHeightActive() || isWeightActive() || isBustActive() || isCupActive()
+                    ? 'bg-rose-500 text-white'
+                    : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
+                >
+                  <Icon icon="lucide:ruler" class="h-3.5 w-3.5" />
+                  <span>身体数据</span>
+                  <span
+                    v-if="isHeightActive() || isWeightActive() || isBustActive() || isCupActive()"
+                    class="inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold bg-white/20 text-white"
+                  >
+                    {{ [isHeightActive(), isWeightActive(), isBustActive(), isCupActive()].filter(Boolean).length }}
+                  </span>
+                  <Icon v-else icon="lucide:chevron-down" class="h-3 w-3 text-neutral-400" />
+                </button>
+
+                <!-- 清除身体数据 -->
+                <button
+                  v-if="isHeightActive() || isWeightActive() || isBustActive() || isCupActive()"
+                  @click="resetBodyFilters"
+                  class="flex w-full items-center justify-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-red-500 bg-red-50 border border-red-100 hover:bg-red-100 transition cursor-pointer"
+                >
+                  <Icon icon="lucide:x" class="h-3 w-3" />
+                  <span>清除身体数据</span>
+                </button>
+              </div>
+
+              <!-- 生日筛选面板 -->
+              <Transition name="panel">
+                <div v-if="showBirthdayFilters" class="rounded-xl bg-neutral-50 border border-neutral-100 p-3 space-y-3">
+                  <div class="space-y-1.5">
+                    <div class="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                      <Icon icon="lucide:cake" class="h-3 w-3" />
+                      <span>生日</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                      <select
+                        v-model.number="birthdayMonth"
+                        class="px-2 py-1.5 rounded-lg bg-white border border-neutral-200 text-xs text-neutral-700 focus:outline-none focus:ring-1 focus:ring-neutral-300"
+                      >
+                        <option v-for="opt in monthOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                      </select>
+                      <input
+                        v-model.number="birthdayDay"
+                        type="number"
+                        min="0"
+                        max="31"
+                        placeholder="日"
+                        :disabled="birthdayMonth <= 0"
+                        class="px-2 py-1.5 rounded-lg bg-white border border-neutral-200 text-xs text-neutral-700 focus:outline-none focus:ring-1 focus:ring-neutral-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Transition>
+
+              <!-- 身体数据筛选面板 -->
+              <Transition name="panel">
+                <div v-if="showBodyFilters" class="rounded-xl bg-neutral-50 border border-neutral-100 p-3 space-y-3">
+                  <!-- 身高 -->
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                        <Icon icon="lucide:ruler" class="h-3 w-3" />
+                        <span>身高 (cm)</span>
+                      </div>
+                      <span class="text-[10px] text-neutral-400 font-medium">{{ heightRange[0] }} - {{ heightRange[1] }}</span>
+                    </div>
+                    <DualRangeSlider v-model="heightRange" :min="100" :max="200" :step="1" />
+                  </div>
+
+                  <!-- 体重 -->
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                        <Icon icon="lucide:weight" class="h-3 w-3" />
+                        <span>体重 (kg)</span>
+                      </div>
+                      <span class="text-[10px] text-neutral-400 font-medium">{{ weightRange[0] }} - {{ weightRange[1] }}</span>
+                    </div>
+                    <DualRangeSlider v-model="weightRange" :min="30" :max="120" :step="1" />
+                  </div>
+
+                  <!-- 胸围 -->
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                        <Icon icon="lucide:circle" class="h-3 w-3" />
+                        <span>胸围 (cm)</span>
+                      </div>
+                      <span class="text-[10px] text-neutral-400 font-medium">{{ bustRange[0] }} - {{ bustRange[1] }}</span>
+                    </div>
+                    <DualRangeSlider v-model="bustRange" :min="40" :max="120" :step="1" />
+                  </div>
+
+                  <!-- 杯型 -->
+                  <div class="space-y-1.5">
+                    <div class="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                      <Icon icon="lucide:heart" class="h-3 w-3" />
+                      <span>杯型</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1">
+                      <button
+                        v-for="opt in cupOptions"
+                        :key="opt.value"
+                        @click="selectedCup = opt.value"
+                        class="px-2.5 py-1 rounded-md text-[11px] font-medium transition cursor-pointer"
+                        :class="selectedCup === opt.value
+                          ? 'bg-amber-500 text-white'
+                          : 'bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100'"
+                      >
+                        {{ opt.label }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
             </div>
           </Transition>
         </div>
@@ -530,6 +943,18 @@ const getSexClass = (sex) => {
               <span v-if="item.blood_type" class="inline-flex items-center rounded-full bg-neutral-50 px-1.5 py-0.5 text-[9px] font-bold text-neutral-500 border border-neutral-100 uppercase">
                 {{ item.blood_type }}
               </span>
+              <span v-if="item.height" class="inline-flex items-center rounded-full bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold text-blue-500 border border-blue-100">
+                {{ item.height }}cm
+              </span>
+              <span v-if="item.weight" class="inline-flex items-center rounded-full bg-green-50 px-1.5 py-0.5 text-[9px] font-bold text-green-500 border border-green-100">
+                {{ item.weight }}kg
+              </span>
+              <span v-if="item.bust" class="inline-flex items-center rounded-full bg-purple-50 px-1.5 py-0.5 text-[9px] font-bold text-purple-500 border border-purple-100">
+                {{ item.bust }}cm
+              </span>
+              <span v-if="item.cup" class="inline-flex items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-500 border border-amber-100 uppercase">
+                {{ item.cup }}
+              </span>
             </div>
             
             <div v-if="item.description" class="mt-2 line-clamp-1">
@@ -599,6 +1024,6 @@ const getSexClass = (sex) => {
 .panel-enter-to,
 .panel-leave-from {
   opacity: 1;
-  max-height: 200px;
+  max-height: 600px;
 }
 </style>
