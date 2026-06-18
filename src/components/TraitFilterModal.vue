@@ -165,7 +165,7 @@ async function fetchPopularTraits() {
               <input
                 v-model="searchQuery"
                 @input="handleSearchInput"
-                type="search"
+                type="text"
                 placeholder="搜索特征名称..."
                 class="w-full rounded-lg border border-neutral-200 bg-neutral-50 pl-9 pr-4 py-2 text-sm outline-none transition focus:border-neutral-400 focus:bg-white placeholder-neutral-400"
               />

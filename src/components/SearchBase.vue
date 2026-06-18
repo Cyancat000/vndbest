@@ -130,7 +130,7 @@ defineExpose({
         :value="localQuery"
         @input="handleInput"
         @keydown.enter="handleSearch"
-        type="search"
+        type="text"
         :placeholder="`搜索${title}...`"
         class="w-full rounded-lg border border-neutral-200 bg-white pl-9 pr-16 py-2.5 text-sm outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-900/5 placeholder-neutral-400"
       />
