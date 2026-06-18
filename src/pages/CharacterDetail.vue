@@ -161,6 +161,20 @@ async function fetchQuotes() {
   }
 }
 
+// 复制台词内容
+const copiedQuoteId = ref(null)
+const copyQuote = async (quote) => {
+  try {
+    await navigator.clipboard.writeText(quote.quote)
+    copiedQuoteId.value = quote.id
+    setTimeout(() => {
+      if (copiedQuoteId.value === quote.id) copiedQuoteId.value = null
+    }, 2000)
+  } catch (err) {
+    console.error('复制失败:', err)
+  }
+}
+
 // 性别图标和颜色（sex 可能为数组、逗号分隔字符串或单字符）
 const getSexIcon = (sex) => {
   let s
@@ -518,7 +532,8 @@ watch(
           <div
             v-for="quote in quotes"
             :key="quote.id"
-            class="rounded-xl border border-neutral-100 bg-neutral-50/50 p-4 space-y-2.5"
+            @click="copyQuote(quote)"
+            class="rounded-xl border border-neutral-100 bg-neutral-50/50 p-4 space-y-2.5 cursor-pointer active:scale-[0.98] transition-transform"
           >
             <!-- 台词内容 -->
             <p class="text-sm leading-relaxed text-neutral-700 italic whitespace-pre-wrap">
@@ -534,9 +549,18 @@ watch(
                   <span v-else class="text-neutral-500">{{ t('vn.char_quotes_narrator') }}</span>
                 </span>
               </div>
-              <div v-if="quote.score !== null && quote.score !== undefined" class="flex items-center gap-1">
-                <Icon icon="lucide:star" class="h-3 w-3 text-amber-400" />
-                <span class="font-semibold text-neutral-500">{{ quote.score }}</span>
+              <div class="flex items-center gap-1.5">
+                <template v-if="copiedQuoteId === quote.id">
+                  <Icon icon="lucide:check" class="h-3 w-3 text-green-500" />
+                  <span class="font-semibold text-green-600">{{ t('vn.quotes.copied') }}</span>
+                </template>
+                <template v-else>
+                  <Icon icon="lucide:copy" class="h-3 w-3 text-neutral-400" />
+                  <div v-if="quote.score !== null && quote.score !== undefined" class="flex items-center gap-1">
+                    <Icon icon="lucide:star" class="h-3 w-3 text-amber-400" />
+                    <span class="font-semibold text-neutral-500">{{ quote.score }}</span>
+                  </div>
+                </template>
               </div>
             </div>
           </div>

@@ -297,7 +297,8 @@
       "loading": "Loading quotes...",
       "empty": "No quotes found",
       "narrator": "Narrator/Unknown",
-      "score": "Score"
+      "score": "Score",
+      "copied": "Copied!"
     },
     "spoiler_alert": {
       "title": "Spoiler Alert",

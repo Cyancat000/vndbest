@@ -844,6 +844,20 @@ const loadQuotes = async (id) => {
   }
 }
 
+// 复制摘录内容
+const copiedQuoteId = ref(null)
+const copyQuote = async (quote) => {
+  try {
+    await navigator.clipboard.writeText(quote.quote)
+    copiedQuoteId.value = quote.id
+    setTimeout(() => {
+      if (copiedQuoteId.value === quote.id) copiedQuoteId.value = null
+    }, 2000)
+  } catch (err) {
+    console.error('复制失败:', err)
+  }
+}
+
 // 统一标题处理逻辑 (与 VnList.vue 保持一致)
 function getTitle(v) {
   if (!v) return ''
@@ -1847,31 +1861,40 @@ watch(
             {{ t('vn.quotes.empty') }}
           </div>
           <div v-else class="space-y-3">
-            <div 
-              v-for="q in quotes" 
-              :key="q.id"
-              class="p-4 rounded-xl border border-neutral-200 bg-neutral-50 relative space-y-2"
-            >
-              <!-- 引用气泡图标 -->
-              <Icon icon="lucide:quote" class="absolute top-2 right-3 h-8 w-8 text-neutral-200 pointer-events-none" />
-              
-              <!-- 摘录内容 -->
-              <p class="text-xs text-neutral-700 italic leading-relaxed pr-6 whitespace-pre-wrap">
-                "{{ q.quote }}"
-              </p>
-
-              <!-- 台词主人名与评分 -->
-              <div class="flex justify-between items-center text-[10px] text-neutral-500 pt-2 border-t border-neutral-200/60">
-                <span v-if="q.character" class="font-semibold text-neutral-800">
-                  —— {{ q.character.name }} <span v-if="q.character.original" class="font-normal text-neutral-400">({{ q.character.original }})</span>
-                </span>
-                <span v-else class="font-semibold text-neutral-400">—— {{ t('vn.quotes.narrator') }}</span>
-
-                <span class="flex items-center gap-1">
-                  {{ t('vn.quotes.score') }}: <strong class="text-neutral-700">{{ q.score }}</strong>
-                </span>
+            <div
+                v-for="q in quotes"
+                :key="q.id"
+                @click="copyQuote(q)"
+                class="p-4 rounded-xl border border-neutral-200 bg-neutral-50 relative space-y-2 cursor-pointer active:scale-[0.98] transition-transform"
+              >
+                <!-- 引用气泡图标 -->
+                <Icon icon="lucide:quote" class="absolute top-2 right-3 h-8 w-8 text-neutral-200 pointer-events-none" />
+                
+                <!-- 摘录内容 -->
+                <p class="text-xs text-neutral-700 italic leading-relaxed pr-6 whitespace-pre-wrap">
+                  "{{ q.quote }}"
+                </p>
+  
+                <!-- 台词主人名与评分 -->
+                <div class="flex justify-between items-center text-[10px] text-neutral-500 pt-2 border-t border-neutral-200/60">
+                  <span v-if="q.character" class="font-semibold text-neutral-800">
+                    —— {{ q.character.name }} <span v-if="q.character.original" class="font-normal text-neutral-400">({{ q.character.original }})</span>
+                  </span>
+                  <span v-else class="font-semibold text-neutral-400">—— {{ t('vn.quotes.narrator') }}</span>
+  
+                  <span class="flex items-center gap-1.5">
+                    <!-- 复制状态 -->
+                    <template v-if="copiedQuoteId === q.id">
+                      <Icon icon="lucide:check" class="h-3 w-3 text-green-500" />
+                      <span class="text-green-600 font-semibold">{{ t('vn.quotes.copied') }}</span>
+                    </template>
+                    <template v-else>
+                      <Icon icon="lucide:copy" class="h-3 w-3 text-neutral-400" />
+                      <span>{{ t('vn.quotes.score') }}: <strong class="text-neutral-700">{{ q.score }}</strong></span>
+                    </template>
+                  </span>
+                </div>
               </div>
-            </div>
           </div>
         </div>
 
