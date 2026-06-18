@@ -1167,8 +1167,19 @@ watch(
             <span class="font-mono text-neutral-800">{{ vn.id }}</span>
 
             <span class="text-neutral-400">{{ t('vn.developer') }}</span>
-            <span class="text-neutral-800 truncate">
-              {{ vn.developers?.map(d => d.name).join(', ') || t('metadata.gender.unknown') }}
+            <span class="truncate flex flex-wrap gap-1">
+              <template v-if="vn.developers?.length">
+                <span
+                  v-for="(d, i) in vn.developers"
+                  :key="d.id || i"
+                  @click="d.id && router.push(`/producer/${d.id}`)"
+                  class="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-700 border border-neutral-200 font-medium cursor-pointer hover:bg-neutral-200 hover:border-neutral-300 active:bg-neutral-300 active:scale-95 transition-all"
+                >
+                  {{ d.name }}
+                  <Icon icon="lucide:external-link" class="h-2.5 w-2.5 text-neutral-400 shrink-0" />
+                </span>
+              </template>
+              <span v-else class="text-neutral-800">{{ t('metadata.gender.unknown') }}</span>
             </span>
 
             <span class="text-neutral-400">{{ t('vn.released') }}</span>
