@@ -77,5 +77,41 @@ export function useTranslation() {
     return zhName
   }
 
-  return { translateTagName, translateTraitName, reverseLookupTagName, reverseLookupTraitName }
+  /**
+   * 在 i18n 翻译表中模糊搜索中文名（支持部分匹配）
+   * @param {string} keyword - 中文搜索关键词
+   * @returns {Array<{en: string, zh: string}>} 匹配结果列表
+   */
+  function searchTagsByZh(keyword) {
+    if (!keyword || locale.value !== 'zh') return []
+    const kw = keyword.trim().toLowerCase()
+    if (!kw) return []
+    const results = []
+    for (const [en, zh] of Object.entries(vnTagsMap)) {
+      if (zh.toLowerCase().includes(kw)) {
+        results.push({ en, zh })
+      }
+    }
+    return results
+  }
+
+  /**
+   * 在 i18n 翻译表中模糊搜索中文名（支持部分匹配）
+   * @param {string} keyword - 中文搜索关键词
+   * @returns {Array<{en: string, zh: string}>} 匹配结果列表
+   */
+  function searchTraitsByZh(keyword) {
+    if (!keyword || locale.value !== 'zh') return []
+    const kw = keyword.trim().toLowerCase()
+    if (!kw) return []
+    const results = []
+    for (const [en, zh] of Object.entries(charTraitsMap)) {
+      if (zh.toLowerCase().includes(kw)) {
+        results.push({ en, zh })
+      }
+    }
+    return results
+  }
+
+  return { translateTagName, translateTraitName, reverseLookupTagName, reverseLookupTraitName, searchTagsByZh, searchTraitsByZh }
 }

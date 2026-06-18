@@ -1,7 +1,7 @@
 <script setup>
 defineOptions({ name: 'TraitSearch' })
 
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
@@ -13,7 +13,7 @@ import { IonPage, IonContent } from '@ionic/vue'
 
 const { t } = useI18n()
 const router = useRouter()
-const { translateTraitName, reverseLookupTraitName } = useTranslation()
+const { translateTraitName, reverseLookupTraitName, searchTraitsByZh } = useTranslation()
 const route = useRoute()
 const { getById } = useSavedSearches()
 
@@ -23,6 +23,17 @@ const isLoading = ref(false)
 const hasMore = ref(false)
 const page = ref(1)
 const resultsPerPage = 25
+
+// i18n 本地翻译匹配结果
+const i18nResults = ref([])
+const isLoadingI18n = ref(false)
+const loadingI18nKey = ref(null) // 当前正在加载的 i18n 项的 key
+
+// 去重：排除已在 API 结果中出现的英文名
+const filteredI18nResults = computed(() => {
+  const apiNames = new Set(results.value.map(r => r.name))
+  return i18nResults.value.filter(item => !apiNames.has(item.en))
+})
 
 // 触底加载逻辑
 const sentinel = ref(null)
@@ -35,6 +46,7 @@ async function fetchTraits(q = '', reset = true) {
     page.value = 1
     results.value = []
     hasMore.value = false
+    i18nResults.value = []
   }
   
   isLoading.value = true
@@ -71,6 +83,11 @@ async function fetchTraits(q = '', reset = true) {
   } finally {
     isLoading.value = false
     
+    // API 搜索完成后，同步执行 i18n 本地搜索
+    if (reset && q && q.trim() !== '') {
+      fetchI18nResults(q.trim())
+    }
+    
     // 如果首屏没填满，且还有数据，递归加载
     nextTick(() => {
       if (hasMore.value && !isLoading.value) {
@@ -80,6 +97,17 @@ async function fetchTraits(q = '', reset = true) {
         }
       }
     })
+  }
+}
+
+function fetchI18nResults(keyword) {
+  isLoadingI18n.value = true
+  try {
+    i18nResults.value = searchTraitsByZh(keyword)
+  } catch (err) {
+    console.error('i18n 特征搜索失败:', err)
+  } finally {
+    isLoadingI18n.value = false
   }
 }
 
@@ -96,12 +124,33 @@ function handleSearch(q) {
 
 function handleClear() {
   query.value = ''
+  i18nResults.value = []
   fetchTraits('', true)
 }
 
 function goToDetail(id) {
-  // 特征详情页面暂未实现，可跳转至按特征搜索角色
   router.push(`/browse/characters?trait=${id}`)
+}
+
+/**
+ * 点击 i18n 翻译结果：通过英文名搜索获取 ID 后跳转
+ */
+async function goToI18nResult(item) {
+  const key = item.en
+  loadingI18nKey.value = key
+  try {
+    const res = await searchTraits(item.en, { results: 5 })
+    if (res && res.results && res.results.length > 0) {
+      // 精确匹配英文名
+      const exact = res.results.find(r => r.name === item.en)
+      const trait = exact || res.results[0]
+      goToDetail(trait.id)
+    }
+  } catch (err) {
+    console.error('查找特征 ID 失败:', err)
+  } finally {
+    loadingI18nKey.value = null
+  }
 }
 
 // 统一观察器初始化
@@ -171,7 +220,7 @@ watch(sentinel, (el) => {
       @clear="handleClear"
       @refresh="handleRefresh"
     >
-      <!-- 列表内容 -->
+      <!-- API 搜索结果 -->
       <div class="grid grid-cols-1 gap-2">
         <div 
           v-for="item in results" 
@@ -210,6 +259,53 @@ watch(sentinel, (el) => {
         </div>
       </div>
 
+      <!-- i18n 翻译匹配结果 -->
+      <div v-if="filteredI18nResults.length > 0" class="mt-3">
+        <div class="flex items-center gap-2 mb-2 px-1">
+          <Icon icon="lucide:languages" class="h-3.5 w-3.5 text-violet-400" />
+          <span class="text-[10px] text-violet-400 font-bold uppercase tracking-widest">翻译匹配</span>
+        </div>
+        <div class="grid grid-cols-1 gap-2">
+          <div 
+            v-for="item in filteredI18nResults" 
+            :key="'i18n-' + item.en"
+            @click="goToI18nResult(item)"
+            :class="[
+              'group relative flex flex-col p-3 rounded-xl border border-dashed transition-all cursor-pointer shadow-xs',
+              loadingI18nKey === item.en
+                ? 'border-violet-400 bg-violet-100/80 scale-[0.98] opacity-80'
+                : 'border-violet-200 bg-violet-50/50 hover:border-violet-300 hover:shadow-sm active:scale-[0.99]'
+            ]"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <h3 class="font-bold text-sm text-violet-800 truncate">
+                      {{ item.zh }}
+                  </h3>
+                  <span class="shrink-0 inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold bg-violet-100 text-violet-500 border border-violet-200">
+                    翻译
+                  </span>
+                </div>
+                <p class="text-[11px] text-violet-400 mt-0.5">
+                  {{ item.en }}
+                </p>
+              </div>
+              
+              <div class="flex items-center gap-1 shrink-0">
+                <template v-if="loadingI18nKey === item.en">
+                  <Icon icon="eos-icons:loading" class="h-4 w-4 text-violet-500 animate-spin" />
+                </template>
+                <template v-else>
+                  <Icon icon="lucide:external-link" class="h-3 w-3 text-violet-300 group-hover:text-violet-500 transition-colors" />
+                  <Icon icon="lucide:chevron-right" class="h-3.5 w-3.5 text-violet-300 group-hover:text-violet-500 transition-colors" />
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 触底加载哨兵 -->
       <div 
         ref="sentinel" 
@@ -219,14 +315,14 @@ watch(sentinel, (el) => {
           <Icon icon="eos-icons:loading" class="h-6 w-6 text-neutral-400" />
           <span class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">{{ t('common.loading') }}</span>
         </div>
-        <div v-else-if="!hasMore && results.length > 0" class="text-[10px] text-neutral-300 font-bold uppercase tracking-widest">
+        <div v-else-if="!hasMore && results.length > 0 && filteredI18nResults.length === 0" class="text-[10px] text-neutral-300 font-bold uppercase tracking-widest">
           —— {{ t('list.all_loaded', 'All Loaded') }} ——
         </div>
         <div v-else class="h-1 w-full opacity-0"></div>
       </div>
 
       <!-- 无搜索结果 -->
-      <div v-if="results.length === 0 && !isLoading && query" class="flex flex-col items-center justify-center py-20 text-neutral-400 space-y-3">
+      <div v-if="results.length === 0 && filteredI18nResults.length === 0 && !isLoading && query" class="flex flex-col items-center justify-center py-20 text-neutral-400 space-y-3">
         <Icon icon="lucide:search-x" class="h-10 w-10 text-neutral-200" />
         <p class="text-sm">未找到相关特征</p>
       </div>
