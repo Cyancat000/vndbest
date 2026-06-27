@@ -1,8 +1,11 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { Icon } from '@iconify/vue'
+import { CapacitorHttp } from '@capacitor/core'
+import { useI18n } from 'vue-i18n'
 import { useTranslation } from '@/composables/useTranslation'
 
+const { t, locale } = useI18n()
 const { translateTagName } = useTranslation()
 
 const props = defineProps({
@@ -16,6 +19,10 @@ const props = defineProps({
 const emit = defineEmits(['remove', 'show-detail'])
 
 const showTooltip = ref(false)
+const translatedDescription = ref('')
+const translationLoading = ref(false)
+const translationError = ref('')
+const translationSourceText = ref('')
 
 const getCategoryClass = (category) => {
   const classes = {
@@ -43,6 +50,57 @@ function handleDetail() {
 function cleanDescription(desc) {
   if (!desc) return ''
   return desc.replace(/\[\/?\w+.*?\]/g, '').trim()
+}
+
+function resetDescriptionTranslation() {
+  translatedDescription.value = ''
+  translationLoading.value = false
+  translationError.value = ''
+  translationSourceText.value = ''
+}
+
+async function translateDescription() {
+  const sourceText = cleanDescription(props.tag?.description || '')
+  if (!sourceText) return
+  if (translationLoading.value) return
+
+  if (translatedDescription.value && translationSourceText.value === sourceText) {
+    resetDescriptionTranslation()
+  }
+
+  translationLoading.value = true
+  translationError.value = ''
+
+  try {
+    const response = await CapacitorHttp.post({
+      url: 'https://workers.hekinyan.vip/v1/translate',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: {
+        locale: locale.value,
+        messages: [
+          {
+            role: 'user',
+            content: sourceText
+          }
+        ]
+      }
+    })
+
+    const content = response?.data?.choices?.[0]?.message?.content?.trim()
+    if (!content) {
+      throw new Error(t('vn.translation.empty'))
+    }
+
+    translatedDescription.value = content
+    translationSourceText.value = sourceText
+  } catch (err) {
+    console.error('标签简介翻译失败:', err)
+    translationError.value = err?.response?.data?.error || err?.message || t('vn.translation.failed')
+  } finally {
+    translationLoading.value = false
+  }
 }
 </script>
 
@@ -98,10 +156,40 @@ function cleanDescription(desc) {
           </div>
 
           <!-- Description -->
-          <div v-if="tag.description" class="px-4 pb-3 max-h-[200px] overflow-y-auto">
-            <p class="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-wrap">
-              {{ cleanDescription(tag.description) }}
-            </p>
+          <div v-if="tag.description" class="px-4 pb-3 space-y-3">
+            <div class="max-h-[200px] overflow-y-auto space-y-3">
+              <div class="flex items-start justify-between gap-3">
+                <p class="flex-1 text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-wrap">
+                  {{ cleanDescription(tag.description) }}
+                </p>
+                <button
+                  @click="translateDescription"
+                  :disabled="translationLoading"
+                  :title="translatedDescription ? t('vn.translation.retranslate') : t('vn.translation.action')"
+                  :aria-label="translatedDescription ? t('vn.translation.retranslate') : t('vn.translation.action')"
+                  class="shrink-0 inline-flex items-center justify-center rounded-md border border-neutral-200 dark:border-neutral-700 bg-white/90 dark:bg-neutral-800 p-1.5 text-neutral-500 dark:text-neutral-400 transition disabled:cursor-not-allowed disabled:opacity-60 hover:border-neutral-300 hover:text-neutral-700 dark:hover:border-neutral-600 dark:hover:text-neutral-200"
+                >
+                  <Icon :icon="translationLoading ? 'lucide:loader-circle' : 'lucide:languages'" class="h-3.5 w-3.5" :class="{ 'animate-spin': translationLoading }" />
+                </button>
+              </div>
+
+              <div v-if="translatedDescription || translationError || translationLoading" class="rounded-lg border border-violet-200 dark:border-violet-800/50 bg-violet-50/60 dark:bg-violet-900/20 p-3 space-y-2">
+                <div class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-violet-500 dark:text-violet-400">
+                  <Icon icon="lucide:languages" class="h-3.5 w-3.5" />
+                  <span>{{ t('vn.translation.title') }}</span>
+                </div>
+                <div v-if="translationLoading" class="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+                  <Icon icon="lucide:loader-circle" class="h-4 w-4 animate-spin" />
+                  <span>{{ t('vn.translation.loading') }}</span>
+                </div>
+                <div v-else-if="translationError" class="text-xs leading-relaxed text-rose-500 dark:text-rose-400">
+                  {{ translationError }}
+                </div>
+                <p v-else class="text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
+                  {{ translatedDescription }}
+                </p>
+              </div>
+            </div>
           </div>
           <div v-else class="px-4 pb-3">
             <p class="text-xs text-neutral-400 dark:text-neutral-500 italic">暂无描述</p>
