@@ -5,6 +5,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import { App } from '@capacitor/app'
+import { Capacitor } from '@capacitor/core'
 import { getStats, getReleaseList, getRandomVn, getVnList, getCharacterList, getProducerList, getStaffList } from '@/api/vndb'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { useSavedSearches, SEARCH_TYPE_MAP } from '@/composables/useSavedSearches'
@@ -35,9 +37,88 @@ const loadingSections = ref({
 const savedSearchResults = ref({})
 const savedSearchLoading = ref({})
 
+const ACTIVE_REPORT_URL = 'https://workers.hekinyan.vip/v1/active'
+const ACTIVE_REPORT_DATE_KEY = 'vndb_active_report_date'
+const INSTALL_ID_KEY = 'vndb_install_id'
+
 function getTodayStr() {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function getOrCreateInstallId() {
+  let installId = localStorage.getItem(INSTALL_ID_KEY)
+  if (!installId) {
+    installId = crypto.randomUUID()
+    localStorage.setItem(INSTALL_ID_KEY, installId)
+  }
+  return installId
+}
+
+async function getAppVersion() {
+  try {
+    const info = await App.getInfo()
+    return info.version || info.build || 'unknown'
+  } catch {
+    return 'web'
+  }
+}
+
+async function buildActivePayload() {
+  const installId = getOrCreateInstallId()
+  const reportDate = getTodayStr()
+  const platform = Capacitor.getPlatform()
+  const appVersion = await getAppVersion()
+  const userAgent = navigator.userAgent || ''
+  const uaData = navigator.userAgentData
+
+  return {
+    installId,
+    date: reportDate,
+    runtime: {
+      platform,
+      isNativePlatform: Capacitor.isNativePlatform(),
+      userAgent,
+      brands: uaData?.brands || [],
+      mobile: uaData?.mobile ?? /Android|iPhone|iPad|iPod/i.test(userAgent)
+    },
+    app: {
+      version: appVersion
+    },
+    device: {
+      osVersion: uaData?.platform || navigator.platform || 'unknown',
+      model: navigator.vendor || navigator.platform || 'unknown',
+      language: navigator.language || 'unknown'
+    }
+  }
+}
+
+async function reportActiveIfNeeded() {
+  const today = getTodayStr()
+  const lastReportedDate = localStorage.getItem(ACTIVE_REPORT_DATE_KEY)
+
+  if (lastReportedDate === today) {
+    return
+  }
+
+  try {
+    const payload = await buildActivePayload()
+    const response = await fetch(ACTIVE_REPORT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+
+    localStorage.setItem(ACTIVE_REPORT_DATE_KEY, today)
+  } catch (err) {
+    console.error('激活上报失败:', err)
+  }
 }
 
 // 从保存的搜索条件重建 API 过滤器
@@ -278,6 +359,8 @@ function deduplicateCharacters(chars) {
 
 onMounted(async () => {
   const today = new Date().toISOString().split('T')[0]
+
+  reportActiveIfNeeded()
 
   // 1. 获取统计数据
   getStats().then(res => {
