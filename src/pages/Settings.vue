@@ -1,7 +1,7 @@
 <script setup>
 defineOptions({ name: 'Settings' })
 
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
@@ -18,6 +18,7 @@ const username = ref(localStorage.getItem('vndb_username') || '')
 const useSandbox = ref(JSON.parse(localStorage.getItem('vndb_use_sandbox') || 'false'))
 const currentLang = ref(locale.value)
 const activeSection = ref('root')
+let ignoreNextPopState = false
 
 const settingsSections = computed(() => ([
   {
@@ -67,14 +68,35 @@ const availableTitleLangOptions = computed(() => {
 
 onMounted(() => {
   username.value = localStorage.getItem('vndb_username') || ''
+  window.addEventListener('popstate', handlePopState)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('popstate', handlePopState)
 })
 
 function openSection(sectionKey) {
+  if (activeSection.value === sectionKey) return
+  window.history.pushState({ settingsSection: sectionKey }, '')
   activeSection.value = sectionKey
 }
 
 function goBackToRoot() {
+  if (activeSection.value === 'root') return
+  ignoreNextPopState = true
   activeSection.value = 'root'
+  window.history.back()
+}
+
+function handlePopState() {
+  if (ignoreNextPopState) {
+    ignoreNextPopState = false
+    return
+  }
+
+  if (activeSection.value !== 'root') {
+    activeSection.value = 'root'
+  }
 }
 
 function moveLanguage(index, direction) {

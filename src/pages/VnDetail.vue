@@ -3,7 +3,6 @@ import { ref, watch, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
-import { App } from '@capacitor/app'
 import { getVnDetail, getVnReleases, getVnCharacters, getVnQuotes, getVnListItem, patchVnListItem, deleteVnListItem } from '@/api/vndb'
 import VnList from '@/components/VnList.vue'
 import BaseSelect from '@/components/BaseSelect.vue'
@@ -64,7 +63,7 @@ const lightboxImageIndex = ref(0) // 记录当前查看的图片索引
 const lightboxImagesList = ref([]) // 大图画廊的数据列表（可以是截图，也可以是封面等）
 const scrollContainer = ref(null) // 滚动容器的 DOM 引用
 const ionContentRef = ref(null) // ion-content 的 DOM 引用
-let backButtonListener = null
+let ignoreNextLightboxPopState = false
 
 // 控制简介展开/收起
 const isDescriptionExpanded = ref(false)
@@ -640,6 +639,7 @@ const confirmSpoilerLevel = () => {
 const openLightbox = (index, imagesArray) => {
   lightboxImagesList.value = imagesArray
   lightboxImageIndex.value = index
+  window.history.pushState({ vnLightbox: true }, '')
   showImageLightbox.value = true
   
   // 锁定背景滚动（同时处理 body 和 ion-content）
@@ -667,7 +667,13 @@ const openLightbox = (index, imagesArray) => {
 }
 
 // 关闭大图查看器
-const closeLightbox = () => {
+const closeLightbox = (fromPopState = false) => {
+  if (!showImageLightbox.value) return
+
+  if (!fromPopState) {
+    ignoreNextLightboxPopState = true
+  }
+
   showImageLightbox.value = false
   // 恢复背景滚动
   document.body.style.overflow = ''
@@ -680,22 +686,29 @@ const closeLightbox = () => {
     }
   }
   window.removeEventListener('keydown', handleKeyDown)
-}
 
-const handleBackButton = () => {
-  if (showImageLightbox.value) {
-    closeLightbox()
+  if (!fromPopState) {
+    window.history.back()
   }
 }
 
-onMounted(async () => {
-  if (!Capacitor.isNativePlatform()) return
-  backButtonListener = await App.addListener('backButton', handleBackButton)
+const handlePopState = () => {
+  if (ignoreNextLightboxPopState) {
+    ignoreNextLightboxPopState = false
+    return
+  }
+
+  if (showImageLightbox.value) {
+    closeLightbox(true)
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('popstate', handlePopState)
 })
 
 onUnmounted(() => {
-  backButtonListener?.remove()
-  backButtonListener = null
+  window.removeEventListener('popstate', handlePopState)
   window.removeEventListener('keydown', handleKeyDown)
 })
 
