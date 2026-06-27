@@ -1,8 +1,9 @@
 <script setup>
-import { ref, watch, computed, nextTick } from 'vue'
+import { ref, watch, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import { App } from '@capacitor/app'
 import { getVnDetail, getVnReleases, getVnCharacters, getVnQuotes, getVnListItem, patchVnListItem, deleteVnListItem } from '@/api/vndb'
 import VnList from '@/components/VnList.vue'
 import BaseSelect from '@/components/BaseSelect.vue'
@@ -63,6 +64,7 @@ const lightboxImageIndex = ref(0) // 记录当前查看的图片索引
 const lightboxImagesList = ref([]) // 大图画廊的数据列表（可以是截图，也可以是封面等）
 const scrollContainer = ref(null) // 滚动容器的 DOM 引用
 const ionContentRef = ref(null) // ion-content 的 DOM 引用
+let backButtonListener = null
 
 // 控制简介展开/收起
 const isDescriptionExpanded = ref(false)
@@ -634,6 +636,23 @@ const closeLightbox = () => {
   window.removeEventListener('keydown', handleKeyDown)
 }
 
+const handleBackButton = () => {
+  if (showImageLightbox.value) {
+    closeLightbox()
+  }
+}
+
+onMounted(async () => {
+  if (!Capacitor.isNativePlatform()) return
+  backButtonListener = await App.addListener('backButton', handleBackButton)
+})
+
+onUnmounted(() => {
+  backButtonListener?.remove()
+  backButtonListener = null
+  window.removeEventListener('keydown', handleKeyDown)
+})
+
 const getImageSaveInfo = (url) => {
   try {
     const urlPath = new URL(url).pathname
@@ -931,18 +950,6 @@ const translateQuote = async (quote) => {
         error: err?.response?.data?.error || err?.message || t('vn.translation.failed'),
         loading: false,
         sourceText
-      } finally {
-        if (quoteTranslations.value[quote.id]?.loading) {
-          quoteTranslations.value = {
-            ...quoteTranslations.value,
-            [quote.id]: {
-              translated: quoteTranslations.value[quote.id]?.translated || '',
-              error: quoteTranslations.value[quote.id]?.error || '',
-              loading: false,
-              sourceText
-            }
-          }
-        }
       }
     }
   } finally {

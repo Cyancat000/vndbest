@@ -31,6 +31,20 @@
     "move_up": "上移",
     "move_down": "下移",
     "remove": "删除",
+    "sections": {
+      "appearance": {
+        "title": "外观与语言",
+        "description": "主题、界面语言与标题显示顺序"
+      },
+      "privacy": {
+        "title": "隐私与过滤",
+        "description": "敏感内容显示与截图过滤规则"
+      },
+      "about": {
+        "title": "关于应用",
+        "description": "版本信息、更新检查与项目链接"
+      }
+    },
     "lang_names": {
       "ja": "日语",
       "en": "英语",

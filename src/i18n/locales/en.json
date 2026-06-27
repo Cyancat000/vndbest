@@ -31,6 +31,20 @@
     "move_up": "Move Up",
     "move_down": "Move Down",
     "remove": "Remove",
+    "sections": {
+      "appearance": {
+        "title": "Appearance & Language",
+        "description": "Theme, app language, and title display order"
+      },
+      "privacy": {
+        "title": "Privacy & Filters",
+        "description": "Sensitive content display and screenshot filtering"
+      },
+      "about": {
+        "title": "About App",
+        "description": "Version info, update checks, and project links"
+      }
+    },
     "lang_names": {
       "ja": "Japanese",
       "en": "English",
