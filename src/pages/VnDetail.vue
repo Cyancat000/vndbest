@@ -31,6 +31,7 @@ const releasesLoading = ref(true)
 const charactersLoading = ref(true)
 const quotesLoading = ref(true)
 const error = ref(null)
+const quoteTranslations = ref({})
 
 // 详情页中的 Tab 切换选项，默认设置为 'releases' (版本发行)
 const activeTab = ref('releases')
@@ -869,6 +870,96 @@ const resetDescriptionTranslation = () => {
   translationSourceText.value = ''
 }
 
+const resetQuoteTranslations = () => {
+  quoteTranslations.value = {}
+}
+
+const translateQuote = async (quote) => {
+  const sourceText = (quote?.quote || '').trim()
+  if (!sourceText || !quote?.id) return
+
+  const current = quoteTranslations.value[quote.id] || {}
+  if (current.loading) return
+
+  quoteTranslations.value = {
+    ...quoteTranslations.value,
+    [quote.id]: {
+      translated: current.translated || '',
+      error: '',
+      loading: true,
+      sourceText
+    }
+  }
+
+  try {
+    const response = await CapacitorHttp.post({
+      url: 'https://workers.hekinyan.vip/v1/translate',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: {
+        locale: locale.value,
+        messages: [
+          {
+            role: 'user',
+            content: sourceText
+          }
+        ]
+      }
+    })
+
+    const content = response?.data?.choices?.[0]?.message?.content?.trim()
+    if (!content) {
+      throw new Error(t('vn.translation.empty'))
+    }
+
+    quoteTranslations.value = {
+      ...quoteTranslations.value,
+      [quote.id]: {
+        translated: content,
+        error: '',
+        loading: false,
+        sourceText
+      }
+    }
+  } catch (err) {
+    console.error('摘录翻译失败:', err)
+    quoteTranslations.value = {
+      ...quoteTranslations.value,
+      [quote.id]: {
+        translated: current.translated || '',
+        error: err?.response?.data?.error || err?.message || t('vn.translation.failed'),
+        loading: false,
+        sourceText
+      } finally {
+        if (quoteTranslations.value[quote.id]?.loading) {
+          quoteTranslations.value = {
+            ...quoteTranslations.value,
+            [quote.id]: {
+              translated: quoteTranslations.value[quote.id]?.translated || '',
+              error: quoteTranslations.value[quote.id]?.error || '',
+              loading: false,
+              sourceText
+            }
+          }
+        }
+      }
+    }
+  } finally {
+    if (quoteTranslations.value[quote.id]?.loading) {
+      quoteTranslations.value = {
+        ...quoteTranslations.value,
+        [quote.id]: {
+          translated: quoteTranslations.value[quote.id]?.translated || '',
+          error: quoteTranslations.value[quote.id]?.error || '',
+          loading: false,
+          sourceText
+        }
+      }
+    }
+  }
+}
+
 const translateDescription = async () => {
   const sourceText = getPlainTextFromBBCode(vn.value?.description || '')
   if (!sourceText) return
@@ -939,6 +1030,7 @@ const loadVnDetail = async (id) => {
       collectionEntry.value = null
       collectionLoaded.value = false
       collectionLoading.value = true
+      resetQuoteTranslations()
       
       // 并发异步加载其余所有子选项卡数据，加快响应时间
       loadReleases(id)
@@ -2090,35 +2182,61 @@ watch(
             <div
                 v-for="q in quotes"
                 :key="q.id"
-                @click="copyQuote(q)"
                 class="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 relative space-y-2 cursor-pointer active:scale-[0.98] transition-transform"
               >
                 <!-- 引用气泡图标 -->
                 <Icon icon="lucide:quote" class="absolute top-2 right-3 h-8 w-8 text-neutral-200 dark:text-neutral-700 pointer-events-none" />
                 
                 <!-- 摘录内容 -->
-                <p class="text-xs text-neutral-700 dark:text-neutral-300 italic leading-relaxed pr-6 whitespace-pre-wrap">
+                <p @click="copyQuote(q)" class="text-xs text-neutral-700 dark:text-neutral-300 italic leading-relaxed pr-6 whitespace-pre-wrap">
                   "{{ q.quote }}"
                 </p>
+
+                <div v-if="quoteTranslations[q.id]?.translated || quoteTranslations[q.id]?.error || quoteTranslations[q.id]?.loading" class="rounded-lg border border-violet-200 dark:border-violet-800/50 bg-violet-50/60 dark:bg-violet-900/20 p-3 space-y-2">
+                  <div class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-violet-500 dark:text-violet-400">
+                    <Icon icon="lucide:languages" class="h-3.5 w-3.5" />
+                    <span>{{ t('vn.translation.title') }}</span>
+                  </div>
+                  <div v-if="quoteTranslations[q.id]?.loading" class="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+                    <Icon icon="lucide:loader-circle" class="h-4 w-4 animate-spin" />
+                    <span>{{ t('vn.translation.loading') }}</span>
+                  </div>
+                  <div v-else-if="quoteTranslations[q.id]?.error" class="text-xs leading-relaxed text-rose-500 dark:text-rose-400">
+                    {{ quoteTranslations[q.id].error }}
+                  </div>
+                  <p v-else class="text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
+                    {{ quoteTranslations[q.id].translated }}
+                  </p>
+                </div>
   
                 <!-- 台词主人名与评分 -->
-                <div class="flex justify-between items-center text-[10px] text-neutral-500 dark:text-neutral-400 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60">
+                <div class="flex justify-between items-center gap-3 text-[10px] text-neutral-500 dark:text-neutral-400 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60">
                   <span v-if="q.character" class="font-semibold text-neutral-800 dark:text-neutral-200">
                     —— {{ q.character.name }} <span v-if="q.character.original" class="font-normal text-neutral-400 dark:text-neutral-500">({{ q.character.original }})</span>
                   </span>
                   <span v-else class="font-semibold text-neutral-400 dark:text-neutral-500">—— {{ t('vn.quotes.narrator') }}</span>
 
-                  <span class="flex items-center gap-1.5">
-                    <!-- 复制状态 -->
-                    <template v-if="copiedQuoteId === q.id">
-                      <Icon icon="lucide:check" class="h-3 w-3 text-green-500 dark:text-green-400" />
-                      <span class="text-green-600 dark:text-green-400 font-semibold">{{ t('vn.quotes.copied') }}</span>
-                    </template>
-                    <template v-else>
-                      <Icon icon="lucide:copy" class="h-3 w-3 text-neutral-400 dark:text-neutral-500" />
-                      <span>{{ t('vn.quotes.score') }}: <strong class="text-neutral-700 dark:text-neutral-300">{{ q.score }}</strong></span>
-                    </template>
-                  </span>
+                  <div class="flex items-center gap-3">
+                    <button
+                      @click.stop="translateQuote(q)"
+                      :disabled="quoteTranslations[q.id]?.loading"
+                      :title="quoteTranslations[q.id]?.translated ? t('vn.quotes.retranslate') : t('vn.quotes.translate')"
+                      :aria-label="quoteTranslations[q.id]?.translated ? t('vn.quotes.retranslate') : t('vn.quotes.translate')"
+                      class="inline-flex items-center justify-center rounded-md border border-neutral-200 dark:border-neutral-700 bg-white/90 dark:bg-neutral-800 p-1.5 text-neutral-500 dark:text-neutral-400 transition disabled:cursor-not-allowed disabled:opacity-60 hover:border-neutral-300 hover:text-neutral-700 dark:hover:border-neutral-600 dark:hover:text-neutral-200"
+                    >
+                      <Icon :icon="quoteTranslations[q.id]?.loading ? 'lucide:loader-circle' : 'lucide:languages'" class="h-3.5 w-3.5" :class="{ 'animate-spin': quoteTranslations[q.id]?.loading }" />
+                    </button>
+                    <span @click="copyQuote(q)" class="flex items-center gap-1.5">
+                      <template v-if="copiedQuoteId === q.id">
+                        <Icon icon="lucide:check" class="h-3 w-3 text-green-500 dark:text-green-400" />
+                        <span class="text-green-600 dark:text-green-400 font-semibold">{{ t('vn.quotes.copied') }}</span>
+                      </template>
+                      <template v-else>
+                        <Icon icon="lucide:copy" class="h-3 w-3 text-neutral-400 dark:text-neutral-500" />
+                        <span>{{ t('vn.quotes.score') }}: <strong class="text-neutral-700 dark:text-neutral-300">{{ q.score }}</strong></span>
+                      </template>
+                    </span>
+                  </div>
                 </div>
               </div>
           </div>

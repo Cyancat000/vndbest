@@ -31,6 +31,7 @@ const showTraitSpoilerConfirm = ref(false)
 const quotes = ref([])
 const quotesLoading = ref(false)
 const quotesError = ref(null)
+const quoteTranslations = ref({})
 
 const translatedDescription = ref('')
 const translationLoading = ref(false)
@@ -104,6 +105,72 @@ const resetDescriptionTranslation = () => {
   translationLoading.value = false
   translationError.value = ''
   translationSourceText.value = ''
+}
+
+const resetQuoteTranslations = () => {
+  quoteTranslations.value = {}
+}
+
+const translateQuote = async (quote) => {
+  const sourceText = (quote?.quote || '').trim()
+  if (!sourceText || !quote?.id) return
+
+  const current = quoteTranslations.value[quote.id] || {}
+  if (current.loading) return
+
+  quoteTranslations.value = {
+    ...quoteTranslations.value,
+    [quote.id]: {
+      translated: current.translated || '',
+      error: '',
+      loading: true,
+      sourceText
+    }
+  }
+
+  try {
+    const response = await CapacitorHttp.post({
+      url: 'https://workers.hekinyan.vip/v1/translate',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: {
+        locale: locale.value,
+        messages: [
+          {
+            role: 'user',
+            content: sourceText
+          }
+        ]
+      }
+    })
+
+    const content = response?.data?.choices?.[0]?.message?.content?.trim()
+    if (!content) {
+      throw new Error(t('vn.translation.empty'))
+    }
+
+    quoteTranslations.value = {
+      ...quoteTranslations.value,
+      [quote.id]: {
+        translated: content,
+        error: '',
+        loading: false,
+        sourceText
+      }
+    }
+  } catch (err) {
+    console.error('角色摘录翻译失败:', err)
+    quoteTranslations.value = {
+      ...quoteTranslations.value,
+      [quote.id]: {
+        translated: current.translated || '',
+        error: err?.response?.data?.error || err?.message || t('vn.translation.failed'),
+        loading: false,
+        sourceText
+      }
+    }
+  }
 }
 
 const translateDescription = async () => {
@@ -198,6 +265,7 @@ async function fetchCharacterInfo() {
     if (res && res.results && res.results.length > 0) {
       character.value = res.results[0]
       resetDescriptionTranslation()
+      resetQuoteTranslations()
       // 自动加载台词
       fetchQuotes()
     } else {
@@ -625,15 +693,32 @@ watch(
           <div
             v-for="quote in quotes"
             :key="quote.id"
-            @click="copyQuote(quote)"
             class="rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/50 p-4 space-y-2.5 cursor-pointer active:scale-[0.98] transition-transform"
           >
             <!-- 台词内容 -->
-            <p class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 italic whitespace-pre-wrap">
+            <p @click="copyQuote(quote)" class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 italic whitespace-pre-wrap">
               "{{ quote.quote }}"
             </p>
+
+            <div v-if="quoteTranslations[quote.id]?.translated || quoteTranslations[quote.id]?.error || quoteTranslations[quote.id]?.loading" class="rounded-lg border border-violet-200 dark:border-violet-800/50 bg-violet-50/60 dark:bg-violet-900/20 p-3 space-y-2">
+              <div class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-violet-500 dark:text-violet-400">
+                <Icon icon="lucide:languages" class="h-3.5 w-3.5" />
+                <span>{{ t('vn.translation.title') }}</span>
+              </div>
+              <div v-if="quoteTranslations[quote.id]?.loading" class="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400">
+                <Icon icon="lucide:loader-circle" class="h-4 w-4 animate-spin" />
+                <span>{{ t('vn.translation.loading') }}</span>
+              </div>
+              <div v-else-if="quoteTranslations[quote.id]?.error" class="text-sm leading-relaxed text-rose-500 dark:text-rose-400">
+                {{ quoteTranslations[quote.id].error }}
+              </div>
+              <p v-else class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
+                {{ quoteTranslations[quote.id].translated }}
+              </p>
+            </div>
+
             <!-- 台词来源和评分 -->
-            <div class="flex items-center justify-between text-[10px] text-neutral-400 dark:text-neutral-500">
+            <div class="flex items-center justify-between gap-3 text-[10px] text-neutral-400 dark:text-neutral-500">
               <div class="flex items-center gap-1.5">
                 <Icon icon="lucide:book-open" class="h-3 w-3" />
                 <span class="font-medium">
@@ -642,18 +727,29 @@ watch(
                   <span v-else class="text-neutral-500 dark:text-neutral-400">{{ t('vn.char_quotes_narrator') }}</span>
                 </span>
               </div>
-              <div class="flex items-center gap-1.5">
-                <template v-if="copiedQuoteId === quote.id">
-                  <Icon icon="lucide:check" class="h-3 w-3 text-green-500" />
-                  <span class="font-semibold text-green-600">{{ t('vn.quotes.copied') }}</span>
-                </template>
-                <template v-else>
-                  <Icon icon="lucide:copy" class="h-3 w-3 text-neutral-400" />
-                  <div v-if="quote.score !== null && quote.score !== undefined" class="flex items-center gap-1">
-                    <Icon icon="lucide:star" class="h-3 w-3 text-amber-400" />
-                    <span class="font-semibold text-neutral-500 dark:text-neutral-400">{{ quote.score }}</span>
-                  </div>
-                </template>
+              <div class="flex items-center gap-3">
+                <button
+                  @click.stop="translateQuote(quote)"
+                  :disabled="quoteTranslations[quote.id]?.loading"
+                  :title="quoteTranslations[quote.id]?.translated ? t('vn.quotes.retranslate') : t('vn.quotes.translate')"
+                  :aria-label="quoteTranslations[quote.id]?.translated ? t('vn.quotes.retranslate') : t('vn.quotes.translate')"
+                  class="inline-flex items-center justify-center rounded-md border border-neutral-200 dark:border-neutral-700 bg-white/90 dark:bg-neutral-900 p-1.5 text-neutral-500 dark:text-neutral-400 transition disabled:cursor-not-allowed disabled:opacity-60 hover:border-neutral-300 hover:text-neutral-700 dark:hover:border-neutral-600 dark:hover:text-neutral-200"
+                >
+                  <Icon :icon="quoteTranslations[quote.id]?.loading ? 'lucide:loader-circle' : 'lucide:languages'" class="h-3.5 w-3.5" :class="{ 'animate-spin': quoteTranslations[quote.id]?.loading }" />
+                </button>
+                <div @click="copyQuote(quote)" class="flex items-center gap-1.5">
+                  <template v-if="copiedQuoteId === quote.id">
+                    <Icon icon="lucide:check" class="h-3 w-3 text-green-500" />
+                    <span class="font-semibold text-green-600">{{ t('vn.quotes.copied') }}</span>
+                  </template>
+                  <template v-else>
+                    <Icon icon="lucide:copy" class="h-3 w-3 text-neutral-400" />
+                    <div v-if="quote.score !== null && quote.score !== undefined" class="flex items-center gap-1">
+                      <Icon icon="lucide:star" class="h-3 w-3 text-amber-400" />
+                      <span class="font-semibold text-neutral-500 dark:text-neutral-400">{{ quote.score }}</span>
+                    </div>
+                  </template>
+                </div>
               </div>
             </div>
           </div>

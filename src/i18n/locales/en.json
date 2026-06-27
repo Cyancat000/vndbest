@@ -320,7 +320,9 @@
       "empty": "No quotes found",
       "narrator": "Narrator/Unknown",
       "score": "Score",
-      "copied": "Copied!"
+      "copied": "Copied!",
+      "translate": "Translate Quote",
+      "retranslate": "Retranslate Quote"
     },
     "spoiler_alert": {
       "title": "Spoiler Alert",
