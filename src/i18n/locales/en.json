@@ -371,8 +371,9 @@
       "save": "Save",
       "cancel": "Cancel",
       "no_notes": "No notes yet",
-      "save_success": "Saved successfully",
-      "save_error": "Failed to save, please try again"
+      "save_success": "Updated successfully",
+      "save_error": "Failed to update, please try again",
+      "no_permission": "No permission"
     }
   },
   "release": {

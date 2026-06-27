@@ -70,12 +70,18 @@ export async function request(path, options = {}) {
           errorMsg = errData.message
         }
       } catch (_) {}
-      throw new Error(errorMsg)
+      const error = new Error(errorMsg)
+      error.status = response.status
+      throw error
     }
 
     // 某些接口如 DELETE 或 PATCH 可能返回空，需要安全解析 JSON
     const text = await response.text()
-    return text ? JSON.parse(text) : {}
+    const data = text ? JSON.parse(text) : {}
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+      return { ...data, _status: response.status }
+    }
+    return { data, _status: response.status }
   } catch (err) {
     if (err.name === 'AbortError') {
       throw new Error('请求超时，请检查网络后重试')

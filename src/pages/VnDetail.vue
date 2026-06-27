@@ -224,11 +224,14 @@ const handleStatusChange = async (newLabelId) => {
 
   statusLoading.value = true
   try {
+    let updated = false
+
     if (!newLabelId) {
       // 选择"无" → 从列表移除
       if (collectionEntry.value) {
         await deleteVnListItem(collectionEntry.value.id)
         collectionEntry.value = null
+        updated = true
       }
     } else if (collectionEntry.value) {
       // 已在列表中 → 先移除旧的状态标签，再设置新的
@@ -241,17 +244,25 @@ const handleStatusChange = async (newLabelId) => {
         data.labels_set = [newLabelId]
       }
       if (Object.keys(data).length > 0) {
-        await patchVnListItem(collectionEntry.value.id, data)
+        const response = await patchVnListItem(collectionEntry.value.id, data)
+        updated = response?._status === 204
       }
     } else {
       // 不在列表中 → 创建新条目
-      await patchVnListItem(vn.value.id, { labels: [newLabelId] })
+      const response = await patchVnListItem(vn.value.id, { labels: [newLabelId] })
+      updated = response?._status === 204
     }
 
     // 重新加载状态
     await loadCollectionStatus(vn.value.id)
+
+    if (updated) {
+      showToast(newLabelId ? t('vn.status.update_success') : t('vn.status.remove_success'), 'success')
+    }
   } catch (err) {
     console.error('更新收藏状态失败:', err)
+    const isUnauthorized = err?.status === 401 || err?.message?.includes('401')
+    showToast(isUnauthorized ? t('vn.status.no_permission') : t(newLabelId ? 'vn.status.update_error' : 'vn.status.remove_error'), 'error')
   } finally {
     statusLoading.value = false
   }
@@ -261,6 +272,11 @@ const handleStatusChange = async (newLabelId) => {
 
 const showEditModal = ref(false)
 const editSaving = ref(false)
+const editFeedback = ref({
+  type: '',
+  message: ''
+})
+let editSuccessTimer = null
 
 // 弹窗表单数据
 const editForm = ref({
@@ -297,6 +313,17 @@ const formattedVote = computed(() => {
 })
 
 // 打开编辑弹窗，用当前收藏数据填充表单
+const resetEditFeedback = () => {
+  editFeedback.value = {
+    type: '',
+    message: ''
+  }
+  if (editSuccessTimer) {
+    clearTimeout(editSuccessTimer)
+    editSuccessTimer = null
+  }
+}
+
 const openEditModal = () => {
   const rawVote = collectionEntry.value?.vote
   editForm.value = {
@@ -307,12 +334,14 @@ const openEditModal = () => {
     finished: collectionEntry.value?.finished || ''
   }
   hoverVote.value = null
+  resetEditFeedback()
   showEditModal.value = true
   document.body.style.overflow = 'hidden'
 }
 
 // 关闭编辑弹窗
 const closeEditModal = () => {
+  resetEditFeedback()
   showEditModal.value = false
   document.body.style.overflow = ''
 }
@@ -328,8 +357,10 @@ const saveEditForm = async () => {
   }
 
   editSaving.value = true
+  resetEditFeedback()
   try {
     const form = editForm.value
+    let patchResponse = null
 
     // 处理状态标签变更
     const newLabelId = form.statusLabelId || 0
@@ -354,7 +385,7 @@ const saveEditForm = async () => {
         patchData.finished = form.finished
       }
       if (Object.keys(patchData).length > 0) {
-        await patchVnListItem(vn.value.id, patchData, { timeout: 15000 })
+        patchResponse = await patchVnListItem(vn.value.id, patchData, { timeout: 15000 })
       }
     } else {
       // 已在列表中 → 更新（仅发送实际变更的字段）
@@ -403,18 +434,33 @@ const saveEditForm = async () => {
       }
 
       if (Object.keys(patchData).length > 0) {
-        await patchVnListItem(entry.id, patchData, { timeout: 15000 })
+        patchResponse = await patchVnListItem(entry.id, patchData, { timeout: 15000 })
       }
     }
 
-    // 重新加载状态
-    await loadCollectionStatus(vn.value.id)
-    showEditModal.value = false
-    document.body.style.overflow = ''
-    showToast(t('vn.status.save_success'), 'success')
+    if (patchResponse?._status === 204 || patchResponse === null) {
+      editFeedback.value = {
+        type: 'success',
+        message: t('vn.status.save_success')
+      }
+      showToast(t('vn.status.save_success'), 'success')
+      await loadCollectionStatus(vn.value.id)
+      editSuccessTimer = setTimeout(() => {
+        closeEditModal()
+      }, 1200)
+      return
+    }
+
+    throw new Error(t('vn.status.save_error'))
   } catch (err) {
     console.error('保存收藏信息失败:', err)
-    showToast(t('vn.status.save_error'), 'error')
+    const isUnauthorized = err?.status === 401 || err?.message?.includes('401')
+    const message = isUnauthorized ? t('vn.status.no_permission') : t('vn.status.save_error')
+    editFeedback.value = {
+      type: 'error',
+      message
+    }
+    showToast(message, 'error')
   } finally {
     editSaving.value = false
   }
