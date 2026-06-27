@@ -1,6 +1,7 @@
 import { createI18n } from 'vue-i18n'
 import zh from './locales/zh.json'
 import en from './locales/en.json'
+import ja from './locales/ja.json'
 
 const i18n = createI18n({
   legacy: false, // 使用 Composition API
@@ -8,7 +9,8 @@ const i18n = createI18n({
   fallbackLocale: 'en', // 备用语言
   messages: {
     zh,
-    en
+    en,
+    ja
   }
 })
 

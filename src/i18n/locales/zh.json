@@ -155,6 +155,7 @@
   "library": {
     "title": "库",
     "description": "探索 VNDB 数据库",
+    "view_list": "查看 {name} 列表",
     "vn": "作品",
     "releases": "版本",
     "producers": "会社",

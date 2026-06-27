@@ -100,7 +100,7 @@ function navigateTo(path) {
         </div>
         <div class="flex-1">
           <h3 class="font-bold text-neutral-900 dark:text-neutral-100">{{ item.title }}</h3>
-          <p class="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">查看 {{ item.title }} 列表</p>
+          <p class="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">{{ t('library.view_list', { name: item.title }) }}</p>
         </div>
         <Icon icon="lucide:chevron-right" class="h-5 w-5 text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-500 dark:group-hover:text-neutral-400 transition-colors" />
       </button>

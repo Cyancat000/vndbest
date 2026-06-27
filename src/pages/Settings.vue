@@ -48,7 +48,8 @@ const titleLangPriority = ref(JSON.parse(localStorage.getItem('vndb_title_lang_p
 
 const languageOptions = [
   { value: 'zh', label: '简体中文' },
-  { value: 'en', label: 'English' }
+  { value: 'en', label: 'English' },
+  { value: 'ja', label: '日本語' }
 ]
 
 // 可选的标题语言

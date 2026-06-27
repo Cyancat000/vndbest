@@ -121,6 +121,7 @@
   },
   "nav": {
     "home": "Home",
+    "library": "Library",
     "search": "Search",
     "list": "List",
     "settings": "Settings"
@@ -151,6 +152,23 @@
     "birthday_tomorrow": "Tomorrow's Birthdays",
     "no_birthday": "No characters have birthdays today",
     "birthday_age": "Age {age}"
+  },
+  "library": {
+    "title": "Library",
+    "description": "Explore the VNDB database",
+    "view_list": "Browse {name}",
+    "vn": "Visual Novels",
+    "releases": "Releases",
+    "producers": "Producers",
+    "staff": "People",
+    "characters": "Characters",
+    "tags": "Tags",
+    "traits": "Traits"
+  },
+  "producer_type": {
+    "co": "Company",
+    "in": "Individual",
+    "ng": "Amateur Group"
   },
   "search": {
     "title": "Search",
@@ -559,10 +577,5 @@
       "web": "Web Browser",
       "otc": "Other"
     }
-  },
-  "producer_type": {
-    "co": "Company",
-    "in": "Individual",
-    "ng": "Amateur Group"
   }
 }
