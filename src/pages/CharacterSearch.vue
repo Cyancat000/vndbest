@@ -10,6 +10,7 @@ import BaseSelect from '@/components/BaseSelect.vue'
 import DualRangeSlider from '@/components/DualRangeSlider.vue'
 import TraitChip from '@/components/TraitChip.vue'
 import TraitFilterModal from '@/components/TraitFilterModal.vue'
+import { SEX_ICONS } from '@/icons/icon-names'
 import { getCharacterList, getTraitList } from '@/api/vndb'
 import { IonPage, IonContent, IonImg, IonSpinner } from '@ionic/vue'
 import { useSavedSearches } from '@/composables/useSavedSearches'
@@ -543,12 +544,7 @@ watch(sentinel, (el) => {
 })
 
 // 性别展示
-const getSexIcon = (sex) => {
-  if (sex === 'f') return 'lucide:venus'
-  if (sex === 'm') return 'lucide:mars'
-  if (sex === 'b') return 'lucide:venus-mars'
-  return null
-}
+const getSexIcon = (sex) => SEX_ICONS[sex] || null
 
 const getSexClass = (sex) => {
   if (sex === 'f') return 'text-rose-400 bg-rose-50 border-rose-100 dark:bg-rose-900/30 dark:border-rose-800/50'

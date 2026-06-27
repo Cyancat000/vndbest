@@ -8,6 +8,7 @@ import { Icon } from '@iconify/vue'
 import BaseSelect from '@/components/BaseSelect.vue'
 import { IonPage, IonContent } from '@ionic/vue'
 import { useTheme } from '@/composables/useTheme'
+import { SETTINGS_SECTION_ICONS, THEME_OPTION_ICONS } from '@/icons/icon-names'
 
 const router = useRouter()
 const { t, locale } = useI18n()
@@ -23,19 +24,19 @@ const settingsSections = computed(() => ([
     key: 'appearance',
     title: t('settings.sections.appearance.title'),
     description: t('settings.sections.appearance.description'),
-    icon: 'lucide:palette'
+    icon: SETTINGS_SECTION_ICONS.appearance
   },
   {
     key: 'privacy',
     title: t('settings.sections.privacy.title'),
     description: t('settings.sections.privacy.description'),
-    icon: 'lucide:shield'
+    icon: SETTINGS_SECTION_ICONS.privacy
   },
   {
     key: 'about',
     title: t('settings.sections.about.title'),
     description: t('settings.sections.about.description'),
-    icon: 'lucide:info'
+    icon: SETTINGS_SECTION_ICONS.about
   }
 ]))
 
@@ -230,9 +231,9 @@ async function checkForUpdate() {
 
 // ====== 主题选项 ======
 const themeOptions = [
-  { value: 'system', icon: 'lucide:monitor', labelKey: 'settings.theme_follow_system' },
-  { value: 'light', icon: 'lucide:sun', labelKey: 'settings.theme_light' },
-  { value: 'dark', icon: 'lucide:moon', labelKey: 'settings.theme_dark' }
+  { value: 'system', icon: THEME_OPTION_ICONS.system, labelKey: 'settings.theme_follow_system' },
+  { value: 'light', icon: THEME_OPTION_ICONS.light, labelKey: 'settings.theme_light' },
+  { value: 'dark', icon: THEME_OPTION_ICONS.dark, labelKey: 'settings.theme_dark' }
 ]
 </script>
 

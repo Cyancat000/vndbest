@@ -4,6 +4,7 @@
  */
 
 import { ref, computed } from 'vue'
+import { SEARCH_TYPE_ICONS } from '@/icons/icon-names'
 
 const STORAGE_KEY = 'vndb_saved_searches'
 
@@ -11,13 +12,13 @@ const STORAGE_KEY = 'vndb_saved_searches'
  * 搜索类型 → 路由路径映射
  */
 export const SEARCH_TYPE_MAP = {
-  vn: { path: '/browse/vn', label: 'VN 搜索', icon: 'lucide:gamepad-2' },
-  releases: { path: '/browse/releases', label: '版本搜索', icon: 'lucide:package' },
-  producers: { path: '/browse/producers', label: '制作商搜索', icon: 'lucide:building-2' },
-  staff: { path: '/browse/staff', label: '制作人员搜索', icon: 'lucide:users' },
-  characters: { path: '/browse/characters', label: '角色搜索', icon: 'lucide:user-circle' },
-  tags: { path: '/browse/tags', label: '标签搜索', icon: 'lucide:tags' },
-  traits: { path: '/browse/traits', label: '特征搜索', icon: 'lucide:scan-search' }
+  vn: { path: '/browse/vn', label: 'VN 搜索', icon: SEARCH_TYPE_ICONS.vn },
+  releases: { path: '/browse/releases', label: '版本搜索', icon: SEARCH_TYPE_ICONS.releases },
+  producers: { path: '/browse/producers', label: '制作商搜索', icon: SEARCH_TYPE_ICONS.producers },
+  staff: { path: '/browse/staff', label: '制作人员搜索', icon: SEARCH_TYPE_ICONS.staff },
+  characters: { path: '/browse/characters', label: '角色搜索', icon: SEARCH_TYPE_ICONS.characters },
+  tags: { path: '/browse/tags', label: '标签搜索', icon: SEARCH_TYPE_ICONS.tags },
+  traits: { path: '/browse/traits', label: '特征搜索', icon: SEARCH_TYPE_ICONS.traits }
 }
 
 /**

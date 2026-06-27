@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import BaseSelect from './BaseSelect.vue'
 import { IonImg, IonSpinner } from '@ionic/vue'
+import { PLATFORM_ICON_NAMES, APP_ICON_NAMES } from '@/icons/icon-names'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { useImageLoader } from '@/composables/useImageLoader'
 
@@ -114,6 +115,10 @@ function getTitle(item) {
 function getAltTitle(item) {
   if (item.alttitle && item.alttitle !== item.title) return item.alttitle
   return ''
+}
+
+function getPlatformIcon(platform) {
+  return PLATFORM_ICON_NAMES[platform] || APP_ICON_NAMES.common.monitor
 }
 
 function getImage(item) {
@@ -414,7 +419,7 @@ onUnmounted(() => {
                   <Icon
                     v-for="plat in (isCompact ? item.platforms?.slice(0, 3) : item.platforms)"
                     :key="plat"
-                    :icon="`simple-icons:${plat}`"
+                    :icon="getPlatformIcon(plat)"
                     :title="t(`metadata.platform.${plat}`, plat)"
                     :class="isCompact ? 'h-2.5 w-2.5 text-neutral-300 dark:text-neutral-600' : 'h-3 w-3 text-neutral-400 dark:text-neutral-500'"
                   />
@@ -506,7 +511,7 @@ onUnmounted(() => {
                   <Icon
                     v-for="plat in (item.platforms?.slice(0, 4))"
                     :key="plat"
-                    :icon="`simple-icons:${plat}`"
+                    :icon="getPlatformIcon(plat)"
                     :title="t(`metadata.platform.${plat}`, plat)"
                     class="h-2.5 w-2.5 text-neutral-300 dark:text-neutral-600"
                   />
@@ -593,7 +598,7 @@ onUnmounted(() => {
                   <Icon
                     v-for="plat in (item.platforms?.slice(0, 4))"
                     :key="plat"
-                    :icon="`simple-icons:${plat}`"
+                    :icon="getPlatformIcon(plat)"
                     :title="t(`metadata.platform.${plat}`, plat)"
                     class="h-2.5 w-2.5 text-neutral-300 dark:text-neutral-600"
                   />
@@ -649,7 +654,7 @@ onUnmounted(() => {
             <Icon
               v-for="plat in item.platforms?.slice(0, 4)"
               :key="plat"
-              :icon="`simple-icons:${plat}`"
+              :icon="getPlatformIcon(plat)"
               :title="t(`metadata.platform.${plat}`, plat)"
               class="h-3 w-3 text-neutral-300 dark:text-neutral-600"
             />

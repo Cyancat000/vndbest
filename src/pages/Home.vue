@@ -7,6 +7,7 @@ import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { App } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
+import { PLACEHOLDER_ICONS } from '@/icons/icon-names'
 import { getStats, getReleaseList, getRandomVn, getVnList, getCharacterList, getProducerList, getStaffList } from '@/api/vndb'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { useSavedSearches, SEARCH_TYPE_MAP } from '@/composables/useSavedSearches'
@@ -275,7 +276,7 @@ function getResultDisplay(search, item) {
       subtitle: item.released || '',
       badges: (item.languages || []).slice(0, 2).map(l => typeof l === 'string' ? l : l.lang),
       blur: shouldBlurReleaseCover(item),
-      placeholderIcon: 'lucide:package'
+      placeholderIcon: PLACEHOLDER_ICONS.releases
     }
   }
   if (type === 'vn') {
@@ -287,7 +288,7 @@ function getResultDisplay(search, item) {
       subtitle: item.released || '',
       badges: (item.languages || []).slice(0, 2).map(l => typeof l === 'string' ? l : l.lang),
       blur: action === 'blur' || action === 'blur_card',
-      placeholderIcon: 'lucide:gamepad-2'
+      placeholderIcon: PLACEHOLDER_ICONS.vn
     }
   }
   if (type === 'characters') {
@@ -297,7 +298,7 @@ function getResultDisplay(search, item) {
       subtitle: item.role || '',
       badges: [],
       blur: false,
-      placeholderIcon: 'lucide:user-circle'
+      placeholderIcon: PLACEHOLDER_ICONS.characters
     }
   }
   if (type === 'producers') {
@@ -307,7 +308,7 @@ function getResultDisplay(search, item) {
       subtitle: item.type || '',
       badges: (item.languages || []).slice(0, 2),
       blur: false,
-      placeholderIcon: 'lucide:building-2'
+      placeholderIcon: PLACEHOLDER_ICONS.producers
     }
   }
   if (type === 'staff') {
@@ -317,10 +318,10 @@ function getResultDisplay(search, item) {
       subtitle: item.langs?.[0] || '',
       badges: [],
       blur: false,
-      placeholderIcon: 'lucide:users'
+      placeholderIcon: PLACEHOLDER_ICONS.staff
     }
   }
-  return { image: null, title: '', subtitle: '', badges: [], blur: false, placeholderIcon: 'lucide:search' }
+  return { image: null, title: '', subtitle: '', badges: [], blur: false, placeholderIcon: PLACEHOLDER_ICONS.fallback }
 }
 
 // 点击结果项跳转

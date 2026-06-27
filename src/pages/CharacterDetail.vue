@@ -3,6 +3,7 @@ import { ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import { SEX_ICONS } from '@/icons/icon-names'
 import { getCharacterDetail, getCharacterQuotes } from '@/api/vndb'
 import VnList from '@/components/VnList.vue'
 import { useTranslation } from '@/composables/useTranslation'
@@ -320,9 +321,9 @@ const getSexIcon = (sex) => {
   } else {
     s = sex
   }
-  if (s === 'f') return 'lucide:venus'
-  if (s === 'm') return 'lucide:mars'
-  if (s === 'b') return 'lucide:venus-mars'
+  if (s === 'f') return SEX_ICONS.f
+  if (s === 'm') return SEX_ICONS.m
+  if (s === 'b') return SEX_ICONS.b
   return null
 }
 
