@@ -213,6 +213,14 @@
     "votes": "{count} votes",
     "votes_count": "Vote Count",
     "description": "Description",
+    "translation": {
+      "title": "AI Translation",
+      "action": "Translate",
+      "retranslate": "Translate Again",
+      "loading": "Translating...",
+      "failed": "Translation failed, please try again later",
+      "empty": "No translation result returned"
+    },
     "relations": "Relations",
     "relations_empty_title": "No related works",
     "relations_empty_desc": "This work has no related titles",

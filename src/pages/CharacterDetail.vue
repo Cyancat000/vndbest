@@ -8,10 +8,11 @@ import VnList from '@/components/VnList.vue'
 import { useTranslation } from '@/composables/useTranslation'
 import { useImageLoader } from '@/composables/useImageLoader'
 import { IonPage, IonContent, IonImg, IonSpinner } from '@ionic/vue'
+import { CapacitorHttp } from '@capacitor/core'
 
 const route = useRoute()
 const router = useRouter()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { translateTraitName } = useTranslation()
 const imageLoader = useImageLoader()
 const characterId = ref(route.params.id)
@@ -30,6 +31,11 @@ const showTraitSpoilerConfirm = ref(false)
 const quotes = ref([])
 const quotesLoading = ref(false)
 const quotesError = ref(null)
+
+const translatedDescription = ref('')
+const translationLoading = ref(false)
+const translationError = ref('')
+const translationSourceText = ref('')
 
 // 翻译角色性别（sex 可能为数组 ["f","f"] 或字符串 "f,f"）
 const translateGender = (sex) => {
@@ -79,6 +85,66 @@ const parseBBCode = (text) => {
   })
 
   return escaped
+}
+
+const getPlainTextFromBBCode = (text) => {
+  if (!text) return ''
+  return text
+    .replace(/\[quote\][\s\S]*?\[\/quote\]/gi, ' ')
+    .replace(/\[url=.*?\](.*?)\[\/url\]/gi, '$1')
+    .replace(/\[img\].*?\[\/img\]/gi, ' ')
+    .replace(/\[\/?.+?\]/g, ' ')
+    .replace(/https?:\/\/\S+/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+const resetDescriptionTranslation = () => {
+  translatedDescription.value = ''
+  translationLoading.value = false
+  translationError.value = ''
+  translationSourceText.value = ''
+}
+
+const translateDescription = async () => {
+  const sourceText = getPlainTextFromBBCode(character.value?.description || '')
+  if (!sourceText) return
+
+  if (translationLoading.value) return
+
+  translationLoading.value = true
+  translationError.value = ''
+
+  try {
+    const response = await CapacitorHttp.post({
+      url: 'https://workers.hekinyan.vip/v1/translate',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: {
+        locale: locale.value,
+        messages: [
+          {
+            role: 'user',
+            content: sourceText
+          }
+        ]
+      }
+    })
+
+    const content = response?.data?.choices?.[0]?.message?.content?.trim()
+    if (!content) {
+      throw new Error(t('vn.translation.empty'))
+    }
+
+    translatedDescription.value = content
+    translationSourceText.value = sourceText
+  } catch (err) {
+    console.error('角色简介翻译失败:', err)
+    translationError.value = err?.response?.data?.error || err?.message || t('vn.translation.failed')
+  } finally {
+    translationLoading.value = false
+  }
 }
 
 // 分组展示特征标签（根据剧透等级和性内容过滤）
@@ -131,6 +197,7 @@ async function fetchCharacterInfo() {
     const res = await getCharacterDetail(characterId.value)
     if (res && res.results && res.results.length > 0) {
       character.value = res.results[0]
+      resetDescriptionTranslation()
       // 自动加载台词
       fetchQuotes()
     } else {
@@ -359,14 +426,40 @@ watch(
 
       <!-- 角色简述 -->
       <div v-if="character.description" class="space-y-3">
-        <div class="flex items-center gap-2 px-1">
-          <div class="h-3 w-1 rounded-full bg-neutral-900 dark:bg-neutral-100"></div>
-          <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">{{ t('vn.description') }}</h3>
+        <div class="flex items-center justify-between gap-3 px-1">
+          <div class="flex items-center gap-2">
+            <div class="h-3 w-1 rounded-full bg-neutral-900 dark:bg-neutral-100"></div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">{{ t('vn.description') }}</h3>
+          </div>
+          <button
+            @click="translateDescription"
+            :disabled="translationLoading"
+            class="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2.5 py-1 text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 transition disabled:cursor-not-allowed disabled:opacity-60 hover:border-neutral-300 hover:text-neutral-700 dark:hover:border-neutral-600 dark:hover:text-neutral-200"
+          >
+            <Icon :icon="translationLoading ? 'lucide:loader-circle' : 'lucide:languages'" class="h-3.5 w-3.5" :class="{ 'animate-spin': translationLoading }" />
+            {{ translationLoading ? t('vn.translation.loading') : (translatedDescription ? t('vn.translation.retranslate') : t('vn.translation.action')) }}
+          </button>
         </div>
         <div
           class="rounded-2xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800 px-5 py-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap bbcode-container shadow-xs"
           v-html="parseBBCode(character.description)"
         ></div>
+        <div v-if="translatedDescription || translationError || translationLoading" class="rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-5 py-4 space-y-2 shadow-xs">
+          <div class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-violet-500 dark:text-violet-400">
+            <Icon icon="lucide:languages" class="h-3.5 w-3.5" />
+            <span>{{ t('vn.translation.title') }}</span>
+          </div>
+          <div v-if="translationLoading" class="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400">
+            <Icon icon="lucide:loader-circle" class="h-4 w-4 animate-spin" />
+            <span>{{ t('vn.translation.loading') }}</span>
+          </div>
+          <div v-else-if="translationError" class="text-sm leading-relaxed text-rose-500 dark:text-rose-400">
+            {{ translationError }}
+          </div>
+          <p v-else class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
+            {{ translatedDescription }}
+          </p>
+        </div>
       </div>
 
       <!-- 特征标签 -->

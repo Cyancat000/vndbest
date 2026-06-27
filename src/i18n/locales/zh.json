@@ -229,6 +229,14 @@
     "votes": "{count}票",
     "votes_count": "投票数",
     "description": "简介",
+    "translation": {
+      "title": "AI 翻译",
+      "action": "翻译简介",
+      "retranslate": "重新翻译",
+      "loading": "翻译中...",
+      "failed": "翻译失败，请稍后重试",
+      "empty": "未获取到翻译结果"
+    },
     "relations": "相关作品",
     "relations_empty_title": "暂无相关作品",
     "relations_empty_desc": "该作品没有相关联的其他作品",

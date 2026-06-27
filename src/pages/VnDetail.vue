@@ -10,7 +10,7 @@ import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { useTranslation } from '@/composables/useTranslation'
 import { useImageLoader } from '@/composables/useImageLoader'
 import { IonPage, IonContent, IonImg, IonSpinner, IonToast } from '@ionic/vue'
-import { Capacitor, registerPlugin } from '@capacitor/core'
+import { Capacitor, CapacitorHttp, registerPlugin } from '@capacitor/core'
 
 const PhotoGallery = registerPlugin('PhotoGallery')
 
@@ -19,7 +19,7 @@ const imageLoader = useImageLoader()
 
 const route = useRoute()
 const router = useRouter()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { translateTagName, translateTraitName } = useTranslation()
 
 const vn = ref(null)
@@ -68,6 +68,12 @@ const isDescriptionExpanded = ref(false)
 
 // 控制笔记展开/收起
 const notesExpanded = ref(false)
+
+// 简介 AI 翻译状态
+const translatedDescription = ref('')
+const translationLoading = ref(false)
+const translationError = ref('')
+const translationSourceText = ref('')
 
 // 相关作品：同人作开关（默认隐藏非官方关联）
 const showDoujin = ref(false)
@@ -844,6 +850,66 @@ const translateStaffRole = (role) => {
   return t(`metadata.staff_role.${role.toLowerCase()}`) || role
 }
 
+const getPlainTextFromBBCode = (text) => {
+  if (!text) return ''
+  return text
+    .replace(/\[quote\][\s\S]*?\[\/quote\]/gi, ' ')
+    .replace(/\[url=.*?\](.*?)\[\/url\]/gi, '$1')
+    .replace(/\[img\].*?\[\/img\]/gi, ' ')
+    .replace(/\[\/?.+?\]/g, ' ')
+    .replace(/https?:\/\/\S+/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+const resetDescriptionTranslation = () => {
+  translatedDescription.value = ''
+  translationError.value = ''
+  translationLoading.value = false
+  translationSourceText.value = ''
+}
+
+const translateDescription = async () => {
+  const sourceText = getPlainTextFromBBCode(vn.value?.description || '')
+  if (!sourceText) return
+
+  if (translationLoading.value) return
+
+  translationLoading.value = true
+  translationError.value = ''
+
+  try {
+    const response = await CapacitorHttp.post({
+      url: 'https://workers.hekinyan.vip/v1/translate',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: {
+        locale: locale.value,
+        messages: [
+          {
+            role: 'user',
+            content: sourceText
+          }
+        ]
+      }
+    })
+
+    const content = response?.data?.choices?.[0]?.message?.content?.trim()
+    if (!content) {
+      throw new Error(t('vn.translation.empty'))
+    }
+
+    translatedDescription.value = content
+    translationSourceText.value = sourceText
+  } catch (err) {
+    console.error('简介翻译失败:', err)
+    translationError.value = err?.response?.data?.error || err?.message || t('vn.translation.failed')
+  } finally {
+    translationLoading.value = false
+  }
+}
+
 // 翻译角色类型关系
 const translateCharRole = (role) => {
   return t(`metadata.role.${role.toLowerCase()}`) || role
@@ -868,6 +934,7 @@ const loadVnDetail = async (id) => {
       activeTab.value = 'releases'
       spoilerLevel.value = 0
       activeTagCategories.value = ['cont', 'tech']
+      resetDescriptionTranslation()
       tagSearchMode.value = 'summary'
       collectionEntry.value = null
       collectionLoaded.value = false
@@ -1317,7 +1384,17 @@ watch(
 
       <!-- 2. 简介 (固定在选项卡上方) -->
       <div class="space-y-1.5" v-if="vn.description">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">{{ t('vn.description') }}</h3>
+        <div class="flex items-center justify-between gap-3">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">{{ t('vn.description') }}</h3>
+          <button
+            @click="translateDescription"
+            :disabled="translationLoading"
+            class="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2.5 py-1 text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 transition disabled:cursor-not-allowed disabled:opacity-60 hover:border-neutral-300 hover:text-neutral-700 dark:hover:border-neutral-600 dark:hover:text-neutral-200"
+          >
+            <Icon :icon="translationLoading ? 'lucide:loader-circle' : 'lucide:languages'" class="h-3.5 w-3.5" :class="{ 'animate-spin': translationLoading }" />
+            {{ translationLoading ? t('vn.translation.loading') : (translatedDescription ? t('vn.translation.retranslate') : t('vn.translation.action')) }}
+          </button>
+        </div>
         <div class="relative">
           <div
             class="relative border-l-3 border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 px-4 py-3 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap bbcode-container transition-all duration-300"
@@ -1337,6 +1414,26 @@ watch(
             <Icon :icon="isDescriptionExpanded ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="h-3 w-3" />
             {{ isDescriptionExpanded ? t('vn.collapse') : t('vn.expand') }}
           </button>
+        </div>
+
+        <div v-if="translatedDescription || translationError || translationLoading" class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-3 space-y-2">
+          <div class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-violet-500 dark:text-violet-400">
+            <Icon icon="lucide:languages" class="h-3.5 w-3.5" />
+            <span>{{ t('vn.translation.title') }}</span>
+          </div>
+
+          <div v-if="translationLoading" class="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+            <Icon icon="lucide:loader-circle" class="h-4 w-4 animate-spin" />
+            <span>{{ t('vn.translation.loading') }}</span>
+          </div>
+
+          <div v-else-if="translationError" class="text-xs leading-relaxed text-rose-500 dark:text-rose-400">
+            {{ translationError }}
+          </div>
+
+          <p v-else class="text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
+            {{ translatedDescription }}
+          </p>
         </div>
       </div>
 
