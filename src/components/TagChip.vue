@@ -19,11 +19,11 @@ const showTooltip = ref(false)
 
 const getCategoryClass = (category) => {
   const classes = {
-    'cont': 'text-blue-600 bg-blue-50 border-blue-200',
-    'tech': 'text-amber-600 bg-amber-50 border-amber-200',
-    'ero': 'text-rose-600 bg-rose-50 border-rose-200',
+    'cont': 'text-blue-600 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-900/30 dark:border-blue-800/50',
+    'tech': 'text-amber-600 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-900/30 dark:border-amber-800/50',
+    'ero': 'text-rose-600 bg-rose-50 border-rose-200 dark:text-rose-400 dark:bg-rose-900/30 dark:border-rose-800/50',
   }
-  return classes[category] || 'text-neutral-600 bg-neutral-50 border-neutral-200'
+  return classes[category] || 'text-neutral-600 bg-neutral-50 border-neutral-200 dark:text-neutral-400 dark:bg-neutral-800 dark:border-neutral-700'
 }
 
 function handleRemove(e) {
@@ -70,7 +70,7 @@ function cleanDescription(desc) {
         @click.self="showTooltip = false"
       >
         <div class="fixed inset-0 bg-black/20" @click="showTooltip = false"></div>
-        <div class="fixed z-[101] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] max-w-[85vw] bg-white rounded-2xl shadow-2xl border border-neutral-100 overflow-hidden animate-in fade-in zoom-in duration-150">
+        <div class="fixed z-[101] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] max-w-[85vw] bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden animate-in fade-in zoom-in duration-150">
           <!-- Header -->
           <div class="flex items-center justify-between px-4 pt-4 pb-2">
             <div class="flex items-center gap-2 min-w-0">
@@ -80,38 +80,38 @@ function cleanDescription(desc) {
               >
                 {{ tag.category }}
               </span>
-              <h3 class="font-bold text-sm text-neutral-900 truncate">{{ translateTagName(tag.name) }}</h3>
+              <h3 class="font-bold text-sm text-neutral-900 dark:text-neutral-100 truncate">{{ translateTagName(tag.name) }}</h3>
             </div>
             <button
               @click="showTooltip = false"
-              class="shrink-0 p-1 rounded-full hover:bg-neutral-100 transition-colors cursor-pointer"
+              class="shrink-0 p-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
             >
-              <Icon icon="lucide:x" class="h-4 w-4 text-neutral-400" />
+              <Icon icon="lucide:x" class="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
             </button>
           </div>
 
           <!-- VN Count -->
           <div class="px-4 pb-2">
-            <span class="text-[11px] text-neutral-400 font-medium">
+            <span class="text-[11px] text-neutral-400 dark:text-neutral-500 font-medium">
               {{ tag.vn_count }} VNs
             </span>
           </div>
 
           <!-- Description -->
           <div v-if="tag.description" class="px-4 pb-3 max-h-[200px] overflow-y-auto">
-            <p class="text-xs text-neutral-600 leading-relaxed whitespace-pre-wrap">
+            <p class="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-wrap">
               {{ cleanDescription(tag.description) }}
             </p>
           </div>
           <div v-else class="px-4 pb-3">
-            <p class="text-xs text-neutral-400 italic">暂无描述</p>
+            <p class="text-xs text-neutral-400 dark:text-neutral-500 italic">暂无描述</p>
           </div>
 
           <!-- Footer -->
           <div class="px-4 pb-4">
             <button
               @click="handleDetail"
-              class="w-full py-2 rounded-lg bg-neutral-900 text-white text-xs font-medium hover:bg-neutral-800 transition-colors cursor-pointer"
+              class="w-full py-2 rounded-lg bg-neutral-900 text-white text-xs font-medium hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white transition-colors cursor-pointer"
             >
               查看相关作品
             </button>

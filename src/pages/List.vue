@@ -151,14 +151,14 @@ function goToLogin() {
   <ion-page>
   <ion-content>
   <div class="page-container pb-24 space-y-6">
-    <div class="flex items-center justify-between py-3 sticky top-0 bg-white/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100">
+    <div class="flex items-center justify-between py-3 sticky top-0 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100 dark:border-neutral-800">
       <div class="flex items-center gap-3">
-        <div class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs">
-          <Icon icon="lucide:file-text" class="h-5 w-5 text-neutral-800" />
+        <div class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs">
+          <Icon icon="lucide:file-text" class="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
         </div>
         <div>
-          <h1 class="text-2xl font-bold tracking-tight text-neutral-900">{{ t('list.title') }}</h1>
-          <p class="text-xs text-neutral-500">{{ t('list.description') }}</p>
+          <h1 class="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">{{ t('list.title') }}</h1>
+          <p class="text-xs text-neutral-500 dark:text-neutral-400">{{ t('list.description') }}</p>
         </div>
       </div>
       
@@ -167,21 +167,21 @@ function goToLogin() {
         v-if="isLoggedIn"
         @click="fetchList(true)"
         :disabled="isLoading"
-        class="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 bg-white transition hover:bg-neutral-50 active:bg-neutral-100 disabled:opacity-50"
+        class="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 transition hover:bg-neutral-50 dark:hover:bg-neutral-700 active:bg-neutral-100 dark:active:bg-neutral-600 disabled:opacity-50"
         :title="t('list.refresh')"
       >
-        <Icon :icon="isLoading ? 'eos-icons:loading' : 'lucide:refresh-cw'" class="h-4 w-4 text-neutral-600" />
+        <Icon :icon="isLoading ? 'eos-icons:loading' : 'lucide:refresh-cw'" class="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
       </button>
     </div>
 
     <!-- 未登录状态提示 -->
-    <div v-if="!isLoggedIn" class="rounded-xl border border-neutral-200 bg-white p-8 text-center shadow-xs space-y-4">
-      <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-neutral-100">
-        <Icon icon="lucide:user" class="h-6 w-6 text-neutral-400" />
+    <div v-if="!isLoggedIn" class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-8 text-center shadow-xs space-y-4">
+      <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-neutral-100 dark:bg-neutral-800">
+        <Icon icon="lucide:user" class="h-6 w-6 text-neutral-400 dark:text-neutral-500" />
       </div>
       <div class="space-y-1">
-        <h3 class="text-sm font-semibold text-neutral-800">{{ t('list.not_connected_title') }}</h3>
-        <p class="text-xs text-neutral-400 max-w-sm mx-auto">
+        <h3 class="text-sm font-semibold text-neutral-800 dark:text-neutral-200">{{ t('list.not_connected_title') }}</h3>
+        <p class="text-xs text-neutral-400 dark:text-neutral-500 max-w-sm mx-auto">
           {{ t('list.not_connected_desc') }}
         </p>
       </div>
@@ -196,15 +196,15 @@ function goToLogin() {
 
     <div v-else class="space-y-4">
       <!-- Tab 筛选 Row -->
-      <div class="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800">
+      <div class="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-700">
         <!-- 标签筛选器 (Notion Style Tab Row) -->
         <div class="flex gap-6 overflow-x-auto pb-3 -mb-3 px-1 scroll-smooth no-scrollbar flex-1">
           <button
             @click="activeLabelId = null"
             class="whitespace-nowrap pb-3 text-sm font-medium transition-all duration-200 border-b-2 shrink-0 flex items-center gap-1.5 focus:outline-none cursor-pointer"
             :class="activeLabelId === null
-              ? 'border-neutral-900 text-neutral-900 font-semibold'
-              : 'border-transparent text-neutral-500 hover:text-neutral-800'"
+              ? 'border-neutral-900 dark:border-neutral-100 text-neutral-900 dark:text-neutral-100 font-semibold'
+              : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-300'"
           >
             {{ t('list.all') }}
           </button>
@@ -214,14 +214,14 @@ function goToLogin() {
             @click="activeLabelId = lbl.id"
             class="whitespace-nowrap pb-3 text-sm font-medium transition-all duration-200 border-b-2 shrink-0 flex items-center gap-1.5 focus:outline-none cursor-pointer"
             :class="activeLabelId === lbl.id
-              ? 'border-neutral-900 text-neutral-900 font-semibold'
-              : 'border-transparent text-neutral-500 hover:text-neutral-800'"
+              ? 'border-neutral-900 dark:border-neutral-100 text-neutral-900 dark:text-neutral-100 font-semibold'
+              : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-300'"
           >
             <span>{{ lbl.label }}</span>
             <span
               v-if="lbl.count !== undefined && lbl.count !== null && lbl.count !== '' && lbl.count !== 0"
-              class="text-[10px] rounded-full px-1.5 py-0.5 bg-neutral-100 text-neutral-500 border border-neutral-200/50"
-              :class="activeLabelId === lbl.id ? 'bg-neutral-950 text-white border-neutral-950 font-normal' : ''"
+              class="text-[10px] rounded-full px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200/50 dark:border-neutral-700/50"
+              :class="activeLabelId === lbl.id ? 'bg-neutral-950 dark:bg-neutral-100 text-white dark:text-neutral-900 border-neutral-950 dark:border-neutral-100 font-normal' : ''"
             >
               {{ lbl.count }}
             </span>
@@ -242,7 +242,7 @@ function goToLogin() {
       />
 
       <!-- 错误提示 -->
-      <div v-if="errorMsg" class="flex items-center gap-2 rounded-lg bg-red-50 p-3.5 text-xs text-red-600 border border-red-100">
+      <div v-if="errorMsg" class="flex items-center gap-2 rounded-lg bg-red-50 dark:bg-red-900/30 p-3.5 text-xs text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/50">
         <Icon icon="lucide:x" class="h-4 w-4 shrink-0" />
         <span>{{ errorMsg }}</span>
       </div>

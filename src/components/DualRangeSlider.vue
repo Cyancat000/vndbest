@@ -48,9 +48,9 @@ const rangeStyle = computed(() => {
 <template>
   <div class="relative h-6 flex items-center">
     <!-- 背景轨道 -->
-    <div class="absolute w-full h-1.5 rounded-full bg-neutral-200"></div>
+    <div class="absolute w-full h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800"></div>
     <!-- 选中范围高亮 -->
-    <div class="absolute h-1.5 rounded-full bg-neutral-900" :style="rangeStyle"></div>
+    <div class="absolute h-1.5 rounded-full bg-neutral-900 dark:bg-neutral-500" :style="rangeStyle"></div>
     <!-- 最小值滑块 -->
     <input
       type="range"
@@ -123,6 +123,18 @@ const rangeStyle = computed(() => {
   cursor: pointer;
   pointer-events: all;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.dark .dual-range-input::-webkit-slider-thumb {
+  background: #262626;
+  border-color: #737373;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.dark .dual-range-input::-moz-range-thumb {
+  background: #262626;
+  border-color: #737373;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
 
 .dual-range-input::-webkit-slider-runnable-track {

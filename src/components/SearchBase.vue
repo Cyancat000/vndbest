@@ -101,16 +101,16 @@ defineExpose({
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="flex items-center gap-3 py-3 sticky top-0 bg-white/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100">
+    <div class="flex items-center gap-3 py-3 sticky top-0 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100 dark:border-neutral-800">
       <button
         @click="goBack"
-        class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs active:scale-95 transition-transform cursor-pointer shrink-0"
+        class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs active:scale-95 transition-transform cursor-pointer shrink-0"
       >
-        <Icon icon="lucide:chevron-left" class="h-5 w-5 text-neutral-800" />
+        <Icon icon="lucide:chevron-left" class="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
       </button>
       <div class="flex-1 min-w-0">
-        <h1 class="text-2xl font-bold tracking-tight text-neutral-900">{{ title }}</h1>
-        <p class="text-xs text-neutral-500">搜索 {{ title }} 相关信息</p>
+        <h1 class="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">{{ title }}</h1>
+        <p class="text-xs text-neutral-500 dark:text-neutral-400">搜索 {{ title }} 相关信息</p>
       </div>
     </div>
 
@@ -132,23 +132,23 @@ defineExpose({
         @keydown.enter="handleSearch"
         type="text"
         :placeholder="`搜索${title}...`"
-        class="w-full rounded-lg border border-neutral-200 bg-white pl-9 pr-16 py-2.5 text-sm outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-900/5 placeholder-neutral-400"
+        class="w-full rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 pl-9 pr-16 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-900/5 placeholder-neutral-400 dark:placeholder-neutral-500"
       />
       <!-- 清除按钮 -->
       <button
         v-if="localQuery"
         @click="handleClear"
-        class="absolute right-10 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600 cursor-pointer"
+        class="absolute right-10 top-1/2 -translate-y-1/2 p-1 text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 cursor-pointer"
       >
         <Icon icon="lucide:x" class="h-3.5 w-3.5" />
       </button>
       <!-- 搜索按钮（搜索框内部） -->
       <button
         @click="handleSearch"
-        class="absolute right-1.5 top-1/2 -translate-y-1/2 grid h-7 w-7 place-items-center rounded-md bg-neutral-900 text-white hover:bg-neutral-700 active:scale-95 transition-all cursor-pointer shrink-0"
+        class="absolute right-1.5 top-1/2 -translate-y-1/2 grid h-7 w-7 place-items-center rounded-md bg-white text-neutral-900 hover:bg-neutral-100 border border-neutral-200 dark:!bg-neutral-800 dark:!text-neutral-100 dark:hover:!bg-neutral-700 dark:!border-neutral-700 active:scale-95 transition-all cursor-pointer shrink-0"
         title="搜索"
       >
-        <Icon icon="lucide:arrow-right" class="h-3.5 w-3.5" />
+        <Icon icon="lucide:search" class="h-3.5 w-3.5" />
       </button>
     </div>
 
@@ -162,8 +162,8 @@ defineExpose({
       <slot></slot>
       
       <!-- Default Empty State (if no slot content and not searching) -->
-      <div v-if="!$slots.default && !localQuery" class="flex flex-col items-center justify-center py-20 text-neutral-400 space-y-4">
-        <div class="p-4 rounded-full bg-neutral-50">
+      <div v-if="!$slots.default && !localQuery" class="flex flex-col items-center justify-center py-20 text-neutral-400 dark:text-neutral-500 space-y-4">
+        <div class="p-4 rounded-full bg-neutral-50 dark:bg-neutral-800">
           <Icon :icon="icon" class="h-8 w-8" />
         </div>
         <p class="text-sm">输入关键词开始搜索</p>

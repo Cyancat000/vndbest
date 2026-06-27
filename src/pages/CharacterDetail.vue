@@ -200,9 +200,9 @@ const getSexClass = (sex) => {
   } else {
     s = sex
   }
-  if (s === 'f') return 'text-rose-400 bg-rose-50 border-rose-100'
-  if (s === 'm') return 'text-blue-400 bg-blue-50 border-blue-100'
-  return 'text-neutral-400 bg-neutral-50 border-neutral-100'
+  if (s === 'f') return 'text-rose-400 bg-rose-50 border-rose-100 dark:bg-rose-900/30 dark:border-rose-800/50'
+  if (s === 'm') return 'text-blue-400 bg-blue-50 border-blue-100 dark:bg-blue-900/30 dark:border-blue-800/50'
+  return 'text-neutral-400 bg-neutral-50 border-neutral-100 dark:bg-neutral-800 dark:border-neutral-700'
 }
 
 // 当前已加载的角色 ID，用于避免从子页面返回时重复加载
@@ -228,54 +228,54 @@ watch(
   <ion-content>
   <div class="page-container space-y-6">
     <!-- Header/Back Navigation -->
-    <div class="flex items-center gap-4 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100">
+    <div class="flex items-center gap-4 py-4 sticky top-0 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100 dark:border-neutral-800">
       <button
         @click="router.back()"
-        class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs active:scale-95 transition-transform cursor-pointer"
+        class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs dark:bg-neutral-800 dark:border-neutral-700 active:scale-95 transition-transform cursor-pointer"
       >
-        <Icon icon="lucide:chevron-left" class="h-5 w-5 text-neutral-800" />
+        <Icon icon="lucide:chevron-left" class="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
       </button>
       <div class="flex-1 min-w-0">
-        <h1 class="text-lg font-bold text-neutral-900 truncate">
+        <h1 class="text-lg font-bold text-neutral-900 dark:text-neutral-100 truncate">
           {{ character?.name || t('vn.character_details') }}
         </h1>
-        <p class="text-[10px] text-neutral-400 uppercase tracking-widest">{{ characterId }}</p>
+        <p class="text-[10px] text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">{{ characterId }}</p>
       </div>
     </div>
 
     <!-- 骨架屏 -->
     <div v-if="loading" class="animate-pulse space-y-6">
-      <div class="flex gap-4 p-4 rounded-xl border border-neutral-100 bg-neutral-50/50">
-        <div class="w-24 h-32 rounded-lg bg-neutral-100"></div>
+      <div class="flex gap-4 p-4 rounded-xl border border-neutral-100 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-800/50">
+        <div class="w-24 h-32 rounded-lg bg-neutral-100 dark:bg-neutral-800"></div>
         <div class="flex-1 space-y-3 py-1">
-          <div class="h-6 bg-neutral-100 rounded w-1/2"></div>
-          <div class="h-4 bg-neutral-100 rounded w-1/3"></div>
+          <div class="h-6 bg-neutral-100 dark:bg-neutral-800 rounded w-1/2"></div>
+          <div class="h-4 bg-neutral-100 dark:bg-neutral-800 rounded w-1/3"></div>
           <div class="grid grid-cols-2 gap-2 pt-2">
-            <div class="h-4 bg-neutral-100 rounded w-full"></div>
-            <div class="h-4 bg-neutral-100 rounded w-full"></div>
-            <div class="h-4 bg-neutral-100 rounded w-full"></div>
-            <div class="h-4 bg-neutral-100 rounded w-full"></div>
+            <div class="h-4 bg-neutral-100 dark:bg-neutral-800 rounded w-full"></div>
+            <div class="h-4 bg-neutral-100 dark:bg-neutral-800 rounded w-full"></div>
+            <div class="h-4 bg-neutral-100 dark:bg-neutral-800 rounded w-full"></div>
+            <div class="h-4 bg-neutral-100 dark:bg-neutral-800 rounded w-full"></div>
           </div>
         </div>
       </div>
       <div class="space-y-2 px-1">
-        <div class="h-3 bg-neutral-100 rounded w-1/6"></div>
-        <div class="h-24 bg-neutral-50 rounded-lg"></div>
+        <div class="h-3 bg-neutral-100 dark:bg-neutral-800 rounded w-1/6"></div>
+        <div class="h-24 bg-neutral-50 dark:bg-neutral-800 rounded-lg"></div>
       </div>
     </div>
 
     <!-- 错误处理 -->
-    <div v-else-if="error || !character" class="flex flex-col items-center justify-center py-20 text-neutral-400 space-y-4">
+    <div v-else-if="error || !character" class="flex flex-col items-center justify-center py-20 text-neutral-400 dark:text-neutral-500 space-y-4">
       <Icon icon="lucide:user-x" class="h-12 w-12 opacity-20" />
       <p class="text-sm font-medium">{{ error || t('vn.not_found') }}</p>
-      <button @click="router.back()" class="text-xs text-neutral-900 font-bold underline">{{ t('common.go_back') }}</button>
+      <button @click="router.back()" class="text-xs text-neutral-900 dark:text-neutral-100 font-bold underline">{{ t('common.go_back') }}</button>
     </div>
 
     <!-- 详情内容 -->
     <div v-else class="space-y-6">
       <!-- 角色基本信息卡片 -->
-      <div class="flex flex-col sm:flex-row items-start gap-5 p-4 rounded-2xl border border-neutral-200 bg-neutral-50 shadow-xs">
-        <div class="w-full sm:w-32 aspect-[3/4] sm:h-44 rounded-xl overflow-hidden flex-shrink-0 border border-neutral-200 bg-white shadow-sm relative">
+      <div class="flex flex-col sm:flex-row items-start gap-5 p-4 rounded-2xl border border-neutral-200 bg-neutral-50 shadow-xs dark:border-neutral-700 dark:bg-neutral-800">
+        <div class="w-full sm:w-32 aspect-[3/4] sm:h-44 rounded-xl overflow-hidden flex-shrink-0 border border-neutral-200 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-900 relative">
           <ion-img
             v-if="character.image?.url"
             :key="`char-img-${imageLoader.getRetryCount('char-main')}`"
@@ -288,17 +288,17 @@ watch(
           <ion-spinner
             v-if="character.image?.url && imageLoader.isLoading('char-main')"
             name="crescent"
-            class="absolute inset-0 m-auto z-10 text-neutral-400"
+            class="absolute inset-0 m-auto z-10 text-neutral-400 dark:text-neutral-500"
             style="width: 24px; height: 24px;"
           />
           <div
             v-if="character.image?.url && imageLoader.isError('char-main')"
             @click="imageLoader.retry('char-main')"
-            class="absolute inset-0 flex items-center justify-center bg-neutral-50 z-10 cursor-pointer"
+            class="absolute inset-0 flex items-center justify-center bg-neutral-50 dark:bg-neutral-800 z-10 cursor-pointer"
           >
-            <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
+            <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400 dark:text-neutral-500" />
           </div>
-          <div v-if="!character.image?.url" class="w-full h-full flex items-center justify-center bg-neutral-100 text-neutral-300">
+          <div v-if="!character.image?.url" class="w-full h-full flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 text-neutral-300 dark:text-neutral-600">
             <Icon icon="lucide:user" class="h-12 w-12" />
           </div>
         </div>
@@ -306,7 +306,7 @@ watch(
         <div class="flex-1 min-w-0 w-full space-y-3">
           <div>
             <div class="flex items-center gap-2">
-              <h1 class="text-2xl font-black tracking-tight text-neutral-900 leading-tight">{{ character.name }}</h1>
+              <h1 class="text-2xl font-black tracking-tight text-neutral-900 dark:text-neutral-100 leading-tight">{{ character.name }}</h1>
               <div 
                 v-if="getSexIcon(character.sex)" 
                 class="shrink-0 inline-flex items-center rounded-lg px-2 py-1 border"
@@ -315,43 +315,43 @@ watch(
                 <Icon :icon="getSexIcon(character.sex)" class="h-3.5 w-3.5" />
               </div>
             </div>
-            <p v-if="character.original" class="text-sm text-neutral-500 font-medium mt-0.5">{{ character.original }}</p>
+            <p v-if="character.original" class="text-sm text-neutral-500 dark:text-neutral-400 font-medium mt-0.5">{{ character.original }}</p>
           </div>
           
           <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-[11px]">
-            <div class="flex items-center justify-between border-b border-neutral-200/50 pb-1">
-              <span class="text-neutral-400">{{ t('vn.characters.gender') }}</span>
-              <span class="text-neutral-800 font-bold">{{ translateGender(character.sex) }}</span>
+            <div class="flex items-center justify-between border-b border-neutral-200/50 dark:border-neutral-700/50 pb-1">
+              <span class="text-neutral-400 dark:text-neutral-500">{{ t('vn.characters.gender') }}</span>
+              <span class="text-neutral-800 dark:text-neutral-200 font-bold">{{ translateGender(character.sex) }}</span>
             </div>
-            <div class="flex items-center justify-between border-b border-neutral-200/50 pb-1">
-              <span class="text-neutral-400">{{ t('vn.characters.blood_type') }}</span>
-              <span class="text-neutral-800 font-bold uppercase">{{ character.blood_type || '?' }}</span>
+            <div class="flex items-center justify-between border-b border-neutral-200/50 dark:border-neutral-700/50 pb-1">
+              <span class="text-neutral-400 dark:text-neutral-500">{{ t('vn.characters.blood_type') }}</span>
+              <span class="text-neutral-800 dark:text-neutral-200 font-bold uppercase">{{ character.blood_type || '?' }}</span>
             </div>
-            <div class="flex items-center justify-between border-b border-neutral-200/50 pb-1">
-              <span class="text-neutral-400">{{ t('vn.characters.age') }}</span>
-              <span class="text-neutral-800 font-bold">{{ character.age || '?' }}</span>
+            <div class="flex items-center justify-between border-b border-neutral-200/50 dark:border-neutral-700/50 pb-1">
+              <span class="text-neutral-400 dark:text-neutral-500">{{ t('vn.characters.age') }}</span>
+              <span class="text-neutral-800 dark:text-neutral-200 font-bold">{{ character.age || '?' }}</span>
             </div>
-            <div class="flex items-center justify-between border-b border-neutral-200/50 pb-1">
-              <span class="text-neutral-400">{{ t('vn.characters.height') }}</span>
-              <span class="text-neutral-800 font-bold">{{ character.height ? `${character.height}cm` : '?' }}</span>
+            <div class="flex items-center justify-between border-b border-neutral-200/50 dark:border-neutral-700/50 pb-1">
+              <span class="text-neutral-400 dark:text-neutral-500">{{ t('vn.characters.height') }}</span>
+              <span class="text-neutral-800 dark:text-neutral-200 font-bold">{{ character.height ? `${character.height}cm` : '?' }}</span>
             </div>
-            <div class="flex items-center justify-between border-b border-neutral-200/50 pb-1">
-              <span class="text-neutral-400">{{ t('vn.characters.weight') }}</span>
-              <span class="text-neutral-800 font-bold">{{ character.weight ? `${character.weight}kg` : '?' }}</span>
+            <div class="flex items-center justify-between border-b border-neutral-200/50 dark:border-neutral-700/50 pb-1">
+              <span class="text-neutral-400 dark:text-neutral-500">{{ t('vn.characters.weight') }}</span>
+              <span class="text-neutral-800 dark:text-neutral-200 font-bold">{{ character.weight ? `${character.weight}kg` : '?' }}</span>
             </div>
-            <div class="flex items-center justify-between border-b border-neutral-200/50 pb-1">
-              <span class="text-neutral-400">{{ t('vn.characters.birthday') }}</span>
-              <span class="text-neutral-800 font-bold">
+            <div class="flex items-center justify-between border-b border-neutral-200/50 dark:border-neutral-700/50 pb-1">
+              <span class="text-neutral-400 dark:text-neutral-500">{{ t('vn.characters.birthday') }}</span>
+              <span class="text-neutral-800 dark:text-neutral-200 font-bold">
                 {{ character.birthday ? t('vn.characters.birthday_val', { month: character.birthday[0], day: character.birthday[1] }) : '?' }}
               </span>
             </div>
           </div>
 
-          <div v-if="character.bust || character.waist || character.hips" class="bg-white/50 rounded-lg px-3 py-2 border border-neutral-200/50 flex items-center justify-between">
-            <span class="text-[11px] text-neutral-400 font-medium">{{ t('vn.characters.measurements') }}</span>
+          <div v-if="character.bust || character.waist || character.hips" class="bg-white/50 dark:bg-neutral-800/50 rounded-lg px-3 py-2 border border-neutral-200/50 dark:border-neutral-700/50 flex items-center justify-between">
+            <span class="text-[11px] text-neutral-400 dark:text-neutral-500 font-medium">{{ t('vn.characters.measurements') }}</span>
             <div class="flex items-center gap-2">
-              <span class="text-sm font-black text-neutral-800 tracking-tighter">{{ character.bust || '?' }} / {{ character.waist || '?' }} / {{ character.hips || '?' }}</span>
-              <span v-if="character.cup" class="px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 text-[10px] font-black uppercase">{{ t('vn.characters.cup', { cup: character.cup }) }}</span>
+              <span class="text-sm font-black text-neutral-800 dark:text-neutral-200 tracking-tighter">{{ character.bust || '?' }} / {{ character.waist || '?' }} / {{ character.hips || '?' }}</span>
+              <span v-if="character.cup" class="px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[10px] font-black uppercase">{{ t('vn.characters.cup', { cup: character.cup }) }}</span>
             </div>
           </div>
         </div>
@@ -360,11 +360,11 @@ watch(
       <!-- 角色简述 -->
       <div v-if="character.description" class="space-y-3">
         <div class="flex items-center gap-2 px-1">
-          <div class="h-3 w-1 rounded-full bg-neutral-900"></div>
-          <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-400">{{ t('vn.description') }}</h3>
+          <div class="h-3 w-1 rounded-full bg-neutral-900 dark:bg-neutral-100"></div>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">{{ t('vn.description') }}</h3>
         </div>
-        <div 
-          class="rounded-2xl border border-neutral-100 bg-neutral-50 px-5 py-4 text-sm leading-relaxed text-neutral-600 whitespace-pre-wrap bbcode-container shadow-xs"
+        <div
+          class="rounded-2xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800 px-5 py-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap bbcode-container shadow-xs"
           v-html="parseBBCode(character.description)"
         ></div>
       </div>
@@ -372,21 +372,21 @@ watch(
       <!-- 特征标签 -->
       <div v-if="character.traits && character.traits.length > 0" class="space-y-3">
         <div class="flex items-center gap-2 px-1">
-          <div class="h-3 w-1 rounded-full bg-neutral-900"></div>
-          <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-400">{{ t('library.traits') }}</h3>
-          <span class="text-[10px] font-bold text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-full">
+          <div class="h-3 w-1 rounded-full bg-neutral-900 dark:bg-neutral-100"></div>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">{{ t('library.traits') }}</h3>
+          <span class="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
             {{ filteredTraitCount }}
           </span>
         </div>
 
         <!-- 特征筛选控件 -->
-        <div class="rounded-xl border border-neutral-100 bg-neutral-50/50 p-3 space-y-3">
+        <div class="rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/50 p-3 space-y-3">
           <!-- 剧透等级筛选 -->
-          <span class="text-xs text-neutral-600 font-medium flex items-center gap-1.5">
-            <Icon icon="lucide:shield-alert" class="h-4 w-4 text-neutral-400" />
+          <span class="text-xs text-neutral-600 dark:text-neutral-400 font-medium flex items-center gap-1.5">
+            <Icon icon="lucide:shield-alert" class="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
             {{ t('vn.characters.trait_spoiler_filter') }}
           </span>
-          <div class="grid grid-cols-3 gap-1 rounded-lg bg-neutral-200 p-0.5 text-center">
+          <div class="grid grid-cols-3 gap-1 rounded-lg bg-neutral-200 dark:bg-neutral-700 p-0.5 text-center">
             <button
               v-for="level in [
                 { val: 0, label: t('vn.characters.trait_spoiler_0') },
@@ -398,8 +398,8 @@ watch(
               class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
               :class="[
                 traitSpoilerLevel === level.val
-                  ? 'bg-white text-neutral-900 shadow-xs font-semibold'
-                  : 'text-neutral-500 hover:text-neutral-800'
+                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
               ]"
             >
               {{ level.label }}
@@ -407,18 +407,18 @@ watch(
           </div>
 
           <!-- 性内容过滤 -->
-          <span class="text-xs text-neutral-600 font-medium flex items-center gap-1.5 mt-1">
-            <Icon icon="lucide:layers" class="h-4 w-4 text-neutral-400" />
+          <span class="text-xs text-neutral-600 dark:text-neutral-400 font-medium flex items-center gap-1.5 mt-1">
+            <Icon icon="lucide:layers" class="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
             {{ t('vn.characters.trait_sexual_filter') }}
           </span>
-          <div class="grid grid-cols-2 gap-1 rounded-lg bg-neutral-200 p-0.5 text-center">
+          <div class="grid grid-cols-2 gap-1 rounded-lg bg-neutral-200 dark:bg-neutral-700 p-0.5 text-center">
             <button
               @click="showTraitSexual = false"
               class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
               :class="[
                 !showTraitSexual
-                  ? 'bg-white text-neutral-900 shadow-xs font-semibold'
-                  : 'text-neutral-500 hover:text-neutral-800'
+                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
               ]"
             >
               {{ t('vn.characters.trait_sexual_hide') }}
@@ -428,8 +428,8 @@ watch(
               class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
               :class="[
                 showTraitSexual
-                  ? 'bg-white text-neutral-900 shadow-xs font-semibold'
-                  : 'text-neutral-500 hover:text-neutral-800'
+                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
               ]"
             >
               {{ t('vn.characters.trait_sexual_show') }}
@@ -438,7 +438,7 @@ watch(
         </div>
 
         <!-- 筛选后无结果提示 -->
-        <div v-if="filteredTraitCount === 0" class="text-center py-4 text-xs text-neutral-400">
+        <div v-if="filteredTraitCount === 0" class="text-center py-4 text-xs text-neutral-400 dark:text-neutral-500">
           {{ t('vn.characters.trait_empty') }}
         </div>
 
@@ -447,9 +447,9 @@ watch(
           <div
             v-for="(traits, group) in groupTraits(character.traits)"
             :key="group"
-            class="space-y-2 bg-neutral-50/30 p-3 rounded-xl border border-neutral-100"
+            class="space-y-2 bg-neutral-50/30 dark:bg-neutral-800/30 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800"
           >
-            <h5 class="text-[10px] font-black text-neutral-400 uppercase tracking-widest flex items-center gap-2">
+            <h5 class="text-[10px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-2">
               {{ translateTraitGroup(group) }}
             </h5>
             <div class="flex flex-wrap gap-1.5">
@@ -459,9 +459,9 @@ watch(
                 @click="router.push(`/browse/characters?trait=${trait.id}`)"
                 class="px-2.5 py-1 rounded-lg text-[11px] font-semibold shadow-xs transition-colors cursor-pointer active:scale-[0.98]"
                 :class="[
-                  trait.spoiler === 2 ? 'bg-red-50 text-red-700 border border-red-100 hover:border-red-300'
-                    : trait.spoiler === 1 ? 'bg-amber-50 text-amber-700 border border-amber-100 hover:border-amber-300'
-                    : 'bg-white text-neutral-700 border border-neutral-200 hover:border-neutral-400'
+                  trait.spoiler === 2 ? 'bg-red-50 text-red-700 border border-red-100 hover:border-red-300 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50 dark:hover:border-red-600'
+                    : trait.spoiler === 1 ? 'bg-amber-50 text-amber-700 border border-amber-100 hover:border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 dark:hover:border-amber-600'
+                    : 'bg-white text-neutral-700 border border-neutral-200 hover:border-neutral-400 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 dark:hover:border-neutral-500'
                 ]"
               >
                 {{ translateTraitName(trait.name) }}
@@ -475,10 +475,10 @@ watch(
       <div v-if="character.vns && character.vns.length > 0" class="space-y-4 pt-2">
         <div class="flex items-center justify-between px-1">
           <div class="flex items-center gap-2">
-            <div class="h-4 w-1 rounded-full bg-neutral-900"></div>
-            <h3 class="text-sm font-bold text-neutral-900 uppercase tracking-wider">{{ t('vn.other_instances') }}</h3>
+            <div class="h-4 w-1 rounded-full bg-neutral-900 dark:bg-neutral-100"></div>
+            <h3 class="text-sm font-bold text-neutral-900 dark:text-neutral-100 uppercase tracking-wider">{{ t('vn.other_instances') }}</h3>
           </div>
-          <span class="text-[10px] font-bold text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-full">
+          <span class="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
             {{ character.vns.length }}
           </span>
         </div>
@@ -493,11 +493,11 @@ watch(
       <div v-else-if="!loading && character" class="space-y-4 pt-2">
         <div class="flex items-center justify-between px-1">
           <div class="flex items-center gap-2">
-            <div class="h-4 w-1 rounded-full bg-neutral-200"></div>
-            <h3 class="text-sm font-bold text-neutral-400 uppercase tracking-wider">{{ t('vn.other_instances') }}</h3>
+            <div class="h-4 w-1 rounded-full bg-neutral-200 dark:bg-neutral-700"></div>
+            <h3 class="text-sm font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">{{ t('vn.other_instances') }}</h3>
           </div>
         </div>
-        <div class="text-center py-8 text-xs text-neutral-400">
+        <div class="text-center py-8 text-xs text-neutral-400 dark:text-neutral-500">
           {{ t('vn.other_instances_empty') }}
         </div>
       </div>
@@ -505,9 +505,9 @@ watch(
       <!-- Quotes（经典台词） -->
       <div class="space-y-3 pt-2">
         <div class="flex items-center gap-2 px-1">
-          <div class="h-4 w-1 rounded-full bg-neutral-900"></div>
-          <h3 class="text-sm font-bold text-neutral-900 uppercase tracking-wider">{{ t('vn.char_quotes') }}</h3>
-          <span v-if="quotes.length > 0" class="text-[10px] font-bold text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-full">
+          <div class="h-4 w-1 rounded-full bg-neutral-900 dark:bg-neutral-100"></div>
+          <h3 class="text-sm font-bold text-neutral-900 dark:text-neutral-100 uppercase tracking-wider">{{ t('vn.char_quotes') }}</h3>
+          <span v-if="quotes.length > 0" class="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
             {{ quotes.length }}
           </span>
         </div>
@@ -523,7 +523,7 @@ watch(
         </div>
 
         <!-- 空状态 -->
-        <div v-else-if="quotes.length === 0" class="text-center py-8 text-xs text-neutral-400">
+        <div v-else-if="quotes.length === 0" class="text-center py-8 text-xs text-neutral-400 dark:text-neutral-500">
           {{ t('vn.char_quotes_empty') }}
         </div>
 
@@ -533,20 +533,20 @@ watch(
             v-for="quote in quotes"
             :key="quote.id"
             @click="copyQuote(quote)"
-            class="rounded-xl border border-neutral-100 bg-neutral-50/50 p-4 space-y-2.5 cursor-pointer active:scale-[0.98] transition-transform"
+            class="rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/50 p-4 space-y-2.5 cursor-pointer active:scale-[0.98] transition-transform"
           >
             <!-- 台词内容 -->
-            <p class="text-sm leading-relaxed text-neutral-700 italic whitespace-pre-wrap">
+            <p class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 italic whitespace-pre-wrap">
               "{{ quote.quote }}"
             </p>
             <!-- 台词来源和评分 -->
-            <div class="flex items-center justify-between text-[10px] text-neutral-400">
+            <div class="flex items-center justify-between text-[10px] text-neutral-400 dark:text-neutral-500">
               <div class="flex items-center gap-1.5">
                 <Icon icon="lucide:book-open" class="h-3 w-3" />
                 <span class="font-medium">
                   {{ t('vn.char_quotes_from') }}
-                  <span v-if="quote.vn" class="text-neutral-600 font-semibold">{{ quote.vn.title }}</span>
-                  <span v-else class="text-neutral-500">{{ t('vn.char_quotes_narrator') }}</span>
+                  <span v-if="quote.vn" class="text-neutral-600 dark:text-neutral-300 font-semibold">{{ quote.vn.title }}</span>
+                  <span v-else class="text-neutral-500 dark:text-neutral-400">{{ t('vn.char_quotes_narrator') }}</span>
                 </span>
               </div>
               <div class="flex items-center gap-1.5">
@@ -558,7 +558,7 @@ watch(
                   <Icon icon="lucide:copy" class="h-3 w-3 text-neutral-400" />
                   <div v-if="quote.score !== null && quote.score !== undefined" class="flex items-center gap-1">
                     <Icon icon="lucide:star" class="h-3 w-3 text-amber-400" />
-                    <span class="font-semibold text-neutral-500">{{ quote.score }}</span>
+                    <span class="font-semibold text-neutral-500 dark:text-neutral-400">{{ quote.score }}</span>
                   </div>
                 </template>
               </div>
@@ -577,26 +577,26 @@ watch(
       @click="showTraitSpoilerConfirm = false"
     >
       <div 
-        class="w-full max-w-xs rounded-xl border border-neutral-200 bg-white p-5 shadow-xl space-y-4"
+        class="w-full max-w-xs rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-5 shadow-xl space-y-4"
         @click.stop
       >
         <div class="flex items-center gap-2 text-red-600">
           <Icon icon="lucide:info" class="h-4 w-4" />
           <h3 class="text-xs font-bold uppercase tracking-wider">{{ t('vn.spoiler_alert.title') }}</h3>
         </div>
-        <p class="text-[11px] leading-relaxed text-neutral-600">
+        <p class="text-[11px] leading-relaxed text-neutral-600 dark:text-neutral-400">
           {{ t('vn.spoiler_alert.desc') }}
         </p>
         <div class="flex gap-2 justify-end text-xs">
           <button
             @click="showTraitSpoilerConfirm = false"
-            class="h-7 px-2.5 rounded-lg border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 active:bg-neutral-100"
+            class="h-7 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-600 active:bg-neutral-100 dark:active:bg-neutral-500"
           >
             {{ t('vn.spoiler_alert.cancel') }}
           </button>
           <button
             @click="confirmTraitSpoilerLevel"
-            class="h-7 px-2.5 rounded-lg border border-transparent bg-neutral-900 text-white hover:bg-neutral-800 active:bg-neutral-700"
+            class="h-7 px-2.5 rounded-lg border border-transparent bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 active:bg-neutral-700 dark:active:bg-neutral-300"
           >
             {{ t('vn.spoiler_alert.confirm') }}
           </button>
@@ -616,5 +616,11 @@ watch(
 }
 .bbcode-container :deep(a:hover) {
   color: #525252;
+}
+:global(.dark) .bbcode-container :deep(a) {
+  color: #e5e5e5;
+}
+:global(.dark) .bbcode-container :deep(a:hover) {
+  color: #a3a3a3;
 }
 </style>

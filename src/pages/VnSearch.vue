@@ -481,8 +481,8 @@ onMounted(async () => {
             @click="showAdvancedFilters = !showAdvancedFilters"
             class="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
             :class="showAdvancedFilters
-              ? 'bg-neutral-900 text-white'
-              : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
+              ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
+              : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-100 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700'"
           >
             <Icon icon="lucide:sliders-horizontal" class="h-3.5 w-3.5" />
             <span>筛选</span>
@@ -492,7 +492,7 @@ onMounted(async () => {
           <button
             v-if="hasActiveFilters()"
             @click="openSaveDialog"
-            class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-blue-600 bg-blue-50 border border-blue-100 hover:bg-blue-100 transition cursor-pointer"
+            class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-blue-600 bg-blue-50 border border-blue-100 hover:bg-blue-100 dark:text-blue-400 dark:bg-blue-900/30 dark:border-blue-800/50 dark:hover:bg-blue-900/50 transition cursor-pointer"
           >
             <Icon icon="lucide:bookmark" class="h-3 w-3" />
             <span>保存</span>
@@ -502,7 +502,7 @@ onMounted(async () => {
           <button
             v-if="hasActiveFilters()"
             @click="clearAllFilters"
-            class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-red-500 bg-red-50 border border-red-100 hover:bg-red-100 transition cursor-pointer"
+            class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-red-500 bg-red-50 border border-red-100 hover:bg-red-100 dark:text-red-400 dark:bg-red-900/30 dark:border-red-800/50 dark:hover:bg-red-900/50 transition cursor-pointer"
           >
             <Icon icon="lucide:x" class="h-3 w-3" />
             <span>清除</span>
@@ -528,10 +528,10 @@ onMounted(async () => {
               v-model="selectedLang"
               :options="langOptions"
               :label-renderer="(l) => t(l)"
-              class="!bg-neutral-50 rounded-lg border border-neutral-100"
+              class="!bg-neutral-50 dark:!bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700"
             >
               <template #prefix>
-                <Icon icon="lucide:languages" class="h-3.5 w-3.5 text-neutral-400" />
+                <Icon icon="lucide:languages" class="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" />
               </template>
             </BaseSelect>
 
@@ -540,10 +540,10 @@ onMounted(async () => {
               v-model="selectedPlatform"
               :options="platformOptions"
               :label-renderer="(l) => t(l, l)"
-              class="!bg-neutral-50 rounded-lg border border-neutral-100"
+              class="!bg-neutral-50 dark:!bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700"
             >
               <template #prefix>
-                <Icon icon="lucide:monitor" class="h-3.5 w-3.5 text-neutral-400" />
+                <Icon icon="lucide:monitor" class="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" />
               </template>
             </BaseSelect>
 
@@ -552,19 +552,19 @@ onMounted(async () => {
               @click="showTagModal = true"
               class="flex w-full items-center justify-between gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
               :class="selectedTags.length > 0
-                ? 'bg-neutral-900 text-white'
-                : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
+                ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
+                : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-100 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700'"
             >
               <Icon icon="lucide:tags" class="h-3.5 w-3.5" />
               <span>标签</span>
               <span
                 v-if="selectedTags.length > 0"
                 class="inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold"
-                :class="selectedTags.length > 0 ? 'bg-white/20 text-white' : 'bg-neutral-200 text-neutral-600'"
+                :class="selectedTags.length > 0 ? 'bg-white/20 dark:bg-neutral-900/20 text-white dark:text-neutral-900' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400'"
               >
                 {{ selectedTags.length }}
               </span>
-              <Icon v-else icon="lucide:chevron-down" class="h-3 w-3 text-neutral-400" />
+              <Icon v-else icon="lucide:chevron-down" class="h-3 w-3 text-neutral-400 dark:text-neutral-500" />
             </button>
 
             <!-- 原始语言 -->
@@ -572,10 +572,10 @@ onMounted(async () => {
               v-model="selectedOrigLang"
               :options="origLangOptions"
               :label-renderer="(l) => t(l, l)"
-              class="!bg-neutral-50 rounded-lg border border-neutral-100"
+              class="!bg-neutral-50 dark:!bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700"
             >
               <template #prefix>
-                <Icon icon="lucide:book-open" class="h-3.5 w-3.5 text-neutral-400" />
+                <Icon icon="lucide:book-open" class="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" />
               </template>
             </BaseSelect>
 
@@ -584,10 +584,10 @@ onMounted(async () => {
               v-model="selectedLength"
               :options="lengthOptions"
               :label-renderer="(l) => t(l, l)"
-              class="!bg-neutral-50 rounded-lg border border-neutral-100"
+              class="!bg-neutral-50 dark:!bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700"
             >
               <template #prefix>
-                <Icon icon="lucide:clock" class="h-3.5 w-3.5 text-neutral-400" />
+                <Icon icon="lucide:clock" class="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" />
               </template>
             </BaseSelect>
 
@@ -596,10 +596,10 @@ onMounted(async () => {
               v-model="selectedDevStatus"
               :options="devStatusOptions"
               :label-renderer="(l) => t(l, l)"
-              class="!bg-neutral-50 rounded-lg border border-neutral-100"
+              class="!bg-neutral-50 dark:!bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700"
             >
               <template #prefix>
-                <Icon icon="lucide:flag" class="h-3.5 w-3.5 text-neutral-400" />
+                <Icon icon="lucide:flag" class="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" />
               </template>
             </BaseSelect>
 
@@ -608,66 +608,66 @@ onMounted(async () => {
               v-model="selectedHasScreenshot"
               :options="hasScreenshotOptions"
               :label-renderer="(l) => t(l, l)"
-              class="!bg-neutral-50 rounded-lg border border-neutral-100"
+              class="!bg-neutral-50 dark:!bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700"
             >
               <template #prefix>
-                <Icon icon="lucide:image" class="h-3.5 w-3.5 text-neutral-400" />
+                <Icon icon="lucide:image" class="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" />
               </template>
             </BaseSelect>
 
             <!-- 发布日期范围 -->
-            <div class="flex flex-col gap-1 px-2 py-1.5 rounded-lg border border-neutral-100 bg-neutral-50 col-span-2 sm:col-span-3">
+            <div class="flex flex-col gap-1 px-2 py-1.5 rounded-lg border border-neutral-100 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 col-span-2 sm:col-span-3">
               <div class="flex items-center gap-1.5 mb-1">
-                <Icon icon="lucide:calendar" class="h-3.5 w-3.5 text-neutral-400" />
-                <span class="text-xs font-medium text-neutral-600">发布日期范围</span>
-                <span v-if="selectedDateFrom || selectedDateTo" class="text-[10px] font-bold text-neutral-900">
+                <Icon icon="lucide:calendar" class="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" />
+                <span class="text-xs font-medium text-neutral-600 dark:text-neutral-400">发布日期范围</span>
+                <span v-if="selectedDateFrom || selectedDateTo" class="text-[10px] font-bold text-neutral-900 dark:text-neutral-100">
                   {{ selectedDateFrom === 'today' ? '今天' : (selectedDateFrom || '不限') }} ~ {{ selectedDateTo === 'today' ? '今天' : (selectedDateTo || '不限') }}
                 </span>
               </div>
               <!-- 开始日期 -->
               <div class="flex items-center gap-2">
-                <span class="text-[10px] text-neutral-400 w-6 shrink-0">从</span>
+                <span class="text-[10px] text-neutral-400 dark:text-neutral-500 w-6 shrink-0">从</span>
                 <input
                   v-if="selectedDateFrom !== 'today'"
                   v-model="selectedDateFrom"
                   type="date"
-                  class="flex-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-900/5"
+                  class="flex-1 rounded-md border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 px-2 py-1 text-xs outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-900/5"
                 />
                 <button
                   @click="setTodayDateFrom"
                   class="rounded-md border px-3 py-1 text-[10px] font-medium transition-colors"
                   :class="selectedDateFrom === 'today'
-                    ? 'flex-1 border-neutral-800 bg-neutral-800 text-white'
-                    : 'border-neutral-200 bg-white text-neutral-500 hover:bg-neutral-100 active:bg-neutral-200'"
+                    ? 'flex-1 border-neutral-800 bg-neutral-800 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900'
+                    : 'border-neutral-200 bg-white text-neutral-500 hover:bg-neutral-100 active:bg-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700'"
                 >{{ selectedDateFrom === 'today' ? '今天 ✓' : '今天' }}</button>
               </div>
               <!-- 结束日期 -->
               <div class="flex items-center gap-2">
-                <span class="text-[10px] text-neutral-400 w-6 shrink-0">到</span>
+                <span class="text-[10px] text-neutral-400 dark:text-neutral-500 w-6 shrink-0">到</span>
                 <input
                   v-if="selectedDateTo !== 'today'"
                   v-model="selectedDateTo"
                   type="date"
-                  class="flex-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-900/5"
+                  class="flex-1 rounded-md border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 px-2 py-1 text-xs outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-900/5"
                 />
                 <button
                   @click="setTodayDateTo"
                   class="rounded-md border px-3 py-1 text-[10px] font-medium transition-colors"
                   :class="selectedDateTo === 'today'
-                    ? 'flex-1 border-neutral-800 bg-neutral-800 text-white'
-                    : 'border-neutral-200 bg-white text-neutral-500 hover:bg-neutral-100 active:bg-neutral-200'"
+                    ? 'flex-1 border-neutral-800 bg-neutral-800 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900'
+                    : 'border-neutral-200 bg-white text-neutral-500 hover:bg-neutral-100 active:bg-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700'"
                 >{{ selectedDateTo === 'today' ? '今天 ✓' : '今天' }}</button>
               </div>
             </div>
 
             <!-- 评分范围滑动条 -->
-            <div class="flex flex-col gap-1 px-2 py-1.5 rounded-lg border border-neutral-100 bg-neutral-50 col-span-2 sm:col-span-3">
+            <div class="flex flex-col gap-1 px-2 py-1.5 rounded-lg border border-neutral-100 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 col-span-2 sm:col-span-3">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-1.5">
-                  <Icon icon="lucide:star" class="h-3.5 w-3.5 text-neutral-400" />
-                  <span class="text-xs font-medium text-neutral-600">评分范围</span>
+                  <Icon icon="lucide:star" class="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" />
+                  <span class="text-xs font-medium text-neutral-600 dark:text-neutral-400">评分范围</span>
                 </div>
-                <span class="text-xs font-bold text-neutral-900">{{ getRatingRangeText() }}</span>
+                <span class="text-xs font-bold text-neutral-900 dark:text-neutral-400">{{ getRatingRangeText() }}</span>
               </div>
               <DualRangeSlider
                 v-model="selectedRatingRange"
@@ -675,7 +675,7 @@ onMounted(async () => {
                 :max="100"
                 :step="1"
               />
-              <div class="flex justify-between text-[9px] text-neutral-400 font-medium px-1">
+              <div class="flex justify-between text-[9px] text-neutral-400 dark:text-neutral-500 font-medium px-1">
                 <span>不限</span>
                 <span>5.0</span>
                 <span>6.0</span>

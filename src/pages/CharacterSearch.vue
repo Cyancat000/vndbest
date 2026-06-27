@@ -551,9 +551,9 @@ const getSexIcon = (sex) => {
 }
 
 const getSexClass = (sex) => {
-  if (sex === 'f') return 'text-rose-400 bg-rose-50 border-rose-100'
-  if (sex === 'm') return 'text-blue-400 bg-blue-50 border-blue-100'
-  return 'text-neutral-400 bg-neutral-50 border-neutral-100'
+  if (sex === 'f') return 'text-rose-400 bg-rose-50 border-rose-100 dark:bg-rose-900/30 dark:border-rose-800/50'
+  if (sex === 'm') return 'text-blue-400 bg-blue-50 border-blue-100 dark:bg-blue-900/30 dark:border-blue-800/50'
+  return 'text-neutral-400 bg-neutral-50 border-neutral-100 dark:bg-neutral-800 dark:border-neutral-700'
 }
 </script>
 
@@ -582,8 +582,8 @@ const getSexClass = (sex) => {
               @click="showAdvancedFilters = !showAdvancedFilters"
               class="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
               :class="showAdvancedFilters
-                ? 'bg-neutral-900 text-white'
-                : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
+                ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
+                : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-100 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700'"
             >
               <Icon icon="lucide:sliders-horizontal" class="h-3.5 w-3.5" />
               <span>筛选</span>
@@ -593,7 +593,7 @@ const getSexClass = (sex) => {
             <button
               v-if="hasActiveFilters()"
               @click="openSaveDialog"
-              class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-blue-600 bg-blue-50 border border-blue-100 hover:bg-blue-100 transition cursor-pointer"
+              class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition cursor-pointer"
             >
               <Icon icon="lucide:bookmark" class="h-3 w-3" />
               <span>保存</span>
@@ -603,7 +603,7 @@ const getSexClass = (sex) => {
             <button
               v-if="hasActiveFilters()"
               @click="clearAllFilters"
-              class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-red-500 bg-red-50 border border-red-100 hover:bg-red-100 transition cursor-pointer"
+              class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800/50 hover:bg-red-100 dark:hover:bg-red-900/50 transition cursor-pointer"
             >
               <Icon icon="lucide:x" class="h-3 w-3" />
               <span>清除</span>
@@ -624,11 +624,11 @@ const getSexClass = (sex) => {
           <!-- 生日筛选 chip -->
           <div v-if="isBirthdayActive()" class="flex flex-wrap gap-1.5">
             <div
-              class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-pink-50 border border-pink-200 text-[11px] font-medium text-pink-700"
+              class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-pink-50 dark:bg-pink-900/30 border border-pink-200 dark:border-pink-800/50 text-[11px] font-medium text-pink-700 dark:text-pink-400"
             >
               <Icon icon="lucide:cake" class="h-3 w-3" />
               <span>{{ birthdayMonth }}月{{ birthdayDay > 0 ? birthdayDay + '日' : '' }}</span>
-              <button @click="resetBirthdayFilters" class="ml-0.5 p-0.5 rounded-full hover:bg-pink-100 transition cursor-pointer">
+              <button @click="resetBirthdayFilters" class="ml-0.5 p-0.5 rounded-full hover:bg-pink-100 dark:hover:bg-pink-800/50 transition cursor-pointer">
                 <Icon icon="lucide:x" class="h-2.5 w-2.5" />
               </button>
             </div>
@@ -638,41 +638,41 @@ const getSexClass = (sex) => {
           <div v-if="isHeightActive() || isWeightActive() || isBustActive() || isCupActive()" class="flex flex-wrap gap-1.5">
             <div
               v-if="isHeightActive()"
-              class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-50 border border-blue-200 text-[11px] font-medium text-blue-700"
+              class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800/50 text-[11px] font-medium text-blue-700 dark:text-blue-400"
             >
               <Icon icon="lucide:ruler" class="h-3 w-3" />
               <span>{{ heightRange[0] }}-{{ heightRange[1] }}cm</span>
-              <button @click="resetHeight" class="ml-0.5 p-0.5 rounded-full hover:bg-blue-100 transition cursor-pointer">
+              <button @click="resetHeight" class="ml-0.5 p-0.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-800/50 transition cursor-pointer">
                 <Icon icon="lucide:x" class="h-2.5 w-2.5" />
               </button>
             </div>
             <div
               v-if="isWeightActive()"
-              class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-50 border border-green-200 text-[11px] font-medium text-green-700"
+              class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800/50 text-[11px] font-medium text-green-700 dark:text-green-400"
             >
               <Icon icon="lucide:weight" class="h-3 w-3" />
               <span>{{ weightRange[0] }}-{{ weightRange[1] }}kg</span>
-              <button @click="resetWeight" class="ml-0.5 p-0.5 rounded-full hover:bg-green-100 transition cursor-pointer">
+              <button @click="resetWeight" class="ml-0.5 p-0.5 rounded-full hover:bg-green-100 dark:hover:bg-green-800/50 transition cursor-pointer">
                 <Icon icon="lucide:x" class="h-2.5 w-2.5" />
               </button>
             </div>
             <div
               v-if="isBustActive()"
-              class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-purple-50 border border-purple-200 text-[11px] font-medium text-purple-700"
+              class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800/50 text-[11px] font-medium text-purple-700 dark:text-purple-400"
             >
               <Icon icon="lucide:circle" class="h-3 w-3" />
               <span>{{ bustRange[0] }}-{{ bustRange[1] }}cm</span>
-              <button @click="resetBust" class="ml-0.5 p-0.5 rounded-full hover:bg-purple-100 transition cursor-pointer">
+              <button @click="resetBust" class="ml-0.5 p-0.5 rounded-full hover:bg-purple-100 dark:hover:bg-purple-800/50 transition cursor-pointer">
                 <Icon icon="lucide:x" class="h-2.5 w-2.5" />
               </button>
             </div>
             <div
               v-if="isCupActive()"
-              class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-medium text-amber-700"
+              class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800/50 text-[11px] font-medium text-amber-700 dark:text-amber-400"
             >
               <Icon icon="lucide:heart" class="h-3 w-3" />
               <span>Cup {{ selectedCup }}</span>
-              <button @click="resetCup" class="ml-0.5 p-0.5 rounded-full hover:bg-amber-100 transition cursor-pointer">
+              <button @click="resetCup" class="ml-0.5 p-0.5 rounded-full hover:bg-amber-100 dark:hover:bg-amber-800/50 transition cursor-pointer">
                 <Icon icon="lucide:x" class="h-2.5 w-2.5" />
               </button>
             </div>
@@ -687,19 +687,19 @@ const getSexClass = (sex) => {
                   @click="showTraitModal = true"
                   class="flex w-full items-center justify-between gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
                   :class="selectedTraits.length > 0
-                    ? 'bg-violet-600 text-white'
-                    : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
+                    ? 'bg-violet-600 dark:bg-violet-500 text-white'
+                    : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-100 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700'"
                 >
                   <Icon icon="lucide:scan-search" class="h-3.5 w-3.5" />
                   <span>特征</span>
                   <span
                     v-if="selectedTraits.length > 0"
                     class="inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold"
-                    :class="selectedTraits.length > 0 ? 'bg-white/20 text-white' : 'bg-neutral-200 text-neutral-600'"
+                    :class="selectedTraits.length > 0 ? 'bg-white/20 text-white' : 'bg-neutral-200 dark:bg-neutral-600 text-neutral-600 dark:text-neutral-400'"
                   >
                     {{ selectedTraits.length }}
                   </span>
-                  <Icon v-else icon="lucide:chevron-down" class="h-3 w-3 text-neutral-400" />
+                  <Icon v-else icon="lucide:chevron-down" class="h-3 w-3 text-neutral-400 dark:text-neutral-500" />
                 </button>
 
                 <!-- 性别 -->
@@ -707,10 +707,10 @@ const getSexClass = (sex) => {
                   v-model="selectedSex"
                   :options="sexOptions"
                   :label-renderer="(l) => t(l, l)"
-                  class="!bg-neutral-50 rounded-lg border border-neutral-100"
+                  class="!bg-neutral-50 dark:!bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700"
                 >
                   <template #prefix>
-                    <Icon icon="lucide:users" class="h-3.5 w-3.5 text-neutral-400" />
+                    <Icon icon="lucide:users" class="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" />
                   </template>
                 </BaseSelect>
 
@@ -719,10 +719,10 @@ const getSexClass = (sex) => {
                   v-model="selectedBloodType"
                   :options="bloodTypeOptions"
                   :label-renderer="(l) => t(l, l)"
-                  class="!bg-neutral-50 rounded-lg border border-neutral-100"
+                  class="!bg-neutral-50 dark:!bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700"
                 >
                   <template #prefix>
-                    <Icon icon="lucide:droplets" class="h-3.5 w-3.5 text-neutral-400" />
+                    <Icon icon="lucide:droplets" class="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" />
                   </template>
                 </BaseSelect>
 
@@ -731,10 +731,10 @@ const getSexClass = (sex) => {
                   v-model="selectedRole"
                   :options="roleOptions"
                   :label-renderer="(l) => t(l, l)"
-                  class="!bg-neutral-50 rounded-lg border border-neutral-100"
+                  class="!bg-neutral-50 dark:!bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700"
                 >
                   <template #prefix>
-                    <Icon icon="lucide:badge" class="h-3.5 w-3.5 text-neutral-400" />
+                    <Icon icon="lucide:badge" class="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" />
                   </template>
                 </BaseSelect>
 
@@ -743,12 +743,12 @@ const getSexClass = (sex) => {
                   @click="showBirthdayFilters = !showBirthdayFilters"
                   class="flex w-full items-center justify-between gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
                   :class="isBirthdayActive()
-                    ? 'bg-pink-500 text-white'
-                    : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
+                    ? 'bg-pink-500 dark:bg-pink-400 text-white'
+                    : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-100 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700'"
                 >
                   <Icon icon="lucide:cake" class="h-3.5 w-3.5" />
                   <span>生日</span>
-                  <Icon v-if="!isBirthdayActive()" icon="lucide:chevron-down" class="h-3 w-3 text-neutral-400" />
+                  <Icon v-if="!isBirthdayActive()" icon="lucide:chevron-down" class="h-3 w-3 text-neutral-400 dark:text-neutral-500" />
                   <Icon v-else icon="lucide:x" class="h-3 w-3" />
                 </button>
 
@@ -757,8 +757,8 @@ const getSexClass = (sex) => {
                   @click="showBodyFilters = !showBodyFilters"
                   class="flex w-full items-center justify-between gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
                   :class="isHeightActive() || isWeightActive() || isBustActive() || isCupActive()
-                    ? 'bg-rose-500 text-white'
-                    : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
+                    ? 'bg-rose-500 dark:bg-rose-400 text-white'
+                    : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-100 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700'"
                 >
                   <Icon icon="lucide:ruler" class="h-3.5 w-3.5" />
                   <span>身体数据</span>
@@ -768,14 +768,14 @@ const getSexClass = (sex) => {
                   >
                     {{ [isHeightActive(), isWeightActive(), isBustActive(), isCupActive()].filter(Boolean).length }}
                   </span>
-                  <Icon v-else icon="lucide:chevron-down" class="h-3 w-3 text-neutral-400" />
+                  <Icon v-else icon="lucide:chevron-down" class="h-3 w-3 text-neutral-400 dark:text-neutral-500" />
                 </button>
 
                 <!-- 清除身体数据 -->
                 <button
                   v-if="isHeightActive() || isWeightActive() || isBustActive() || isCupActive()"
                   @click="resetBodyFilters"
-                  class="flex w-full items-center justify-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-red-500 bg-red-50 border border-red-100 hover:bg-red-100 transition cursor-pointer"
+                  class="flex w-full items-center justify-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800/50 hover:bg-red-100 dark:hover:bg-red-900/50 transition cursor-pointer"
                 >
                   <Icon icon="lucide:x" class="h-3 w-3" />
                   <span>清除身体数据</span>
@@ -784,16 +784,16 @@ const getSexClass = (sex) => {
 
               <!-- 生日筛选面板 -->
               <Transition name="panel">
-                <div v-if="showBirthdayFilters" class="rounded-xl bg-neutral-50 border border-neutral-100 p-3 space-y-3">
+                <div v-if="showBirthdayFilters" class="rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 p-3 space-y-3">
                   <div class="space-y-1.5">
-                    <div class="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                    <div class="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       <Icon icon="lucide:cake" class="h-3 w-3" />
                       <span>生日</span>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                       <select
                         v-model.number="birthdayMonth"
-                        class="px-2 py-1.5 rounded-lg bg-white border border-neutral-200 text-xs text-neutral-700 focus:outline-none focus:ring-1 focus:ring-neutral-300"
+                        class="px-2 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-600 text-xs text-neutral-700 dark:text-neutral-300 focus:outline-none focus:ring-1 focus:ring-neutral-300 dark:focus:ring-neutral-500"
                       >
                         <option v-for="opt in monthOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                       </select>
@@ -804,7 +804,7 @@ const getSexClass = (sex) => {
                         max="31"
                         placeholder="日"
                         :disabled="birthdayMonth <= 0"
-                        class="px-2 py-1.5 rounded-lg bg-white border border-neutral-200 text-xs text-neutral-700 focus:outline-none focus:ring-1 focus:ring-neutral-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                        class="px-2 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-600 text-xs text-neutral-700 dark:text-neutral-300 focus:outline-none focus:ring-1 focus:ring-neutral-300 dark:focus:ring-neutral-500 disabled:opacity-40 disabled:cursor-not-allowed"
                       />
                     </div>
                   </div>
@@ -813,15 +813,15 @@ const getSexClass = (sex) => {
 
               <!-- 身体数据筛选面板 -->
               <Transition name="panel">
-                <div v-if="showBodyFilters" class="rounded-xl bg-neutral-50 border border-neutral-100 p-3 space-y-3">
+                <div v-if="showBodyFilters" class="rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 p-3 space-y-3">
                   <!-- 身高 -->
                   <div class="space-y-1.5">
                     <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                      <div class="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                         <Icon icon="lucide:ruler" class="h-3 w-3" />
                         <span>身高 (cm)</span>
                       </div>
-                      <span class="text-[10px] text-neutral-400 font-medium">{{ heightRange[0] }} - {{ heightRange[1] }}</span>
+                      <span class="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium">{{ heightRange[0] }} - {{ heightRange[1] }}</span>
                     </div>
                     <DualRangeSlider v-model="heightRange" :min="100" :max="200" :step="1" />
                   </div>
@@ -829,11 +829,11 @@ const getSexClass = (sex) => {
                   <!-- 体重 -->
                   <div class="space-y-1.5">
                     <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                      <div class="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                         <Icon icon="lucide:weight" class="h-3 w-3" />
                         <span>体重 (kg)</span>
                       </div>
-                      <span class="text-[10px] text-neutral-400 font-medium">{{ weightRange[0] }} - {{ weightRange[1] }}</span>
+                      <span class="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium">{{ weightRange[0] }} - {{ weightRange[1] }}</span>
                     </div>
                     <DualRangeSlider v-model="weightRange" :min="30" :max="120" :step="1" />
                   </div>
@@ -841,18 +841,18 @@ const getSexClass = (sex) => {
                   <!-- 胸围 -->
                   <div class="space-y-1.5">
                     <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                      <div class="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                         <Icon icon="lucide:circle" class="h-3 w-3" />
                         <span>胸围 (cm)</span>
                       </div>
-                      <span class="text-[10px] text-neutral-400 font-medium">{{ bustRange[0] }} - {{ bustRange[1] }}</span>
+                      <span class="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium">{{ bustRange[0] }} - {{ bustRange[1] }}</span>
                     </div>
                     <DualRangeSlider v-model="bustRange" :min="40" :max="120" :step="1" />
                   </div>
 
                   <!-- 杯型 -->
                   <div class="space-y-1.5">
-                    <div class="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                    <div class="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       <Icon icon="lucide:heart" class="h-3 w-3" />
                       <span>杯型</span>
                     </div>
@@ -863,8 +863,8 @@ const getSexClass = (sex) => {
                         @click="selectedCup = opt.value"
                         class="px-2.5 py-1 rounded-md text-[11px] font-medium transition cursor-pointer"
                         :class="selectedCup === opt.value
-                          ? 'bg-amber-500 text-white'
-                          : 'bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100'"
+                          ? 'bg-amber-500 dark:bg-amber-400 text-white'
+                          : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700'"
                       >
                         {{ opt.label }}
                       </button>
@@ -879,14 +879,14 @@ const getSexClass = (sex) => {
 
       <!-- 列表内容 -->
       <div class="grid grid-cols-1 gap-3">
-        <div 
-          v-for="item in results" 
+        <div
+          v-for="item in results"
           :key="item.id"
           @click="goToDetail(item.id)"
-          class="group relative flex items-start p-3 rounded-xl border border-neutral-100 bg-white shadow-xs active:scale-[0.99] transition-all cursor-pointer hover:border-neutral-200 hover:shadow-sm overflow-hidden"
+          class="group relative flex items-start p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-950 shadow-xs active:scale-[0.99] transition-all cursor-pointer hover:border-neutral-200 dark:hover:border-neutral-700 hover:shadow-sm overflow-hidden"
         >
           <!-- Avatar/Image -->
-          <div class="shrink-0 w-16 h-20 rounded-lg bg-neutral-50 overflow-hidden border border-neutral-100 mr-3 relative">
+          <div class="shrink-0 w-16 h-20 rounded-lg bg-neutral-50 dark:bg-neutral-900 overflow-hidden border border-neutral-100 dark:border-neutral-700 mr-3 relative">
             <ion-img
               v-if="item.image?.url"
               :key="`char-img-${item.id}-${imageLoader.getRetryCount(`char-${item.id}`)}`"
@@ -905,18 +905,18 @@ const getSexClass = (sex) => {
             <div
               v-if="item.image?.url && imageLoader.isError(`char-${item.id}`)"
               @click.stop="imageLoader.retry(`char-${item.id}`)"
-              class="absolute inset-0 flex items-center justify-center bg-neutral-50 z-10 cursor-pointer"
+              class="absolute inset-0 flex items-center justify-center bg-neutral-50 dark:bg-neutral-900 z-10 cursor-pointer"
             >
               <Icon icon="lucide:refresh-cw" class="h-4 w-4 text-neutral-400" />
             </div>
             <div v-if="!item.image?.url" class="w-full h-full flex items-center justify-center">
-              <Icon icon="lucide:user" class="h-6 w-6 text-neutral-200" />
+              <Icon icon="lucide:user" class="h-6 w-6 text-neutral-200 dark:text-neutral-600" />
             </div>
           </div>
 
           <div class="flex-1 min-w-0 py-0.5">
             <div class="flex items-center gap-2">
-              <h3 class="font-bold text-sm text-neutral-900 truncate">
+              <h3 class="font-bold text-sm text-neutral-900 dark:text-neutral-100 truncate">
                 {{ item.name }}
               </h3>
               <div 
@@ -928,44 +928,44 @@ const getSexClass = (sex) => {
               </div>
             </div>
             
-            <p v-if="item.original" class="text-[10px] text-neutral-400 truncate mt-0.5 font-medium">
+            <p v-if="item.original" class="text-[10px] text-neutral-400 dark:text-neutral-500 truncate mt-0.5 font-medium">
               {{ item.original }}
             </p>
 
             <!-- Attributes -->
             <div class="flex flex-wrap gap-1.5 mt-2">
-              <span v-if="item.age" class="inline-flex items-center rounded-full bg-neutral-50 px-1.5 py-0.5 text-[9px] font-bold text-neutral-500 border border-neutral-100">
+              <span v-if="item.age" class="inline-flex items-center rounded-full bg-neutral-50 dark:bg-neutral-900 px-1.5 py-0.5 text-[9px] font-bold text-neutral-500 dark:text-neutral-400 border border-neutral-100 dark:border-neutral-700">
                 Age: {{ item.age }}
               </span>
-              <span v-if="item.birthday" class="inline-flex items-center rounded-full bg-neutral-50 px-1.5 py-0.5 text-[9px] font-bold text-neutral-500 border border-neutral-100 uppercase">
+              <span v-if="item.birthday" class="inline-flex items-center rounded-full bg-neutral-50 dark:bg-neutral-900 px-1.5 py-0.5 text-[9px] font-bold text-neutral-500 dark:text-neutral-400 border border-neutral-100 dark:border-neutral-700 uppercase">
                 BD: {{ item.birthday[1] }}/{{ item.birthday[0] }}
               </span>
-              <span v-if="item.blood_type" class="inline-flex items-center rounded-full bg-neutral-50 px-1.5 py-0.5 text-[9px] font-bold text-neutral-500 border border-neutral-100 uppercase">
+              <span v-if="item.blood_type" class="inline-flex items-center rounded-full bg-neutral-50 dark:bg-neutral-900 px-1.5 py-0.5 text-[9px] font-bold text-neutral-500 dark:text-neutral-400 border border-neutral-100 dark:border-neutral-700 uppercase">
                 {{ item.blood_type }}
               </span>
-              <span v-if="item.height" class="inline-flex items-center rounded-full bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold text-blue-500 border border-blue-100">
+              <span v-if="item.height" class="inline-flex items-center rounded-full bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 text-[9px] font-bold text-blue-500 dark:text-blue-400 border border-blue-100 dark:border-blue-800/50">
                 {{ item.height }}cm
               </span>
-              <span v-if="item.weight" class="inline-flex items-center rounded-full bg-green-50 px-1.5 py-0.5 text-[9px] font-bold text-green-500 border border-green-100">
+              <span v-if="item.weight" class="inline-flex items-center rounded-full bg-green-50 dark:bg-green-900/30 px-1.5 py-0.5 text-[9px] font-bold text-green-500 dark:text-green-400 border border-green-100 dark:border-green-800/50">
                 {{ item.weight }}kg
               </span>
-              <span v-if="item.bust" class="inline-flex items-center rounded-full bg-purple-50 px-1.5 py-0.5 text-[9px] font-bold text-purple-500 border border-purple-100">
+              <span v-if="item.bust" class="inline-flex items-center rounded-full bg-purple-50 dark:bg-purple-900/30 px-1.5 py-0.5 text-[9px] font-bold text-purple-500 dark:text-purple-400 border border-purple-100 dark:border-purple-800/50">
                 {{ item.bust }}cm
               </span>
-              <span v-if="item.cup" class="inline-flex items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-500 border border-amber-100 uppercase">
+              <span v-if="item.cup" class="inline-flex items-center rounded-full bg-amber-50 dark:bg-amber-900/30 px-1.5 py-0.5 text-[9px] font-bold text-amber-500 dark:text-amber-400 border border-amber-100 dark:border-amber-800/50 uppercase">
                 {{ item.cup }}
               </span>
             </div>
             
             <div v-if="item.description" class="mt-2 line-clamp-1">
-              <p class="text-[11px] text-neutral-500 italic">
+              <p class="text-[11px] text-neutral-500 dark:text-neutral-400 italic">
                 {{ item.description.replace(/\[\/?\w+.*?\]/g, '') }}
               </p>
             </div>
           </div>
           
           <div class="self-center ml-2 shrink-0">
-            <Icon icon="lucide:chevron-right" class="h-4 w-4 text-neutral-300 group-hover:text-neutral-500 transition-colors" />
+            <Icon icon="lucide:chevron-right" class="h-4 w-4 text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-500 dark:group-hover:text-neutral-400 transition-colors" />
           </div>
         </div>
       </div>
@@ -976,24 +976,24 @@ const getSexClass = (sex) => {
         class="py-12 flex flex-col items-center justify-center min-h-[100px]"
       >
         <div v-if="isLoading && results.length > 0" class="flex flex-col items-center gap-2">
-          <Icon icon="eos-icons:loading" class="h-6 w-6 text-neutral-400" />
-          <span class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">{{ t('common.loading') }}</span>
+          <Icon icon="eos-icons:loading" class="h-6 w-6 text-neutral-400 dark:text-neutral-500" />
+          <span class="text-[10px] text-neutral-400 dark:text-neutral-500 font-bold uppercase tracking-widest">{{ t('common.loading') }}</span>
         </div>
-        <div v-else-if="!hasMore && results.length > 0" class="text-[10px] text-neutral-300 font-bold uppercase tracking-widest">
+        <div v-else-if="!hasMore && results.length > 0" class="text-[10px] text-neutral-300 dark:text-neutral-600 font-bold uppercase tracking-widest">
           —— {{ t('list.all_loaded', 'All Loaded') }} ——
         </div>
         <div v-else class="h-1 w-full opacity-0"></div>
       </div>
 
       <!-- 无搜索结果 -->
-      <div v-if="results.length === 0 && !isLoading && query" class="flex flex-col items-center justify-center py-20 text-neutral-400 space-y-3">
-        <Icon icon="lucide:search-x" class="h-10 w-10 text-neutral-200" />
+      <div v-if="results.length === 0 && !isLoading && query" class="flex flex-col items-center justify-center py-20 text-neutral-400 dark:text-neutral-500 space-y-3">
+        <Icon icon="lucide:search-x" class="h-10 w-10 text-neutral-200 dark:text-neutral-600" />
         <p class="text-sm">未找到相关角色</p>
       </div>
 
       <!-- 初始加载动画 -->
       <div v-if="isLoading && results.length === 0" class="flex justify-center py-20">
-        <Icon icon="eos-icons:loading" class="h-8 w-8 text-neutral-200" />
+        <Icon icon="eos-icons:loading" class="h-8 w-8 text-neutral-200 dark:text-neutral-600" />
       </div>
     </SearchBase>
 

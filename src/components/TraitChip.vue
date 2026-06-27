@@ -41,7 +41,7 @@ function cleanDescription(desc) {
   <div class="relative inline-flex">
     <button
       @click="handleClick"
-      class="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-md border text-[11px] font-medium transition-all cursor-pointer hover:shadow-sm bg-violet-50 text-violet-600 border-violet-200"
+      class="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-md border text-[11px] font-medium transition-all cursor-pointer hover:shadow-sm bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-800/50"
     >
       <span class="max-w-[120px] truncate">{{ translateTraitName(trait.name) }}</span>
       <span
@@ -60,47 +60,47 @@ function cleanDescription(desc) {
         @click.self="showTooltip = false"
       >
         <div class="fixed inset-0 bg-black/20" @click="showTooltip = false"></div>
-        <div class="fixed z-[101] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] max-w-[85vw] bg-white rounded-2xl shadow-2xl border border-neutral-100 overflow-hidden animate-in fade-in zoom-in duration-150">
+        <div class="fixed z-[101] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] max-w-[85vw] bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden animate-in fade-in zoom-in duration-150">
           <!-- Header -->
           <div class="flex items-center justify-between px-4 pt-4 pb-2">
             <div class="flex items-center gap-2 min-w-0">
               <span
-                class="shrink-0 inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold border uppercase bg-violet-50 text-violet-600 border-violet-200"
+                class="shrink-0 inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold border uppercase bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-800/50"
               >
                 {{ trait.group_name || 'trait' }}
               </span>
-              <h3 class="font-bold text-sm text-neutral-900 truncate">{{ translateTraitName(trait.name) }}</h3>
+              <h3 class="font-bold text-sm text-neutral-900 dark:text-neutral-100 truncate">{{ translateTraitName(trait.name) }}</h3>
             </div>
             <button
               @click="showTooltip = false"
-              class="shrink-0 p-1 rounded-full hover:bg-neutral-100 transition-colors cursor-pointer"
+              class="shrink-0 p-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
             >
-              <Icon icon="lucide:x" class="h-4 w-4 text-neutral-400" />
+              <Icon icon="lucide:x" class="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
             </button>
           </div>
 
           <!-- Char Count -->
           <div class="px-4 pb-2">
-            <span class="text-[11px] text-neutral-400 font-medium">
+            <span class="text-[11px] text-neutral-400 dark:text-neutral-500 font-medium">
               {{ trait.char_count }} Characters
             </span>
           </div>
 
           <!-- Description -->
           <div v-if="trait.description" class="px-4 pb-3 max-h-[200px] overflow-y-auto">
-            <p class="text-xs text-neutral-600 leading-relaxed whitespace-pre-wrap">
+            <p class="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-wrap">
               {{ cleanDescription(trait.description) }}
             </p>
           </div>
           <div v-else class="px-4 pb-3">
-            <p class="text-xs text-neutral-400 italic">暂无描述</p>
+            <p class="text-xs text-neutral-400 dark:text-neutral-500 italic">暂无描述</p>
           </div>
 
           <!-- Footer -->
           <div class="px-4 pb-4">
             <button
               @click="handleDetail"
-              class="w-full py-2 rounded-lg bg-neutral-900 text-white text-xs font-medium hover:bg-neutral-800 transition-colors cursor-pointer"
+              class="w-full py-2 rounded-lg bg-neutral-900 text-white text-xs font-medium hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white transition-colors cursor-pointer"
             >
               查看相关角色
             </button>

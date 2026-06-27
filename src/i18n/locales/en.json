@@ -99,7 +99,11 @@
       "up_to_date": "Up to Date",
       "check_failed": "Check Failed",
       "download_update": "Download Latest Version"
-    }
+    },
+    "theme": "Appearance",
+    "theme_follow_system": "System",
+    "theme_light": "Light",
+    "theme_dark": "Dark"
   },
   "nav": {
     "home": "Home",

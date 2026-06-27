@@ -115,23 +115,23 @@ const sortOptions = [
   <ion-content>
   <div class="page-container space-y-6">
     <!-- Header/Back Navigation -->
-    <div class="flex items-center gap-4 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100">
+    <div class="flex items-center gap-4 py-4 sticky top-0 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100 dark:border-neutral-800">
       <button
         @click="router.back()"
-        class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs active:scale-95 transition-transform cursor-pointer"
+        class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs active:scale-95 transition-transform cursor-pointer"
       >
-        <Icon icon="lucide:chevron-left" class="h-5 w-5 text-neutral-800" />
+        <Icon icon="lucide:chevron-left" class="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
       </button>
       <div class="flex-1 min-w-0">
-        <h1 class="text-lg font-bold text-neutral-900 truncate">
+        <h1 class="text-lg font-bold text-neutral-900 dark:text-neutral-100 truncate">
           {{ staff?.name || '人物详情' }}
         </h1>
-        <p class="text-[10px] text-neutral-400 uppercase tracking-widest">{{ staffId }}</p>
+        <p class="text-[10px] text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">{{ staffId }}</p>
       </div>
     </div>
 
     <div v-if="isStaffLoading" class="flex justify-center py-20">
-      <Icon icon="eos-icons:loading" class="h-8 w-8 text-neutral-300" />
+      <Icon icon="eos-icons:loading" class="h-8 w-8 text-neutral-300 dark:text-neutral-600" />
     </div>
 
     <div v-else-if="staff" class="space-y-6">
@@ -139,47 +139,47 @@ const sortOptions = [
       <div class="space-y-4">
         <div class="flex items-start justify-between gap-4">
           <div class="space-y-1">
-            <h2 class="text-2xl font-black tracking-tight text-neutral-900">{{ staff.name }}</h2>
-            <p v-if="staff.original" class="text-sm text-neutral-500 font-medium">{{ staff.original }}</p>
+            <h2 class="text-2xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">{{ staff.name }}</h2>
+            <p v-if="staff.original" class="text-sm text-neutral-500 dark:text-neutral-400 font-medium">{{ staff.original }}</p>
           </div>
           <div v-if="staff.lang" class="shrink-0">
-            <span class="text-xs font-bold text-neutral-400 tracking-tighter bg-neutral-50 px-2 py-1 rounded border border-neutral-100">
+            <span class="text-xs font-bold text-neutral-400 dark:text-neutral-500 tracking-tighter bg-neutral-50 dark:bg-neutral-800 px-2 py-1 rounded border border-neutral-100 dark:border-neutral-700">
               {{ t(`metadata.lang.${staff.lang}`, staff.lang) }}
             </span>
           </div>
         </div>
 
         <!-- Description -->
-        <div v-if="staff.description" class="p-4 rounded-2xl bg-neutral-50 border border-neutral-100">
-          <p class="text-sm text-neutral-600 leading-relaxed whitespace-pre-wrap">
+        <div v-if="staff.description" class="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700">
+          <p class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-wrap">
             {{ staff.description.replace(/\[\/?\w+.*?\]/g, '') }}
           </p>
         </div>
 
         <!-- Aliases -->
         <div v-if="staff.aliases?.length > 1" class="space-y-2">
-          <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">其他曾用名</h3>
+          <h3 class="text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider px-1">其他曾用名</h3>
           <div class="flex flex-wrap gap-2">
-            <span 
-              v-for="alias in staff.aliases.filter(a => a.name !== staff.name)" 
+            <span
+              v-for="alias in staff.aliases.filter(a => a.name !== staff.name)"
               :key="alias.name"
-              class="px-2.5 py-1 rounded-lg bg-neutral-100 text-xs text-neutral-600"
+              class="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-xs text-neutral-600 dark:text-neutral-400"
             >
-              {{ alias.name }} <span v-if="alias.latin" class="text-neutral-400 text-[10px]">({{ alias.latin }})</span>
+              {{ alias.name }} <span v-if="alias.latin" class="text-neutral-400 dark:text-neutral-500 text-[10px]">({{ alias.latin }})</span>
             </span>
           </div>
         </div>
 
         <!-- External Links -->
         <div v-if="staff.extlinks?.length" class="flex flex-wrap gap-2 pt-2">
-          <a 
-            v-for="link in staff.extlinks" 
+          <a
+            v-for="link in staff.extlinks"
             :key="link.url"
             :href="link.url"
             target="_blank"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-neutral-200 text-xs font-medium text-neutral-700 hover:border-neutral-400 transition-colors"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:border-neutral-400 dark:hover:border-neutral-500 transition-colors"
           >
-            <Icon icon="lucide:external-link" class="h-3 w-3 text-neutral-400" />
+            <Icon icon="lucide:external-link" class="h-3 w-3 text-neutral-400 dark:text-neutral-500" />
             {{ link.label }}
           </a>
         </div>
@@ -189,10 +189,10 @@ const sortOptions = [
       <div class="space-y-4 pt-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <div class="h-4 w-1 rounded-full bg-neutral-900"></div>
-            <h3 class="text-sm font-bold text-neutral-900 uppercase tracking-wider">参与作品</h3>
+            <div class="h-4 w-1 rounded-full bg-neutral-900 dark:bg-neutral-100"></div>
+            <h3 class="text-sm font-bold text-neutral-900 dark:text-neutral-100 uppercase tracking-wider">参与作品</h3>
           </div>
-          <span class="text-[10px] font-bold text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-full">
+          <span class="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
             {{ items.length }}{{ hasMore ? '+' : '' }}
           </span>
         </div>
@@ -212,7 +212,7 @@ const sortOptions = [
       </div>
     </div>
     
-    <div v-else class="flex flex-col items-center justify-center py-20 text-neutral-400">
+    <div v-else class="flex flex-col items-center justify-center py-20 text-neutral-400 dark:text-neutral-500">
       <Icon icon="lucide:user-x" class="h-10 w-10 mb-4 opacity-20" />
       <p>未找到该人物的信息</p>
     </div>

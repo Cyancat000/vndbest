@@ -91,13 +91,13 @@ onUnmounted(() => {
     <button
       type="button"
       @click="toggleMenu"
-      class="flex w-full items-center justify-between gap-1.5 px-2 py-1 rounded-md border border-neutral-200 bg-white hover:bg-neutral-50 transition text-xs font-medium text-neutral-600 hover:text-neutral-900 cursor-pointer"
+      class="flex w-full items-center justify-between gap-1.5 px-2 py-1 rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 cursor-pointer"
     >
       <slot name="prefix"></slot>
       <span>{{ currentLabel }}</span>
       <Icon 
         icon="lucide:chevron-down" 
-        class="h-3 w-3 text-neutral-400 transition-transform duration-200" 
+        class="h-3 w-3 text-neutral-400 dark:text-neutral-500 transition-transform duration-200"
         :class="{ 'rotate-180': isOpen }" 
       />
     </button>
@@ -105,7 +105,7 @@ onUnmounted(() => {
     <div
       v-if="isOpen"
       ref="menuRef"
-      class="absolute min-w-[140px] w-max max-w-[220px] z-50 rounded-lg border border-neutral-200 bg-white p-1 shadow-lg ring-1 ring-black/5 animate-in fade-in zoom-in duration-100 max-h-[40vh] overflow-y-auto"
+      class="absolute min-w-[140px] w-max max-w-[220px] z-50 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-1 shadow-lg ring-1 ring-black/5 dark:ring-white/5 animate-in fade-in zoom-in duration-100 max-h-[40vh] overflow-y-auto"
       :class="menuPosition"
     >
       <button
@@ -113,10 +113,10 @@ onUnmounted(() => {
         :key="opt.value"
         @click="handleSelect(opt.value)"
         class="flex w-full items-center justify-between px-2.5 py-1.5 text-left text-xs font-medium rounded-md transition cursor-pointer"
-        :class="modelValue === opt.value ? 'bg-neutral-100 text-neutral-900' : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'"
+        :class="modelValue === opt.value ? 'bg-neutral-100 dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-100'"
       >
         <span>{{ labelRenderer(opt.label) }}</span>
-        <Icon v-if="modelValue === opt.value" icon="lucide:check" class="h-3.5 w-3.5" />
+        <Icon v-if="modelValue === opt.value" icon="lucide:check" class="h-3.5 w-3.5 text-neutral-700 dark:text-neutral-300" />
       </button>
     </div>
   </div>

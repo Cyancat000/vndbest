@@ -88,41 +88,41 @@ function goBack() {
   <ion-content>
   <div class="page-container space-y-6">
     <!-- 头部导航 -->
-    <div class="flex items-center gap-3 py-3 sticky top-0 bg-white/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100">
+    <div class="flex items-center gap-3 py-3 sticky top-0 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100 dark:border-neutral-800">
       <button
         @click="goBack"
-        class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs transition active:bg-neutral-50"
+        class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs transition active:bg-neutral-50 dark:active:bg-neutral-700"
       >
-        <Icon icon="lucide:chevron-left" class="h-5 w-5 text-neutral-800" />
+        <Icon icon="lucide:chevron-left" class="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
       </button>
       <div>
-        <h1 class="text-2xl font-bold tracking-tight text-neutral-900">{{ t('login.title') }}</h1>
-        <p class="text-xs text-neutral-500">{{ t('login.description') }}</p>
+        <h1 class="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">{{ t('login.title') }}</h1>
+        <p class="text-xs text-neutral-500 dark:text-neutral-400">{{ t('login.description') }}</p>
       </div>
     </div>
 
     <!-- 状态面板: 未登录 -->
-    <div v-if="!username" class="rounded-xl border border-neutral-200 bg-white p-5 shadow-xs space-y-4">
+    <div v-if="!username" class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5 shadow-xs space-y-4">
       <div class="flex items-center gap-3">
-        <div class="grid h-12 w-12 place-items-center rounded-full bg-neutral-100">
-          <Icon icon="lucide:user" class="h-6 w-6 text-neutral-400" />
+        <div class="grid h-12 w-12 place-items-center rounded-full bg-neutral-100 dark:bg-neutral-800">
+          <Icon icon="lucide:user" class="h-6 w-6 text-neutral-400 dark:text-neutral-500" />
         </div>
         <div>
-          <h3 class="text-sm font-semibold text-neutral-800">{{ t('login.guest_title') }}</h3>
-          <p class="text-xs text-neutral-400">{{ t('login.guest_desc') }}</p>
+          <h3 class="text-sm font-semibold text-neutral-800 dark:text-neutral-200">{{ t('login.guest_title') }}</h3>
+          <p class="text-xs text-neutral-400 dark:text-neutral-500">{{ t('login.guest_desc') }}</p>
         </div>
       </div>
 
       <div class="space-y-3 pt-2">
         <div class="space-y-1.5">
-          <label class="text-xs font-medium text-neutral-500">{{ t('login.token_label') }}</label>
+          <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">{{ t('login.token_label') }}</label>
           <input
             v-model="token"
             type="password"
             :placeholder="t('login.token_placeholder')"
-            class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-900/5 placeholder-neutral-400"
+            class="w-full rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2.5 text-sm outline-none transition focus:border-neutral-400 dark:focus:border-neutral-500 focus:ring-2 focus:ring-neutral-900/5 dark:focus:ring-neutral-100/10 placeholder-neutral-400 dark:placeholder-neutral-600 text-neutral-900 dark:text-neutral-100"
           />
-          <div class="flex flex-col gap-1 text-[10px] text-neutral-400 leading-normal">
+          <div class="flex flex-col gap-1 text-[10px] text-neutral-400 dark:text-neutral-500 leading-normal">
             <span class="flex items-start gap-1">
               <Icon icon="lucide:info" class="h-3.5 w-3.5 shrink-0 mt-0.5" />
               <span>{{ t('login.token_help_1') }}</span>
@@ -134,12 +134,12 @@ function goBack() {
           </div>
         </div>
 
-        <div v-if="errorMsg" class="flex items-center gap-2 rounded-lg bg-red-50 p-3 text-xs text-red-600">
+        <div v-if="errorMsg" class="flex items-center gap-2 rounded-lg bg-red-50 dark:bg-red-900/30 p-3 text-xs text-red-600 dark:text-red-400">
           <Icon icon="lucide:x" class="h-4 w-4 shrink-0" />
           <span>{{ errorMsg }}</span>
         </div>
 
-        <div v-if="successMsg" class="flex items-center gap-2 rounded-lg bg-green-50 p-3 text-xs text-green-600">
+        <div v-if="successMsg" class="flex items-center gap-2 rounded-lg bg-green-50 dark:bg-green-900/30 p-3 text-xs text-green-600 dark:text-green-400">
           <Icon icon="lucide:check" class="h-4 w-4 shrink-0" />
           <span>{{ successMsg }}</span>
         </div>
@@ -147,7 +147,7 @@ function goBack() {
         <button
           @click="handleLogin"
           :disabled="isLoading"
-          class="w-full rounded-lg bg-neutral-900 py-2.5 text-center text-sm font-medium text-white transition hover:bg-neutral-800 active:bg-neutral-950 disabled:opacity-50"
+          class="w-full rounded-lg bg-neutral-900 dark:bg-neutral-100 py-2.5 text-center text-sm font-medium text-white dark:text-neutral-900 transition hover:bg-neutral-800 dark:hover:bg-neutral-200 active:bg-neutral-950 dark:active:bg-neutral-300 disabled:opacity-50"
         >
           {{ isLoading ? t('login.verifying') : t('login.verify_and_login') }}
         </button>
@@ -155,29 +155,29 @@ function goBack() {
     </div>
 
     <!-- 状态面板: 已登录 -->
-    <div v-else class="rounded-xl border border-neutral-200 bg-white p-5 shadow-xs space-y-6">
+    <div v-else class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5 shadow-xs space-y-6">
       <div class="flex items-center gap-4">
-        <div class="grid h-14 w-14 place-items-center rounded-full bg-neutral-900 text-white font-bold text-xl">
+        <div class="grid h-14 w-14 place-items-center rounded-full bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 font-bold text-xl">
           {{ username.slice(0, 2).toUpperCase() }}
         </div>
         <div class="space-y-1">
-          <h3 class="text-base font-semibold text-neutral-900">{{ username }}</h3>
-          <div class="flex items-center gap-1.5 text-xs text-neutral-400">
+          <h3 class="text-base font-semibold text-neutral-900 dark:text-neutral-100">{{ username }}</h3>
+          <div class="flex items-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-500">
             <span class="inline-block h-2 w-2 rounded-full bg-green-500"></span>
             <span>{{ t('login.logged_in_as', { id: userId }) }}</span>
           </div>
         </div>
       </div>
 
-      <div class="border-t border-neutral-100 pt-4 space-y-3">
-        <div v-if="successMsg" class="flex items-center gap-2 rounded-lg bg-green-50 p-3 text-xs text-green-600">
+      <div class="border-t border-neutral-100 dark:border-neutral-800 pt-4 space-y-3">
+        <div v-if="successMsg" class="flex items-center gap-2 rounded-lg bg-green-50 dark:bg-green-900/30 p-3 text-xs text-green-600 dark:text-green-400">
           <Icon icon="lucide:check" class="h-4 w-4 shrink-0" />
           <span>{{ successMsg }}</span>
         </div>
 
         <button
           @click="logout"
-          class="w-full rounded-lg border border-neutral-200 bg-white py-2.5 text-center text-sm font-medium text-red-600 transition hover:bg-red-50 active:bg-red-100"
+          class="w-full rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 py-2.5 text-center text-sm font-medium text-red-600 dark:text-red-400 transition hover:bg-red-50 dark:hover:bg-red-900/30 active:bg-red-100 dark:active:bg-red-900/50"
         >
           {{ t('login.logout') }}
         </button>

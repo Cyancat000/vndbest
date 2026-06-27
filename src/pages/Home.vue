@@ -506,61 +506,61 @@ function getFilterSummary(item) {
   <ion-page>
   <ion-content>
   <div class="page-container pb-24 space-y-6">
-    <div class="flex items-center gap-3 py-3 sticky top-0 bg-white/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100">
-      <div class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs">
-        <Icon icon="lucide:home" class="h-5 w-5 text-neutral-800" />
+    <div class="flex items-center gap-3 py-3 sticky top-0 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100 dark:border-neutral-800">
+      <div class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs">
+        <Icon icon="lucide:home" class="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
       </div>
       <div>
-        <h1 class="text-2xl font-bold tracking-tight text-neutral-900">{{ t('home.title') }}</h1>
-        <p class="text-xs text-neutral-500">{{ t('home.subtitle') }}</p>
+        <h1 class="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">{{ t('home.title') }}</h1>
+        <p class="text-xs text-neutral-500 dark:text-neutral-400">{{ t('home.subtitle') }}</p>
       </div>
     </div>
 
     <!-- 统计区块 (Notion Style Block) -->
-    <div class="rounded-xl border border-neutral-200 bg-white p-4 shadow-xs">
-      <h2 class="text-sm font-semibold text-neutral-800 mb-3 flex items-center gap-2">
-        <Icon icon="lucide:info" class="h-4 w-4 text-neutral-500" />
+    <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 shadow-xs">
+      <h2 class="text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-3 flex items-center gap-2">
+        <Icon icon="lucide:info" class="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
         {{ t('home.stats_title') }}
       </h2>
       
       <div v-if="loadingSections.stats" class="grid grid-cols-2 gap-3">
-        <div v-for="i in 4" :key="i" class="animate-pulse rounded-lg bg-neutral-100 p-3 h-16"></div>
+        <div v-for="i in 4" :key="i" class="animate-pulse rounded-lg bg-neutral-100 dark:bg-neutral-800 p-3 h-16"></div>
       </div>
       
       <div v-else-if="stats" class="grid grid-cols-2 gap-3">
-        <div class="rounded-lg border border-neutral-100 bg-neutral-50/50 p-3">
-          <div class="text-xs text-neutral-500">{{ t('home.vn') }}</div>
-          <div class="text-lg font-bold text-neutral-950 mt-0.5">{{ stats.vn?.toLocaleString() || '0' }}</div>
+        <div class="rounded-lg border border-neutral-100 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/50 p-3">
+          <div class="text-xs text-neutral-500 dark:text-neutral-400">{{ t('home.vn') }}</div>
+          <div class="text-lg font-bold text-neutral-950 dark:text-neutral-50 mt-0.5">{{ stats.vn?.toLocaleString() || '0' }}</div>
         </div>
-        <div class="rounded-lg border border-neutral-100 bg-neutral-50/50 p-3">
-          <div class="text-xs text-neutral-500">{{ t('home.releases') }}</div>
-          <div class="text-lg font-bold text-neutral-950 mt-0.5">{{ stats.releases?.toLocaleString() || '0' }}</div>
+        <div class="rounded-lg border border-neutral-100 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/50 p-3">
+          <div class="text-xs text-neutral-500 dark:text-neutral-400">{{ t('home.releases') }}</div>
+          <div class="text-lg font-bold text-neutral-950 dark:text-neutral-50 mt-0.5">{{ stats.releases?.toLocaleString() || '0' }}</div>
         </div>
-        <div class="rounded-lg border border-neutral-100 bg-neutral-50/50 p-3">
-          <div class="text-xs text-neutral-500">{{ t('home.producers') }}</div>
-          <div class="text-lg font-bold text-neutral-950 mt-0.5">{{ stats.producers?.toLocaleString() || '0' }}</div>
+        <div class="rounded-lg border border-neutral-100 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/50 p-3">
+          <div class="text-xs text-neutral-500 dark:text-neutral-400">{{ t('home.producers') }}</div>
+          <div class="text-lg font-bold text-neutral-950 dark:text-neutral-50 mt-0.5">{{ stats.producers?.toLocaleString() || '0' }}</div>
         </div>
-        <div class="rounded-lg border border-neutral-100 bg-neutral-50/50 p-3">
-          <div class="text-xs text-neutral-500">{{ t('home.staff') }}</div>
-          <div class="text-lg font-bold text-neutral-950 mt-0.5">{{ stats.staff?.toLocaleString() || '0' }}</div>
+        <div class="rounded-lg border border-neutral-100 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/50 p-3">
+          <div class="text-xs text-neutral-500 dark:text-neutral-400">{{ t('home.staff') }}</div>
+          <div class="text-lg font-bold text-neutral-950 dark:text-neutral-50 mt-0.5">{{ stats.staff?.toLocaleString() || '0' }}</div>
         </div>
       </div>
     </div>
 
     <!-- 角色生日板块 -->
-    <div v-if="todayBirthdays.length > 0 || tomorrowBirthdays.length > 0 || loadingSections.birthday" class="rounded-xl border border-neutral-200 bg-white p-4 shadow-xs">
-      <h2 class="text-sm font-semibold text-neutral-800 flex items-center gap-2">
+    <div v-if="todayBirthdays.length > 0 || tomorrowBirthdays.length > 0 || loadingSections.birthday" class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 shadow-xs">
+      <h2 class="text-sm font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
         <Icon icon="lucide:cake" class="h-4 w-4 text-pink-500" />
         {{ t('home.birthday') }}
       </h2>
-      <p class="text-[11px] text-neutral-400 mt-1 mb-3">ヾ(✿ﾟ▽ﾟ)ノ {{ t('home.birthday_greeting') }}</p>
+      <p class="text-[11px] text-neutral-400 dark:text-neutral-500 mt-1 mb-3">ヾ(✿ﾟ▽ﾟ)ノ {{ t('home.birthday_greeting') }}</p>
 
       <div v-if="loadingSections.birthday" class="space-y-3">
-        <div class="text-xs font-medium text-neutral-500">{{ t('home.birthday_today') }}</div>
+        <div class="text-xs font-medium text-neutral-500 dark:text-neutral-400">{{ t('home.birthday_today') }}</div>
         <div class="flex gap-2 overflow-x-auto pb-1">
           <div v-for="i in 4" :key="i" class="animate-pulse shrink-0 w-16 text-center">
-            <div class="w-12 h-12 mx-auto rounded-xl bg-neutral-100 mb-1"></div>
-            <div class="h-2.5 w-10 mx-auto rounded bg-neutral-100"></div>
+            <div class="w-12 h-12 mx-auto rounded-xl bg-neutral-100 dark:bg-neutral-800 mb-1"></div>
+            <div class="h-2.5 w-10 mx-auto rounded bg-neutral-100 dark:bg-neutral-800"></div>
           </div>
         </div>
       </div>
@@ -569,21 +569,21 @@ function getFilterSummary(item) {
         <!-- 今日生日 -->
         <div class="mb-3">
           <div class="flex items-center justify-between mb-2">
-            <div class="text-xs font-medium text-neutral-500 flex items-center gap-1.5">
+            <div class="text-xs font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5">
               <span class="inline-block w-1.5 h-1.5 rounded-full bg-pink-400"></span>
               {{ t('home.birthday_today') }}
-              <span class="text-neutral-400 font-normal">({{ todayBirthdays.length }})</span>
+              <span class="text-neutral-400 dark:text-neutral-500 font-normal">({{ todayBirthdays.length }})</span>
             </div>
             <button
               v-if="todayBirthdays.length > 0"
               @click="navigateToBirthdaySearch(...getBirthdayParams(0))"
-              class="text-[10px] text-neutral-400 hover:text-neutral-600 transition"
+              class="text-[10px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition"
             >
               {{ t('home.view_all') }}
             </button>
           </div>
 
-          <div v-if="todayBirthdays.length === 0" class="text-[11px] text-neutral-400 py-1">
+          <div v-if="todayBirthdays.length === 0" class="text-[11px] text-neutral-400 dark:text-neutral-500 py-1">
             {{ t('home.no_birthday') }}
           </div>
           <div v-else class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
@@ -593,7 +593,7 @@ function getFilterSummary(item) {
               @click="handleCharacterClick(char)"
               class="shrink-0 w-16 text-center cursor-pointer group"
             >
-              <div class="w-12 h-12 mx-auto rounded-xl bg-neutral-100 overflow-hidden border-2 border-pink-200 mb-1 relative">
+              <div class="w-12 h-12 mx-auto rounded-xl bg-neutral-100 dark:bg-neutral-800 overflow-hidden border-2 border-pink-200 dark:border-pink-800 mb-1 relative">
                 <ion-img
                   v-if="char.image?.url"
                   :key="`bt-${char.id}-${imageLoader.getRetryCount('bt-' + char.id)}`"
@@ -612,16 +612,16 @@ function getFilterSummary(item) {
                 <div
                   v-if="char.image?.url && imageLoader.isError('bt-' + char.id)"
                   @click.stop="imageLoader.retry('bt-' + char.id)"
-                  class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
+                  class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 z-10 cursor-pointer"
                 >
-                  <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400" />
+                  <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400 dark:text-neutral-500" />
                 </div>
-                <div v-if="!char.image?.url" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
-                  <Icon icon="lucide:user" class="h-5 w-5 text-neutral-300" />
+                <div v-if="!char.image?.url" class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800">
+                  <Icon icon="lucide:user" class="h-5 w-5 text-neutral-300 dark:text-neutral-600" />
                 </div>
               </div>
-              <div class="text-[10px] font-medium text-neutral-700 truncate group-hover:text-neutral-950">{{ char.original || char.name }}</div>
-              <div v-if="char.birthday" class="text-[9px] text-neutral-400">{{ char.birthday[0] }}月{{ char.birthday[1] }}日</div>
+              <div class="text-[10px] font-medium text-neutral-700 dark:text-neutral-300 truncate group-hover:text-neutral-950 dark:group-hover:text-neutral-100">{{ char.original || char.name }}</div>
+              <div v-if="char.birthday" class="text-[9px] text-neutral-400 dark:text-neutral-500">{{ char.birthday[0] }}月{{ char.birthday[1] }}日</div>
             </div>
           </div>
         </div>
@@ -629,21 +629,21 @@ function getFilterSummary(item) {
         <!-- 明日生日 -->
         <div>
           <div class="flex items-center justify-between mb-2">
-            <div class="text-xs font-medium text-neutral-500 flex items-center gap-1.5">
+            <div class="text-xs font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5">
               <span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-400"></span>
               {{ t('home.birthday_tomorrow') }}
-              <span class="text-neutral-400 font-normal">({{ tomorrowBirthdays.length }})</span>
+              <span class="text-neutral-400 dark:text-neutral-500 font-normal">({{ tomorrowBirthdays.length }})</span>
             </div>
             <button
               v-if="tomorrowBirthdays.length > 0"
               @click="navigateToBirthdaySearch(...getBirthdayParams(1))"
-              class="text-[10px] text-neutral-400 hover:text-neutral-600 transition"
+              class="text-[10px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition"
             >
               {{ t('home.view_all') }}
             </button>
           </div>
 
-          <div v-if="tomorrowBirthdays.length === 0" class="text-[11px] text-neutral-400 py-1">
+          <div v-if="tomorrowBirthdays.length === 0" class="text-[11px] text-neutral-400 dark:text-neutral-500 py-1">
             {{ t('home.no_birthday') }}
           </div>
           <div v-else class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
@@ -653,7 +653,7 @@ function getFilterSummary(item) {
               @click="handleCharacterClick(char)"
               class="shrink-0 w-16 text-center cursor-pointer group"
             >
-              <div class="w-12 h-12 mx-auto rounded-xl bg-neutral-100 overflow-hidden border-2 border-blue-200 mb-1 relative">
+              <div class="w-12 h-12 mx-auto rounded-xl bg-neutral-100 dark:bg-neutral-800 overflow-hidden border-2 border-blue-200 dark:border-blue-800 mb-1 relative">
                 <ion-img
                   v-if="char.image?.url"
                   :key="`btt-${char.id}-${imageLoader.getRetryCount('btt-' + char.id)}`"
@@ -672,16 +672,16 @@ function getFilterSummary(item) {
                 <div
                   v-if="char.image?.url && imageLoader.isError('btt-' + char.id)"
                   @click.stop="imageLoader.retry('btt-' + char.id)"
-                  class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
+                  class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 z-10 cursor-pointer"
                 >
-                  <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400" />
+                  <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400 dark:text-neutral-500" />
                 </div>
-                <div v-if="!char.image?.url" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
-                  <Icon icon="lucide:user" class="h-5 w-5 text-neutral-300" />
+                <div v-if="!char.image?.url" class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800">
+                  <Icon icon="lucide:user" class="h-5 w-5 text-neutral-300 dark:text-neutral-600" />
                 </div>
               </div>
-              <div class="text-[10px] font-medium text-neutral-700 truncate group-hover:text-neutral-950">{{ char.original || char.name }}</div>
-              <div v-if="char.birthday" class="text-[9px] text-neutral-400">{{ char.birthday[0] }}月{{ char.birthday[1] }}日</div>
+              <div class="text-[10px] font-medium text-neutral-700 dark:text-neutral-300 truncate group-hover:text-neutral-950 dark:group-hover:text-neutral-100">{{ char.original || char.name }}</div>
+              <div v-if="char.birthday" class="text-[9px] text-neutral-400 dark:text-neutral-500">{{ char.birthday[0] }}月{{ char.birthday[1] }}日</div>
             </div>
           </div>
         </div>
@@ -691,28 +691,28 @@ function getFilterSummary(item) {
     <!-- 刚刚发布 & 即将发布 -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- 刚刚发布 -->
-      <div class="rounded-xl border border-neutral-200 bg-white p-4 shadow-xs">
+      <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 shadow-xs">
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-sm font-semibold text-neutral-800 flex items-center gap-2">
+          <h2 class="text-sm font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
             <Icon icon="lucide:calendar-check" class="h-4 w-4 text-emerald-500" />
             {{ t('home.just_released') }}
           </h2>
-          <button @click="router.push('/search/release')" class="text-[10px] text-neutral-400 hover:text-neutral-600 transition">
+          <button @click="router.push('/search/release')" class="text-[10px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition">
             {{ t('home.view_all') }}
           </button>
         </div>
         
         <div v-if="loadingSections.releases" class="space-y-2">
-          <div v-for="i in 3" :key="i" class="animate-pulse h-12 rounded-lg bg-neutral-50"></div>
+          <div v-for="i in 3" :key="i" class="animate-pulse h-12 rounded-lg bg-neutral-50 dark:bg-neutral-800"></div>
         </div>
         <div v-else class="space-y-2">
           <div
             v-for="item in filteredJustReleased"
             :key="item.id"
             @click="handleReleaseClick(item)"
-            class="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-50 transition cursor-pointer group"
+            class="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition cursor-pointer group"
           >
-            <div class="h-10 w-8 rounded bg-neutral-100 overflow-hidden shrink-0 border border-neutral-200/50 relative">
+            <div class="h-10 w-8 rounded bg-neutral-100 dark:bg-neutral-800 overflow-hidden shrink-0 border border-neutral-200/50 dark:border-neutral-700/50 relative">
               <ion-img
                 v-if="item.images?.[0]?.url"
                 :key="`jr-${item.id}-${imageLoader.getRetryCount(`jr-${item.id}`)}`"
@@ -731,20 +731,20 @@ function getFilterSummary(item) {
               <div
                 v-if="item.images?.[0]?.url && imageLoader.isError(`jr-${item.id}`)"
                 @click.stop="imageLoader.retry(`jr-${item.id}`)"
-                class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
+                class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 z-10 cursor-pointer"
               >
-                <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400" />
+                <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400 dark:text-neutral-500" />
               </div>
-              <div v-if="!item.images?.[0]?.url || shouldBlurReleaseCover(item)" class="absolute inset-0 flex items-center justify-center bg-neutral-100 pointer-events-none">
-                <Icon :icon="shouldBlurReleaseCover(item) ? 'lucide:eye-off' : 'lucide:package'" class="h-4 w-4" :class="shouldBlurReleaseCover(item) ? 'text-neutral-400' : 'text-neutral-300'" />
+              <div v-if="!item.images?.[0]?.url || shouldBlurReleaseCover(item)" class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 pointer-events-none">
+                <Icon :icon="shouldBlurReleaseCover(item) ? 'lucide:eye-off' : 'lucide:package'" class="h-4 w-4" :class="shouldBlurReleaseCover(item) ? 'text-neutral-400' : 'text-neutral-300 dark:text-neutral-600'" />
               </div>
             </div>
             <div class="min-w-0 flex-1">
-              <div class="text-xs font-medium text-neutral-800 truncate group-hover:text-neutral-950">{{ item.alttitle || item.title }}</div>
+              <div class="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate group-hover:text-neutral-950 dark:group-hover:text-neutral-100">{{ item.alttitle || item.title }}</div>
               <div class="flex items-center gap-2">
-                <div class="text-[10px] text-neutral-400">{{ item.released }}</div>
+                <div class="text-[10px] text-neutral-400 dark:text-neutral-500">{{ item.released }}</div>
                 <div class="flex flex-wrap gap-1">
-                  <span v-for="lang in item.languages" :key="lang.lang" class="text-[8px] px-1 rounded bg-neutral-100 text-neutral-500 whitespace-nowrap">
+                  <span v-for="lang in item.languages" :key="lang.lang" class="text-[8px] px-1 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
                     {{ t(`settings.lang_names.${lang.lang}`, lang.lang) }}
                   </span>
                 </div>
@@ -755,25 +755,25 @@ function getFilterSummary(item) {
       </div>
 
       <!-- 即将发布 -->
-      <div class="rounded-xl border border-neutral-200 bg-white p-4 shadow-xs">
+      <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 shadow-xs">
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-sm font-semibold text-neutral-800 flex items-center gap-2">
+          <h2 class="text-sm font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
             <Icon icon="lucide:calendar-days" class="h-4 w-4 text-blue-500" />
             {{ t('home.upcoming_releases') }}
           </h2>
         </div>
         
         <div v-if="loadingSections.releases" class="space-y-2">
-          <div v-for="i in 3" :key="i" class="animate-pulse h-12 rounded-lg bg-neutral-50"></div>
+          <div v-for="i in 3" :key="i" class="animate-pulse h-12 rounded-lg bg-neutral-50 dark:bg-neutral-800"></div>
         </div>
         <div v-else class="space-y-2">
           <div
             v-for="item in filteredUpcomingReleases"
             :key="item.id"
             @click="handleReleaseClick(item)"
-            class="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-50 transition cursor-pointer group"
+            class="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition cursor-pointer group"
           >
-            <div class="h-10 w-8 rounded bg-neutral-100 overflow-hidden shrink-0 border border-neutral-200/50 relative">
+            <div class="h-10 w-8 rounded bg-neutral-100 dark:bg-neutral-800 overflow-hidden shrink-0 border border-neutral-200/50 dark:border-neutral-700/50 relative">
               <ion-img
                 v-if="item.images?.[0]?.url"
                 :key="`ur-${item.id}-${imageLoader.getRetryCount(`ur-${item.id}`)}`"
@@ -792,20 +792,20 @@ function getFilterSummary(item) {
               <div
                 v-if="item.images?.[0]?.url && imageLoader.isError(`ur-${item.id}`)"
                 @click.stop="imageLoader.retry(`ur-${item.id}`)"
-                class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
+                class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 z-10 cursor-pointer"
               >
-                <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400" />
+                <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400 dark:text-neutral-500" />
               </div>
-              <div v-if="!item.images?.[0]?.url || shouldBlurReleaseCover(item)" class="absolute inset-0 flex items-center justify-center bg-neutral-100 pointer-events-none">
-                <Icon :icon="shouldBlurReleaseCover(item) ? 'lucide:eye-off' : 'lucide:package'" class="h-4 w-4" :class="shouldBlurReleaseCover(item) ? 'text-neutral-400' : 'text-neutral-300'" />
+              <div v-if="!item.images?.[0]?.url || shouldBlurReleaseCover(item)" class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 pointer-events-none">
+                <Icon :icon="shouldBlurReleaseCover(item) ? 'lucide:eye-off' : 'lucide:package'" class="h-4 w-4" :class="shouldBlurReleaseCover(item) ? 'text-neutral-400' : 'text-neutral-300 dark:text-neutral-600'" />
               </div>
             </div>
             <div class="min-w-0 flex-1">
-              <div class="text-xs font-medium text-neutral-800 truncate group-hover:text-neutral-950">{{ item.alttitle || item.title }}</div>
+              <div class="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate group-hover:text-neutral-950 dark:group-hover:text-neutral-100">{{ item.alttitle || item.title }}</div>
               <div class="flex items-center gap-2">
-                <div class="text-[10px] text-neutral-400">{{ item.released }}</div>
+                <div class="text-[10px] text-neutral-400 dark:text-neutral-500">{{ item.released }}</div>
                 <div class="flex flex-wrap gap-1">
-                  <span v-for="lang in item.languages" :key="lang.lang" class="text-[8px] px-1 rounded bg-neutral-100 text-neutral-500 whitespace-nowrap">
+                  <span v-for="lang in item.languages" :key="lang.lang" class="text-[8px] px-1 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
                     {{ t(`settings.lang_names.${lang.lang}`, lang.lang) }}
                   </span>
                 </div>
@@ -820,42 +820,42 @@ function getFilterSummary(item) {
     <button
       @click="handleRandomClick"
       :disabled="loadingSections.random"
-      class="flex items-center justify-between rounded-xl border border-neutral-200 bg-white p-4 text-left transition hover:bg-neutral-50 active:bg-neutral-100 shadow-xs w-full cursor-pointer disabled:opacity-50"
+      class="flex items-center justify-between rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 text-left transition hover:bg-neutral-50 dark:hover:bg-neutral-800 active:bg-neutral-100 dark:active:bg-neutral-700 shadow-xs w-full cursor-pointer disabled:opacity-50"
     >
       <div class="flex items-center gap-3">
-        <div class="grid h-10 w-10 place-items-center rounded-lg bg-purple-50 text-purple-600">
+        <div class="grid h-10 w-10 place-items-center rounded-lg bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
           <Icon :icon="loadingSections.random ? 'eos-icons:loading' : 'lucide:dices'" class="h-5 w-5" />
         </div>
         <div>
-          <span class="text-sm font-semibold text-neutral-800 block">{{ t('home.random_vn') }}</span>
-          <span class="text-[10px] text-neutral-400">试试手气，随机跳转到一个作品页面</span>
+          <span class="text-sm font-semibold text-neutral-800 dark:text-neutral-200 block">{{ t('home.random_vn') }}</span>
+          <span class="text-[10px] text-neutral-400 dark:text-neutral-500">试试手气，随机跳转到一个作品页面</span>
         </div>
       </div>
-      <Icon icon="lucide:chevron-right" class="h-4 w-4 text-neutral-400" />
+      <Icon icon="lucide:chevron-right" class="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
     </button>
 
     <!-- 已保存的搜索结果预览 -->
     <template v-for="search in displayedSavedSearches" :key="search.id">
-      <div class="rounded-xl border border-neutral-200 bg-white p-4 shadow-xs">
+      <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 shadow-xs">
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-sm font-semibold text-neutral-800 flex items-center gap-2">
+          <h2 class="text-sm font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
             <Icon :icon="SEARCH_TYPE_MAP[search.type]?.icon || 'lucide:search'" class="h-4 w-4 text-amber-500" />
             {{ search.name }}
-            <span class="text-[8px] px-1.5 py-0.5 rounded-full bg-neutral-100 text-neutral-500 font-normal">
+            <span class="text-[8px] px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 font-normal">
               {{ SEARCH_TYPE_MAP[search.type]?.label || search.type }}
             </span>
           </h2>
           <div class="flex items-center gap-1">
             <button
               @click.stop="refreshSingleSearch(search)"
-              class="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition"
+              class="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
               :class="{ 'animate-spin': savedSearchLoading[search.id] }"
             >
               <Icon icon="lucide:refresh-cw" class="h-3.5 w-3.5" />
             </button>
             <button
               @click.stop="openMoreActions(search)"
-              class="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition"
+              class="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
             >
               <Icon icon="lucide:ellipsis" class="h-3.5 w-3.5" />
             </button>
@@ -864,11 +864,11 @@ function getFilterSummary(item) {
 
         <!-- 加载骨架 -->
         <div v-if="savedSearchLoading[search.id]" class="space-y-2">
-          <div v-for="i in 3" :key="i" class="animate-pulse h-12 rounded-lg bg-neutral-50"></div>
+          <div v-for="i in 3" :key="i" class="animate-pulse h-12 rounded-lg bg-neutral-50 dark:bg-neutral-800"></div>
         </div>
 
         <!-- 无结果 -->
-        <div v-else-if="!savedSearchResults[search.id]?.length" class="text-xs text-neutral-400 py-2">
+        <div v-else-if="!savedSearchResults[search.id]?.length" class="text-xs text-neutral-400 dark:text-neutral-500 py-2">
           {{ t('home.no_results') }}
         </div>
 
@@ -878,9 +878,9 @@ function getFilterSummary(item) {
             v-for="item in savedSearchResults[search.id]"
             :key="item.id"
             @click="handleSavedSearchItemClick(search, item)"
-            class="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-50 transition cursor-pointer group"
+            class="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition cursor-pointer group"
           >
-            <div class="h-10 w-8 rounded bg-neutral-100 overflow-hidden shrink-0 border border-neutral-200/50 relative">
+            <div class="h-10 w-8 rounded bg-neutral-100 dark:bg-neutral-800 overflow-hidden shrink-0 border border-neutral-200/50 dark:border-neutral-700/50 relative">
               <ion-img
                 v-if="getResultDisplay(search, item).image"
                 :key="`sv-${search.id}-${item.id}-${imageLoader.getRetryCount(`sv-${search.id}-${item.id}`)}`"
@@ -899,34 +899,34 @@ function getFilterSummary(item) {
               <div
                 v-if="getResultDisplay(search, item).image && imageLoader.isError(`sv-${search.id}-${item.id}`)"
                 @click.stop="imageLoader.retry(`sv-${search.id}-${item.id}`)"
-                class="absolute inset-0 flex items-center justify-center bg-neutral-100 z-10 cursor-pointer"
+                class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 z-10 cursor-pointer"
               >
-                <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400" />
+                <Icon icon="lucide:refresh-cw" class="h-3 w-3 text-neutral-400 dark:text-neutral-500" />
               </div>
               <div
                 v-if="!getResultDisplay(search, item).image || getResultDisplay(search, item).blur"
-                class="absolute inset-0 flex items-center justify-center bg-neutral-100 pointer-events-none"
+                class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 pointer-events-none"
               >
                 <Icon
                   :icon="getResultDisplay(search, item).blur ? 'lucide:eye-off' : getResultDisplay(search, item).placeholderIcon"
                   class="h-4 w-4"
-                  :class="getResultDisplay(search, item).blur ? 'text-neutral-400' : 'text-neutral-300'"
+                  :class="getResultDisplay(search, item).blur ? 'text-neutral-400' : 'text-neutral-300 dark:text-neutral-600'"
                 />
               </div>
             </div>
             <div class="min-w-0 flex-1">
-              <div class="text-xs font-medium text-neutral-800 truncate group-hover:text-neutral-950">
+              <div class="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate group-hover:text-neutral-950 dark:group-hover:text-neutral-100">
                 {{ getResultDisplay(search, item).title }}
               </div>
               <div class="flex items-center gap-2">
-                <div v-if="getResultDisplay(search, item).subtitle" class="text-[10px] text-neutral-400">
+                <div v-if="getResultDisplay(search, item).subtitle" class="text-[10px] text-neutral-400 dark:text-neutral-500">
                   {{ getResultDisplay(search, item).subtitle }}
                 </div>
                 <div class="flex flex-wrap gap-1">
                   <span
                     v-for="badge in getResultDisplay(search, item).badges"
                     :key="badge"
-                    class="text-[8px] px-1 rounded bg-neutral-100 text-neutral-500 whitespace-nowrap"
+                    class="text-[8px] px-1 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 whitespace-nowrap"
                   >
                     {{ t(`settings.lang_names.${badge}`, badge) }}
                   </span>
@@ -951,20 +951,20 @@ function getFilterSummary(item) {
     <Transition name="slide-up">
       <div
         v-if="showBottomSheet"
-        class="fixed bottom-0 inset-x-0 z-50 rounded-t-2xl bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-xl"
+        class="fixed bottom-0 inset-x-0 z-50 rounded-t-2xl bg-white dark:bg-neutral-900 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-xl"
       >
-        <div class="mx-auto mb-4 h-1 w-10 rounded-full bg-neutral-300" aria-hidden="true"></div>
+        <div class="mx-auto mb-4 h-1 w-10 rounded-full bg-neutral-300 dark:bg-neutral-600" aria-hidden="true"></div>
         <div class="grid gap-2">
           <button
-            class="flex items-center gap-3 rounded-xl p-3 text-sm text-neutral-700 hover:bg-neutral-50 active:bg-neutral-100"
+            class="flex items-center gap-3 rounded-xl p-3 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 active:bg-neutral-100 dark:active:bg-neutral-700"
             type="button"
             @click="handleBottomSheetAction('viewAll')"
           >
-            <Icon icon="lucide:external-link" class="h-5 w-5 text-neutral-500" />
+            <Icon icon="lucide:external-link" class="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
             {{ t('home.view_all') }}
           </button>
           <button
-            class="flex items-center gap-3 rounded-xl p-3 text-sm text-red-500 hover:bg-red-50 active:bg-red-100"
+            class="flex items-center gap-3 rounded-xl p-3 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 active:bg-red-100 dark:active:bg-red-900/50"
             type="button"
             @click="handleBottomSheetAction('delete')"
           >
@@ -973,7 +973,7 @@ function getFilterSummary(item) {
           </button>
         </div>
         <button
-          class="mt-4 w-full rounded-xl border border-neutral-200 bg-neutral-50 py-3 text-sm font-medium text-neutral-700 active:bg-neutral-100"
+          class="mt-4 w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 py-3 text-sm font-medium text-neutral-700 dark:text-neutral-300 active:bg-neutral-100 dark:active:bg-neutral-700"
           type="button"
           @click="closeBottomSheet"
         >
@@ -998,18 +998,18 @@ function getFilterSummary(item) {
         class="fixed inset-0 z-[60] flex items-center justify-center p-6"
       >
         <div
-          class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
+          class="w-full max-w-sm rounded-2xl bg-white dark:bg-neutral-900 p-6 shadow-xl"
           @click.stop
         >
-          <h3 class="text-base font-semibold text-neutral-900">
+          <h3 class="text-base font-semibold text-neutral-900 dark:text-neutral-100">
             {{ t('home.delete_confirm_title') }}
           </h3>
-          <p class="mt-2 text-sm text-neutral-500">
+          <p class="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
             {{ t('home.delete_confirm_message', { name: deleteConfirmSearch?.name }) }}
           </p>
           <div class="mt-6 flex gap-3">
             <button
-              class="flex-1 rounded-xl border border-neutral-200 bg-neutral-50 py-2.5 text-sm font-medium text-neutral-700 active:bg-neutral-100"
+              class="flex-1 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 py-2.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 active:bg-neutral-100 dark:active:bg-neutral-700"
               type="button"
               @click="closeDeleteConfirm"
             >

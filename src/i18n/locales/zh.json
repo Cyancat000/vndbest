@@ -99,7 +99,11 @@
       "up_to_date": "已是最新",
       "check_failed": "检查失败",
       "download_update": "下载最新版本"
-    }
+    },
+    "theme": "外观主题",
+    "theme_follow_system": "跟随系统",
+    "theme_light": "浅色",
+    "theme_dark": "深色"
   },
   "nav": {
     "home": "主页",

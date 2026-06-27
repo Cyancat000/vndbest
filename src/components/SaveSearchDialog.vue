@@ -62,10 +62,10 @@ function handleBackdropClick(e) {
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-6"
         @click="handleBackdropClick"
       >
-        <div class="w-full max-w-sm bg-white rounded-2xl shadow-xl p-6">
+        <div class="w-full max-w-sm bg-white dark:bg-neutral-900 rounded-2xl shadow-xl p-6">
           <!-- 标题 -->
-          <h3 class="text-lg font-bold text-neutral-900 mb-1">保存搜索</h3>
-          <p class="text-sm text-neutral-500 mb-4">请输入名称，最多{{ maxLength }}个字</p>
+          <h3 class="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-1">保存搜索</h3>
+          <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-4">请输入名称，最多{{ maxLength }}个字</p>
 
           <!-- 输入框 -->
           <input
@@ -74,7 +74,7 @@ function handleBackdropClick(e) {
             :maxlength="maxLength"
             type="text"
             placeholder="输入搜索名称"
-            class="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 text-neutral-900 text-base outline-none transition-colors focus:border-neutral-400 focus:bg-white"
+            class="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 text-neutral-900 text-base outline-none transition-colors focus:border-neutral-400 focus:bg-white dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:bg-neutral-900"
             @keyup.enter="handleConfirm"
           />
 
@@ -82,18 +82,18 @@ function handleBackdropClick(e) {
           <p v-if="errorMsg" class="mt-2 text-sm text-red-500">{{ errorMsg }}</p>
 
           <!-- 字数统计 -->
-          <p class="mt-1 text-xs text-neutral-400 text-right">{{ nameInput.length }}/{{ maxLength }}</p>
+          <p class="mt-1 text-xs text-neutral-400 dark:text-neutral-500 text-right">{{ nameInput.length }}/{{ maxLength }}</p>
 
           <!-- 按钮 -->
           <div class="flex gap-3 mt-5">
             <button
-              class="flex-1 py-2.5 rounded-xl border border-neutral-200 bg-white text-neutral-700 font-medium text-sm active:scale-95 transition-transform cursor-pointer"
+              class="flex-1 py-2.5 rounded-xl border border-neutral-200 bg-white text-neutral-700 font-medium text-sm active:scale-95 transition-transform cursor-pointer dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
               @click="handleCancel"
             >
               取消
             </button>
             <button
-              class="flex-1 py-2.5 rounded-xl bg-neutral-900 text-white font-medium text-sm active:scale-95 transition-transform cursor-pointer"
+              class="flex-1 py-2.5 rounded-xl bg-neutral-900 text-white font-medium text-sm active:scale-95 transition-transform cursor-pointer dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
               @click="handleConfirm"
             >
               保存

@@ -4,6 +4,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { IonApp, IonRouterOutlet } from '@ionic/vue'
+import { useTheme } from '@/composables/useTheme'
+
+useTheme()
 
 const route = useRoute()
 const router = useRouter()
@@ -31,7 +34,7 @@ function navigate(path) {
     <!-- 移动端优先的 Notion-Style 底部 TabBar -->
     <nav
       v-if="showTabBar"
-      class="fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-200 bg-white/80 backdrop-blur-md pb-[safe-area-inset-bottom]"
+      class="fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-200 dark:border-neutral-700 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md pb-[safe-area-inset-bottom]"
     >
       <div class="mx-auto max-w-2xl flex h-14 items-center justify-around px-2">
         <button
@@ -39,7 +42,7 @@ function navigate(path) {
           :key="tab.path"
           @click="navigate(tab.path)"
           class="flex flex-col items-center justify-center gap-1 w-16 h-full transition relative group"
-          :class="activePath === tab.path ? 'text-neutral-950 font-medium' : 'text-neutral-400 hover:text-neutral-600'"
+          :class="activePath === tab.path ? 'text-neutral-950 dark:text-neutral-50 font-medium' : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300'"
         >
           <Icon :icon="tab.icon" class="h-5 w-5" />
           <span class="text-[10px] leading-none">{{ tab.name }}</span>
@@ -47,7 +50,7 @@ function navigate(path) {
           <!-- 激活指示小条 -->
           <span
             v-if="activePath === tab.path"
-            class="absolute bottom-1 w-5 h-0.5 rounded-full bg-neutral-900"
+            class="absolute bottom-1 w-5 h-0.5 rounded-full bg-neutral-900 dark:bg-neutral-100"
           ></span>
         </button>
       </div>

@@ -226,17 +226,17 @@ watch(sentinel, (el) => {
           v-for="item in results" 
           :key="item.id"
           @click="goToDetail(item.id)"
-          class="group relative flex flex-col p-3 rounded-xl border border-neutral-100 bg-white shadow-xs active:scale-[0.99] transition-all cursor-pointer hover:border-neutral-200 hover:shadow-sm"
+          class="group relative flex flex-col p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs active:scale-[0.99] transition-all cursor-pointer hover:border-neutral-200 dark:hover:border-neutral-700 hover:shadow-sm"
         >
           <div class="flex items-center justify-between gap-3">
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
-                <h3 class="font-bold text-sm text-neutral-900 truncate">
+                <h3 class="font-bold text-sm text-neutral-900 dark:text-neutral-100 truncate">
                     {{ translateTraitName(item.name) }}
                 </h3>
                 <span 
                   v-if="item.group_name" 
-                  class="shrink-0 inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold bg-neutral-50 text-neutral-400 border border-neutral-100 uppercase"
+                  class="shrink-0 inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold bg-neutral-50 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 border border-neutral-100 dark:border-neutral-700 uppercase"
                 >
                   {{ item.group_name }}
                 </span>
@@ -244,15 +244,15 @@ watch(sentinel, (el) => {
             </div>
             
             <div class="flex items-center gap-2 shrink-0">
-              <span class="inline-flex items-center rounded-full bg-neutral-100 px-2 py-0.5 text-[9px] font-bold text-neutral-500">
+              <span class="inline-flex items-center rounded-full bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 text-[9px] font-bold text-neutral-500 dark:text-neutral-400">
                 {{ item.char_count }} Chars
               </span>
-              <Icon icon="lucide:chevron-right" class="h-3.5 w-3.5 text-neutral-300 group-hover:text-neutral-500 transition-colors" />
+              <Icon icon="lucide:chevron-right" class="h-3.5 w-3.5 text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-500 dark:group-hover:text-neutral-400 transition-colors" />
             </div>
           </div>
 
           <div v-if="item.description" class="mt-2 line-clamp-1">
-            <p class="text-[11px] text-neutral-500 italic">
+            <p class="text-[11px] text-neutral-500 dark:text-neutral-400 italic">
               {{ item.description.replace(/\[\/?\w+.*?\]/g, '') }}
             </p>
           </div>
@@ -273,21 +273,21 @@ watch(sentinel, (el) => {
             :class="[
               'group relative flex flex-col p-3 rounded-xl border border-dashed transition-all cursor-pointer shadow-xs',
               loadingI18nKey === item.en
-                ? 'border-violet-400 bg-violet-100/80 scale-[0.98] opacity-80'
-                : 'border-violet-200 bg-violet-50/50 hover:border-violet-300 hover:shadow-sm active:scale-[0.99]'
+                ? 'border-violet-400 bg-violet-100/80 dark:bg-violet-900/40 scale-[0.98] opacity-80'
+                : 'border-violet-200 dark:border-violet-800/50 bg-violet-50/50 dark:bg-violet-900/20 hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-sm active:scale-[0.99]'
             ]"
           >
             <div class="flex items-center justify-between gap-3">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
-                  <h3 class="font-bold text-sm text-violet-800 truncate">
+                  <h3 class="font-bold text-sm text-violet-800 dark:text-violet-300 truncate">
                       {{ item.zh }}
                   </h3>
-                  <span class="shrink-0 inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold bg-violet-100 text-violet-500 border border-violet-200">
+                  <span class="shrink-0 inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold bg-violet-100 dark:bg-violet-800/50 text-violet-500 dark:text-violet-400 border border-violet-200 dark:border-violet-700">
                     翻译
                   </span>
                 </div>
-                <p class="text-[11px] text-violet-400 mt-0.5">
+                <p class="text-[11px] text-violet-400 dark:text-violet-500 mt-0.5">
                   {{ item.en }}
                 </p>
               </div>
@@ -297,8 +297,8 @@ watch(sentinel, (el) => {
                   <Icon icon="eos-icons:loading" class="h-4 w-4 text-violet-500 animate-spin" />
                 </template>
                 <template v-else>
-                  <Icon icon="lucide:external-link" class="h-3 w-3 text-violet-300 group-hover:text-violet-500 transition-colors" />
-                  <Icon icon="lucide:chevron-right" class="h-3.5 w-3.5 text-violet-300 group-hover:text-violet-500 transition-colors" />
+                  <Icon icon="lucide:external-link" class="h-3 w-3 text-violet-300 dark:text-violet-600 group-hover:text-violet-500 transition-colors" />
+                  <Icon icon="lucide:chevron-right" class="h-3.5 w-3.5 text-violet-300 dark:text-violet-600 group-hover:text-violet-500 transition-colors" />
                 </template>
               </div>
             </div>
@@ -312,24 +312,24 @@ watch(sentinel, (el) => {
         class="py-12 flex flex-col items-center justify-center min-h-[100px]"
       >
         <div v-if="isLoading && results.length > 0" class="flex flex-col items-center gap-2">
-          <Icon icon="eos-icons:loading" class="h-6 w-6 text-neutral-400" />
-          <span class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">{{ t('common.loading') }}</span>
+          <Icon icon="eos-icons:loading" class="h-6 w-6 text-neutral-400 dark:text-neutral-500" />
+          <span class="text-[10px] text-neutral-400 dark:text-neutral-500 font-bold uppercase tracking-widest">{{ t('common.loading') }}</span>
         </div>
-        <div v-else-if="!hasMore && results.length > 0 && filteredI18nResults.length === 0" class="text-[10px] text-neutral-300 font-bold uppercase tracking-widest">
+        <div v-else-if="!hasMore && results.length > 0 && filteredI18nResults.length === 0" class="text-[10px] text-neutral-300 dark:text-neutral-600 font-bold uppercase tracking-widest">
           —— {{ t('list.all_loaded', 'All Loaded') }} ——
         </div>
         <div v-else class="h-1 w-full opacity-0"></div>
       </div>
 
       <!-- 无搜索结果 -->
-      <div v-if="results.length === 0 && filteredI18nResults.length === 0 && !isLoading && query" class="flex flex-col items-center justify-center py-20 text-neutral-400 space-y-3">
-        <Icon icon="lucide:search-x" class="h-10 w-10 text-neutral-200" />
+      <div v-if="results.length === 0 && filteredI18nResults.length === 0 && !isLoading && query" class="flex flex-col items-center justify-center py-20 text-neutral-400 dark:text-neutral-500 space-y-3">
+        <Icon icon="lucide:search-x" class="h-10 w-10 text-neutral-200 dark:text-neutral-700" />
         <p class="text-sm">未找到相关特征</p>
       </div>
 
       <!-- 初始加载动画 -->
       <div v-if="isLoading && results.length === 0" class="flex justify-center py-20">
-        <Icon icon="eos-icons:loading" class="h-8 w-8 text-neutral-200" />
+        <Icon icon="eos-icons:loading" class="h-8 w-8 text-neutral-200 dark:text-neutral-700" />
       </div>
     </SearchBase>
   </div>

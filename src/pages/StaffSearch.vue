@@ -257,9 +257,9 @@ watch(sentinel, (el) => {
             <button
               @click="showAdvancedFilters = !showAdvancedFilters"
               class="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition cursor-pointer"
-              :class="showAdvancedFilters 
-                ? 'bg-neutral-900 text-white' 
-                : 'bg-neutral-50 text-neutral-600 border border-neutral-100 hover:bg-neutral-100'"
+              :class="showAdvancedFilters
+                ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
+                : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-100 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700'"
             >
               <Icon icon="lucide:sliders-horizontal" class="h-3.5 w-3.5" />
               <span>筛选</span>
@@ -269,7 +269,7 @@ watch(sentinel, (el) => {
             <button
               v-if="hasActiveFilters()"
               @click="openSaveDialog"
-              class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-blue-600 bg-blue-50 border border-blue-100 hover:bg-blue-100 transition cursor-pointer"
+              class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition cursor-pointer"
             >
               <Icon icon="lucide:bookmark" class="h-3 w-3" />
               <span>保存</span>
@@ -279,7 +279,7 @@ watch(sentinel, (el) => {
             <button
               v-if="hasActiveFilters()"
               @click="clearAllFilters"
-              class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-red-500 bg-red-50 border border-red-100 hover:bg-red-100 transition cursor-pointer"
+              class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800/50 hover:bg-red-100 dark:hover:bg-red-900/50 transition cursor-pointer"
             >
               <Icon icon="lucide:x" class="h-3 w-3" />
               <span>清除</span>
@@ -294,10 +294,10 @@ watch(sentinel, (el) => {
                 v-model="selectedLang"
                 :options="langOptions"
                 :label-renderer="(l) => t(l)"
-                class="!bg-neutral-50 rounded-lg border border-neutral-100"
+                class="!bg-neutral-50 dark:!bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700"
               >
                 <template #prefix>
-                  <Icon icon="lucide:languages" class="h-3.5 w-3.5 text-neutral-400" />
+                  <Icon icon="lucide:languages" class="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" />
                 </template>
               </BaseSelect>
 
@@ -306,10 +306,10 @@ watch(sentinel, (el) => {
                 v-model="selectedGender"
                 :options="genderOptions"
                 :label-renderer="(l) => t(l, l)"
-                class="!bg-neutral-50 rounded-lg border border-neutral-100"
+                class="!bg-neutral-50 dark:!bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700"
               >
                 <template #prefix>
-                  <Icon icon="lucide:user" class="h-3.5 w-3.5 text-neutral-400" />
+                  <Icon icon="lucide:user" class="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" />
                 </template>
               </BaseSelect>
 
@@ -318,10 +318,10 @@ watch(sentinel, (el) => {
                 v-model="selectedRole"
                 :options="roleOptions"
                 :label-renderer="(l) => t(l, l)"
-                class="!bg-neutral-50 rounded-lg border border-neutral-100"
+                class="!bg-neutral-50 dark:!bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700"
               >
                 <template #prefix>
-                  <Icon icon="lucide:badge" class="h-3.5 w-3.5 text-neutral-400" />
+                  <Icon icon="lucide:badge" class="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" />
                 </template>
               </BaseSelect>
             </div>
@@ -331,36 +331,36 @@ watch(sentinel, (el) => {
 
       <!-- 列表内容 -->
       <div class="grid grid-cols-1 gap-3">
-        <div 
-          v-for="item in results" 
+        <div
+          v-for="item in results"
           :key="`${item.id}-${item.aid}`"
           @click="goToDetail(item.id)"
-          class="group relative flex items-center p-3 rounded-xl border border-neutral-100 bg-white shadow-xs active:scale-[0.99] transition-all cursor-pointer hover:border-neutral-200 hover:shadow-sm"
+          class="group relative flex items-center p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-950 shadow-xs active:scale-[0.99] transition-all cursor-pointer hover:border-neutral-200 dark:hover:border-neutral-700 hover:shadow-sm"
         >
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
-              <h3 class="font-bold text-sm text-neutral-900 truncate">
+              <h3 class="font-bold text-sm text-neutral-900 dark:text-neutral-100 truncate">
                 {{ item.name }}
               </h3>
-              <span v-if="item.lang" class="shrink-0 inline-flex items-center rounded-md bg-neutral-50 px-1.5 py-0.5 text-[9px] font-bold text-neutral-400 border border-neutral-100">
+              <span v-if="item.lang" class="shrink-0 inline-flex items-center rounded-md bg-neutral-50 dark:bg-neutral-900 px-1.5 py-0.5 text-[9px] font-bold text-neutral-400 dark:text-neutral-500 border border-neutral-100 dark:border-neutral-700">
                 {{ t(`metadata.lang.${item.lang}`, item.lang) }}
               </span>
             </div>
             <div class="flex items-center gap-2 mt-0.5">
-              <p v-if="item.original" class="text-[10px] text-neutral-400 truncate">
+              <p v-if="item.original" class="text-[10px] text-neutral-400 dark:text-neutral-500 truncate">
                 {{ item.original }}
               </p>
             </div>
             
             <div v-if="item.description" class="mt-2 line-clamp-1">
-              <p class="text-[11px] text-neutral-500 italic">
+              <p class="text-[11px] text-neutral-500 dark:text-neutral-400 italic">
                 {{ item.description.replace(/\[\/?\w+.*?\]/g, '') }}
               </p>
             </div>
           </div>
           
           <div class="ml-3 shrink-0">
-            <Icon icon="lucide:chevron-right" class="h-4 w-4 text-neutral-300 group-hover:text-neutral-500 transition-colors" />
+            <Icon icon="lucide:chevron-right" class="h-4 w-4 text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-500 dark:group-hover:text-neutral-400 transition-colors" />
           </div>
         </div>
       </div>
@@ -371,24 +371,24 @@ watch(sentinel, (el) => {
         class="py-12 flex flex-col items-center justify-center min-h-[100px]"
       >
         <div v-if="isLoading && results.length > 0" class="flex flex-col items-center gap-2">
-          <Icon icon="eos-icons:loading" class="h-6 w-6 text-neutral-400" />
-          <span class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">{{ t('common.loading') }}</span>
+          <Icon icon="eos-icons:loading" class="h-6 w-6 text-neutral-400 dark:text-neutral-500" />
+          <span class="text-[10px] text-neutral-400 dark:text-neutral-500 font-bold uppercase tracking-widest">{{ t('common.loading') }}</span>
         </div>
-        <div v-else-if="!hasMore && results.length > 0" class="text-[10px] text-neutral-300 font-bold uppercase tracking-widest">
+        <div v-else-if="!hasMore && results.length > 0" class="text-[10px] text-neutral-300 dark:text-neutral-600 font-bold uppercase tracking-widest">
           —— {{ t('list.all_loaded', 'All Loaded') }} ——
         </div>
         <div v-else class="h-1 w-full opacity-0"></div>
       </div>
 
       <!-- 无搜索结果 -->
-      <div v-if="results.length === 0 && !isLoading && query" class="flex flex-col items-center justify-center py-20 text-neutral-400 space-y-3">
-        <Icon icon="lucide:search-x" class="h-10 w-10 text-neutral-200" />
+      <div v-if="results.length === 0 && !isLoading && query" class="flex flex-col items-center justify-center py-20 text-neutral-400 dark:text-neutral-500 space-y-3">
+        <Icon icon="lucide:search-x" class="h-10 w-10 text-neutral-200 dark:text-neutral-700" />
         <p class="text-sm">未找到相关人物</p>
       </div>
 
       <!-- 初始加载动画 -->
       <div v-if="isLoading && results.length === 0" class="flex justify-center py-20">
-        <Icon icon="eos-icons:loading" class="h-8 w-8 text-neutral-200" />
+        <Icon icon="eos-icons:loading" class="h-8 w-8 text-neutral-200 dark:text-neutral-700" />
       </div>
     </SearchBase>
   </div>

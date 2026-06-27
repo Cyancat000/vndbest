@@ -77,13 +77,13 @@ function navigateTo(path) {
   <ion-page>
   <ion-content>
   <div class="page-container pb-24 space-y-6">
-    <div class="flex items-center gap-3 py-3 sticky top-0 bg-white/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100">
-      <div class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs">
-        <Icon icon="lucide:library" class="h-5 w-5 text-neutral-800" />
+    <div class="flex items-center gap-3 py-3 sticky top-0 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100 dark:border-neutral-800">
+      <div class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs">
+        <Icon icon="lucide:library" class="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
       </div>
       <div>
-        <h1 class="text-2xl font-bold tracking-tight text-neutral-900">{{ t('library.title') }}</h1>
-        <p class="text-xs text-neutral-500">{{ t('library.description') }}</p>
+        <h1 class="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">{{ t('library.title') }}</h1>
+        <p class="text-xs text-neutral-500 dark:text-neutral-400">{{ t('library.description') }}</p>
       </div>
     </div>
 
@@ -93,16 +93,16 @@ function navigateTo(path) {
         v-for="item in libraryItems"
         :key="item.id"
         @click="navigateTo(item.path)"
-        class="flex items-center gap-4 p-4 rounded-xl border border-neutral-100 bg-white shadow-sm transition-all hover:border-neutral-300 hover:shadow-md active:scale-[0.98] text-left group"
+        class="flex items-center gap-4 p-4 rounded-xl border border-neutral-100 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm transition-all hover:border-neutral-300 dark:hover:border-neutral-600 hover:shadow-md active:scale-[0.98] text-left group"
       >
         <div :class="['grid h-12 w-12 place-items-center rounded-lg transition-colors group-hover:scale-110', item.bgColor]">
           <Icon :icon="item.icon" :class="['h-6 w-6', item.color]" />
         </div>
         <div class="flex-1">
-          <h3 class="font-bold text-neutral-900">{{ item.title }}</h3>
-          <p class="text-xs text-neutral-400 mt-0.5">查看 {{ item.title }} 列表</p>
+          <h3 class="font-bold text-neutral-900 dark:text-neutral-100">{{ item.title }}</h3>
+          <p class="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">查看 {{ item.title }} 列表</p>
         </div>
-        <Icon icon="lucide:chevron-right" class="h-5 w-5 text-neutral-300 group-hover:text-neutral-500 transition-colors" />
+        <Icon icon="lucide:chevron-right" class="h-5 w-5 text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-500 dark:group-hover:text-neutral-400 transition-colors" />
       </button>
     </div>
   </div>

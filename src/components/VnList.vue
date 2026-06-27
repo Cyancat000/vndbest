@@ -308,7 +308,7 @@ function toggleReverse() {
 
         <button
           @click="toggleReverse"
-          class="p-1 rounded-md hover:bg-neutral-100 transition text-neutral-400 hover:text-neutral-900 cursor-pointer"
+          class="p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition text-neutral-400 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 cursor-pointer"
           :title="reverse ? t('list.descending', '降序') : t('list.ascending', '升序')"
         >
           <Icon :icon="reverse ? 'lucide:sort-desc' : 'lucide:sort-asc'" class="h-4 w-4" />
@@ -320,24 +320,24 @@ function toggleReverse() {
       <div v-if="!forceLayout" class="flex items-center gap-1 shrink-0">
         <button
           @click="toggleLayout('list')"
-          class="p-1 rounded transition hover:bg-neutral-100 active:bg-neutral-200 cursor-pointer"
-          :class="layoutMode === 'list' ? 'text-neutral-900 bg-neutral-100' : 'text-neutral-400'"
+          class="p-1 rounded transition hover:bg-neutral-100 dark:hover:bg-neutral-800 active:bg-neutral-200 dark:active:bg-neutral-700 cursor-pointer"
+          :class="layoutMode === 'list' ? 'text-neutral-900 dark:text-neutral-100 bg-neutral-100 dark:bg-neutral-800' : 'text-neutral-400 dark:text-neutral-500'"
           :title="t('list.list_view')"
         >
           <Icon icon="lucide:menu" class="h-4 w-4" />
         </button>
         <button
           @click="toggleLayout('waterfall')"
-          class="p-1 rounded transition hover:bg-neutral-100 active:bg-neutral-200 cursor-pointer"
-          :class="layoutMode === 'waterfall' ? 'text-neutral-900 bg-neutral-100' : 'text-neutral-400'"
+          class="p-1 rounded transition hover:bg-neutral-100 dark:hover:bg-neutral-800 active:bg-neutral-200 dark:active:bg-neutral-700 cursor-pointer"
+          :class="layoutMode === 'waterfall' ? 'text-neutral-900 dark:text-neutral-100 bg-neutral-100 dark:bg-neutral-800' : 'text-neutral-400 dark:text-neutral-500'"
           :title="t('list.grid_view')"
         >
           <Icon icon="lucide:layout-grid" class="h-4 w-4" />
         </button>
         <button
           @click="toggleLayout('compact')"
-          class="p-1 rounded transition hover:bg-neutral-100 active:bg-neutral-200 cursor-pointer"
-          :class="layoutMode === 'compact' ? 'text-neutral-900 bg-neutral-100' : 'text-neutral-400'"
+          class="p-1 rounded transition hover:bg-neutral-100 dark:hover:bg-neutral-800 active:bg-neutral-200 dark:active:bg-neutral-700 cursor-pointer"
+          :class="layoutMode === 'compact' ? 'text-neutral-900 dark:text-neutral-100 bg-neutral-100 dark:bg-neutral-800' : 'text-neutral-400 dark:text-neutral-500'"
           :title="t('list.compact_view')"
         >
           <Icon icon="lucide:list" class="h-4 w-4" />
@@ -352,16 +352,16 @@ function toggleReverse() {
         <div
           v-for="item in displayItems"
           :key="item.id"
-          class="relative flex items-start gap-3 rounded-xl border border-neutral-200 bg-white shadow-xs hover:border-neutral-300 transition cursor-pointer overflow-hidden"
+          class="relative flex items-start gap-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-xs hover:border-neutral-300 dark:hover:border-neutral-600 transition cursor-pointer overflow-hidden"
           :class="[compact ? 'p-2.5' : 'p-4']"
           @click="handleItemClick(item)"
         >
           <div
-            class="rounded-lg bg-neutral-50 overflow-hidden border border-neutral-200 shrink-0"
+            class="rounded-lg bg-neutral-50 dark:bg-neutral-800 overflow-hidden border border-neutral-200 dark:border-neutral-700 shrink-0"
             :class="[compact ? 'h-20 w-15' : 'h-28 w-21']"
           >
             <template v-if="isIconPlaceholder(item)">
-              <div class="h-full w-full flex items-center justify-center bg-neutral-100">
+              <div class="h-full w-full flex items-center justify-center bg-neutral-100 dark:bg-neutral-700">
                 <Icon icon="lucide:eye-off" class="h-5 w-5 text-neutral-400" />
               </div>
             </template>
@@ -377,15 +377,15 @@ function toggleReverse() {
                   @ionImgDidLoad="imageLoader.onLoad('list-' + item.id)"
                   @ionError="imageLoader.onError('list-' + item.id)"
                 />
-                <div v-else class="h-full w-full flex items-center justify-center bg-neutral-50 text-neutral-300">
+                <div v-else class="h-full w-full flex items-center justify-center bg-neutral-50 dark:bg-neutral-800 text-neutral-300 dark:text-neutral-600">
                   <Icon icon="lucide:image" class="h-6 w-6" />
                 </div>
-                <div v-if="imageLoader.isLoading('list-' + item.id) && !imageLoader.isError('list-' + item.id)" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
+                <div v-if="imageLoader.isLoading('list-' + item.id) && !imageLoader.isError('list-' + item.id)" class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800">
                   <ion-spinner name="crescent" class="h-5 w-5 text-neutral-400" />
                 </div>
                 <button
                   v-if="imageLoader.isError('list-' + item.id)"
-                  class="absolute inset-0 flex items-center justify-center bg-neutral-100 cursor-pointer"
+                  class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 cursor-pointer"
                   @click.stop="imageLoader.retry('list-' + item.id)"
                 >
                   <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
@@ -394,7 +394,7 @@ function toggleReverse() {
             </template>
           </div>
           <!-- 整卡模糊遮罩 -->
-          <div v-if="shouldBlurCard(item)" class="absolute inset-0 rounded-xl bg-white/50 backdrop-blur-md flex items-center justify-center z-10 pointer-events-none">
+          <div v-if="shouldBlurCard(item)" class="absolute inset-0 rounded-xl bg-white/50 dark:bg-neutral-900/70 backdrop-blur-md flex items-center justify-center z-10 pointer-events-none">
             <Icon icon="lucide:eye-off" class="h-8 w-8 text-neutral-400" />
           </div>
 
@@ -406,23 +406,23 @@ function toggleReverse() {
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-2 overflow-hidden">
-                    <span class="text-sm font-semibold text-neutral-900 truncate">{{ getTitle(item) }}</span>
+                    <span class="text-sm font-semibold text-neutral-900 dark:text-neutral-100 truncate">{{ getTitle(item) }}</span>
                     <span
                       v-if="getBadge(item)"
                       class="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0"
                       :class="[
                         getBadge(item) === 'main'
-                          ? 'bg-red-50 text-red-600 border border-red-100'
-                          : 'bg-neutral-100 text-neutral-500 border border-neutral-200/50'
+                          ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/50'
+                          : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200/50 dark:border-neutral-700/50'
                       ]"
                     >
                       {{ translateBadge(getBadge(item)) }}
                     </span>
                   </div>
                 </div>
-                <span v-if="item.lastmod" class="text-[10px] text-neutral-400 shrink-0 mt-0.5">{{ formatDate(item.lastmod) }}</span>
+                <span v-if="item.lastmod" class="text-[10px] text-neutral-400 dark:text-neutral-500 shrink-0 mt-0.5">{{ formatDate(item.lastmod) }}</span>
               </div>
-              <span v-if="getAltTitle(item)" class="text-[10px] text-neutral-400 block truncate leading-none">
+              <span v-if="getAltTitle(item)" class="text-[10px] text-neutral-400 dark:text-neutral-500 block truncate leading-none">
                 {{ getAltTitle(item) }}
               </span>
             </div>
@@ -433,7 +433,7 @@ function toggleReverse() {
                 <div
                   v-for="lbl in item.labels"
                   :key="lbl.id"
-                  class="inline-flex items-center gap-1 text-[10px] text-neutral-600 bg-neutral-100/80 px-2 py-0.5 rounded-md border border-neutral-200/50"
+                  class="inline-flex items-center gap-1 text-[10px] text-neutral-600 dark:text-neutral-400 bg-neutral-100/80 dark:bg-neutral-800/80 px-2 py-0.5 rounded-md border border-neutral-200/50 dark:border-neutral-700/50"
                 >
                   <Icon icon="lucide:bookmark" class="h-3 w-3 text-neutral-400 shrink-0" />
                   <span>{{ lbl.label }}</span>
@@ -446,7 +446,7 @@ function toggleReverse() {
                 <!-- 评分显示 -->
                 <span
                   v-if="getUserVote(item)"
-                  class="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-medium border bg-amber-50 text-amber-700 border-amber-100"
+                  class="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-medium border bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-900/50"
                   :title="t('vn.rating')"
                 >
                   <Icon icon="lucide:star" class="h-3 w-3 fill-amber-500 stroke-amber-500" />
@@ -454,16 +454,16 @@ function toggleReverse() {
                 </span>
                 <span
                   v-else-if="getRating(item)"
-                  class="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-medium border bg-neutral-50 text-neutral-600 border-neutral-200"
+                  class="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-medium border bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700"
                 >
                   <Icon icon="lucide:star" class="h-3 w-3 fill-neutral-400 stroke-neutral-400" />
                   {{ formatRating(getRating(item)) }}
                 </span>
 
-                <span v-if="getOlang(item)" class="text-[10px] rounded-full px-1.5 py-0.5 border border-neutral-200 bg-neutral-50 text-neutral-500 font-medium">
+                <span v-if="getOlang(item)" class="text-[10px] rounded-full px-1.5 py-0.5 border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 font-medium">
                   {{ t(`metadata.lang.${getOlang(item)}`, getOlang(item)) }}
                 </span>
-                <span v-if="getReleased(item)" class="text-[10px] text-neutral-400 font-medium">
+                <span v-if="getReleased(item)" class="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium">
                   {{ getReleased(item) }}
                 </span>
               </div>
@@ -478,13 +478,13 @@ function toggleReverse() {
           <div
             v-for="item in waterfallColumns.leftCol"
             :key="item.id"
-            class="relative rounded-xl border border-neutral-200 bg-white overflow-hidden shadow-xs hover:border-neutral-300 transition cursor-pointer"
+            class="relative rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden shadow-xs hover:border-neutral-300 dark:hover:border-neutral-600 transition cursor-pointer"
             @click="handleItemClick(item)"
           >
             <div class="relative">
               <template v-if="isIconPlaceholder(item)">
-                <div class="w-full h-32 flex items-center justify-center bg-neutral-100 border-b border-neutral-100">
-                  <Icon icon="lucide:eye-off" class="h-6 w-6 text-neutral-400" />
+                <div class="w-full h-32 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 border-b border-neutral-100 dark:border-neutral-800">
+                  <Icon icon="lucide:eye-off" class="h-6 w-6 text-neutral-400 dark:text-neutral-500" />
                 </div>
               </template>
               <template v-else>
@@ -494,20 +494,20 @@ function toggleReverse() {
                     :key="`card-left-${item.id}-${imageLoader.getRetryCount('card-left-' + item.id)}`"
                     :src="getImage(item).url"
                     alt="cover"
-                    class="w-full h-auto object-cover max-h-72 border-b border-neutral-100 transition-opacity duration-500"
+                    class="w-full h-auto object-cover max-h-72 border-b border-neutral-100 dark:border-neutral-800 transition-opacity duration-500"
                     :class="{ 'opacity-0': !imageLoader.isSuccess('card-left-' + item.id) }"
                     @ionImgDidLoad="imageLoader.onLoad('card-left-' + item.id)"
                     @ionError="imageLoader.onError('card-left-' + item.id)"
                   />
-                  <div v-else class="w-full h-32 flex items-center justify-center bg-neutral-50 text-neutral-300 border-b border-neutral-100">
+                  <div v-else class="w-full h-32 flex items-center justify-center bg-neutral-50 dark:bg-neutral-800 text-neutral-300 dark:text-neutral-600 border-b border-neutral-100 dark:border-neutral-800">
                     <Icon icon="lucide:image" class="h-6 w-6" />
                   </div>
-                  <div v-if="imageLoader.isLoading('card-left-' + item.id) && !imageLoader.isError('card-left-' + item.id)" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
+                  <div v-if="imageLoader.isLoading('card-left-' + item.id) && !imageLoader.isError('card-left-' + item.id)" class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800">
                     <ion-spinner name="crescent" class="h-5 w-5 text-neutral-400" />
                   </div>
                   <button
                     v-if="imageLoader.isError('card-left-' + item.id)"
-                    class="absolute inset-0 flex items-center justify-center bg-neutral-100 cursor-pointer"
+                    class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 cursor-pointer"
                     @click.stop="imageLoader.retry('card-left-' + item.id)"
                   >
                     <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
@@ -521,14 +521,14 @@ function toggleReverse() {
               </div>
             </div>
             <div class="p-3 space-y-1.5">
-              <span class="text-xs font-semibold text-neutral-900 block line-clamp-2 leading-tight">{{ getTitle(item) }}</span>
+              <span class="text-xs font-semibold text-neutral-900 dark:text-neutral-100 block line-clamp-2 leading-tight">{{ getTitle(item) }}</span>
               <div v-if="getBadge(item)" class="flex">
                 <span
                   class="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0"
                   :class="[
                     getBadge(item) === 'main'
-                      ? 'bg-red-50 text-red-600 border border-red-100'
-                      : 'bg-neutral-100 text-neutral-500 border border-neutral-200/50'
+                      ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/50'
+                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200/50 dark:border-neutral-700/50'
                   ]"
                 >
                   {{ translateBadge(getBadge(item)) }}
@@ -536,8 +536,8 @@ function toggleReverse() {
               </div>
             </div>
             <!-- 整卡模糊遮罩 (左列) -->
-            <div v-if="shouldBlurCard(item)" class="absolute inset-0 rounded-xl bg-white/50 backdrop-blur-md flex items-center justify-center z-10 pointer-events-none">
-              <Icon icon="lucide:eye-off" class="h-8 w-8 text-neutral-400" />
+            <div v-if="shouldBlurCard(item)" class="absolute inset-0 rounded-xl bg-white/50 dark:bg-neutral-900/70 backdrop-blur-md flex items-center justify-center z-10 pointer-events-none">
+              <Icon icon="lucide:eye-off" class="h-8 w-8 text-neutral-400 dark:text-neutral-500" />
             </div>
           </div>
         </div>
@@ -546,13 +546,13 @@ function toggleReverse() {
           <div
             v-for="item in waterfallColumns.rightCol"
             :key="item.id"
-            class="relative rounded-xl border border-neutral-200 bg-white overflow-hidden shadow-xs hover:border-neutral-300 transition cursor-pointer"
+            class="relative rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden shadow-xs hover:border-neutral-300 dark:hover:border-neutral-600 transition cursor-pointer"
             @click="handleItemClick(item)"
           >
             <div class="relative">
               <template v-if="isIconPlaceholder(item)">
-                <div class="w-full h-32 flex items-center justify-center bg-neutral-100 border-b border-neutral-100">
-                  <Icon icon="lucide:eye-off" class="h-6 w-6 text-neutral-400" />
+                <div class="w-full h-32 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 border-b border-neutral-100 dark:border-neutral-800">
+                  <Icon icon="lucide:eye-off" class="h-6 w-6 text-neutral-400 dark:text-neutral-500" />
                 </div>
               </template>
               <template v-else>
@@ -562,20 +562,20 @@ function toggleReverse() {
                     :key="`card-right-${item.id}-${imageLoader.getRetryCount('card-right-' + item.id)}`"
                     :src="getImage(item).url"
                     alt="cover"
-                    class="w-full h-auto object-cover max-h-72 border-b border-neutral-100 transition-opacity duration-500"
+                    class="w-full h-auto object-cover max-h-72 border-b border-neutral-100 dark:border-neutral-800 transition-opacity duration-500"
                     :class="{ 'opacity-0': !imageLoader.isSuccess('card-right-' + item.id) }"
                     @ionImgDidLoad="imageLoader.onLoad('card-right-' + item.id)"
                     @ionError="imageLoader.onError('card-right-' + item.id)"
                   />
-                  <div v-else class="w-full h-32 flex items-center justify-center bg-neutral-50 text-neutral-300 border-b border-neutral-100">
+                  <div v-else class="w-full h-32 flex items-center justify-center bg-neutral-50 dark:bg-neutral-800 text-neutral-300 dark:text-neutral-600 border-b border-neutral-100 dark:border-neutral-800">
                     <Icon icon="lucide:image" class="h-6 w-6" />
                   </div>
-                  <div v-if="imageLoader.isLoading('card-right-' + item.id) && !imageLoader.isError('card-right-' + item.id)" class="absolute inset-0 flex items-center justify-center bg-neutral-100">
+                  <div v-if="imageLoader.isLoading('card-right-' + item.id) && !imageLoader.isError('card-right-' + item.id)" class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800">
                     <ion-spinner name="crescent" class="h-5 w-5 text-neutral-400" />
                   </div>
                   <button
                     v-if="imageLoader.isError('card-right-' + item.id)"
-                    class="absolute inset-0 flex items-center justify-center bg-neutral-100 cursor-pointer"
+                    class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 cursor-pointer"
                     @click.stop="imageLoader.retry('card-right-' + item.id)"
                   >
                     <Icon icon="lucide:refresh-cw" class="h-5 w-5 text-neutral-400" />
@@ -588,21 +588,21 @@ function toggleReverse() {
               </div>
             </div>
             <div class="p-3 space-y-1.5">
-              <span class="text-xs font-semibold text-neutral-900 block line-clamp-2 leading-tight">{{ getTitle(item) }}</span>
+              <span class="text-xs font-semibold text-neutral-900 dark:text-neutral-100 block line-clamp-2 leading-tight">{{ getTitle(item) }}</span>
               <div v-if="getBadge(item)" class="flex">
                 <span
                   class="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0"
                   :class="[
                     getBadge(item) === 'main'
-                      ? 'bg-red-50 text-red-600 border border-red-100'
-                      : 'bg-neutral-100 text-neutral-500 border border-neutral-200/50'
+                      ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/50'
+                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200/50 dark:border-neutral-700/50'
                   ]"
                 >
                   {{ translateBadge(getBadge(item)) }}
                 </span>
               </div>
               <!-- 整卡模糊遮罩 (右列) -->
-              <div v-if="shouldBlurCard(item)" class="absolute inset-0 rounded-xl bg-white/50 backdrop-blur-md flex items-center justify-center z-10 pointer-events-none">
+              <div v-if="shouldBlurCard(item)" class="absolute inset-0 rounded-xl bg-white/50 dark:bg-neutral-900/70 backdrop-blur-md flex items-center justify-center z-10 pointer-events-none">
                 <Icon icon="lucide:eye-off" class="h-8 w-8 text-neutral-400" />
               </div>
             </div>
@@ -611,33 +611,33 @@ function toggleReverse() {
       </div>
 
       <!-- 3. 纯标题文本布局 -->
-      <div v-else-if="displayItems.length > 0 && layoutMode === 'compact'" class="divide-y divide-neutral-100 bg-white rounded-xl border border-neutral-200 overflow-hidden shadow-xs">
+      <div v-else-if="displayItems.length > 0 && layoutMode === 'compact'" class="divide-y divide-neutral-100 dark:divide-neutral-800 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden shadow-xs">
         <div
           v-for="item in displayItems"
           :key="item.id"
-          class="px-4 py-3 hover:bg-neutral-50 transition cursor-pointer flex items-center justify-between gap-4"
+          class="px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition cursor-pointer flex items-center justify-between gap-4"
           @click="handleItemClick(item)"
         >
           <div class="flex flex-col gap-0.5 min-w-0 flex-1">
             <div class="flex items-center gap-2 overflow-hidden">
-              <span class="text-sm font-medium text-neutral-900 truncate">{{ getTitle(item) }}</span>
+              <span class="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">{{ getTitle(item) }}</span>
               <span
                 v-if="getBadge(item)"
                 class="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0 scale-90 origin-left"
                 :class="[
                   getBadge(item) === 'main'
-                    ? 'bg-red-50 text-red-600 border border-red-100'
-                    : 'bg-neutral-100 text-neutral-500 border border-neutral-200/50'
+                    ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/50'
+                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200/50 dark:border-neutral-700/50'
                 ]"
               >
                 {{ translateBadge(getBadge(item)) }}
               </span>
             </div>
-            <span v-if="getAltTitle(item)" class="text-[11px] text-neutral-400 truncate">{{ getAltTitle(item) }}</span>
+            <span v-if="getAltTitle(item)" class="text-[11px] text-neutral-400 dark:text-neutral-500 truncate">{{ getAltTitle(item) }}</span>
           </div>
           <div v-if="getRating(item) || getUserVote(item)" class="flex items-center gap-1 shrink-0">
-            <Icon icon="lucide:star" class="h-3 w-3 text-neutral-300 fill-neutral-300" />
-            <span class="text-xs font-medium text-neutral-500">{{ formatRating(getUserVote(item) || getRating(item)) }}</span>
+            <Icon icon="lucide:star" class="h-3 w-3 text-neutral-300 dark:text-neutral-600 fill-neutral-300 dark:fill-neutral-600" />
+            <span class="text-xs font-medium text-neutral-500 dark:text-neutral-400">{{ formatRating(getUserVote(item) || getRating(item)) }}</span>
           </div>
         </div>
       </div>
@@ -647,7 +647,7 @@ function toggleReverse() {
     <div v-if="hasOverflow" class="flex justify-center pt-1">
       <button
         @click="toggleCollapse"
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-neutral-200 text-xs font-medium text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700 transition cursor-pointer"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-medium text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-neutral-700 dark:hover:text-neutral-200 transition cursor-pointer"
       >
         <Icon
           :icon="isCollapsed ? 'lucide:chevrons-down' : 'lucide:chevrons-up'"
@@ -659,13 +659,13 @@ function toggleReverse() {
     </div>
 
     <!-- 加载中状态 (列表为空时) -->
-    <div v-if="items.length === 0 && isLoading" class="rounded-xl border border-neutral-200 bg-white p-12 text-center shadow-xs space-y-3">
-      <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-neutral-50 border border-neutral-100">
+    <div v-if="items.length === 0 && isLoading" class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-12 text-center shadow-xs space-y-3">
+      <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700">
         <Icon icon="eos-icons:loading" class="h-5 w-5 text-neutral-400" />
       </div>
       <div class="space-y-1">
-        <h3 class="text-sm font-semibold text-neutral-800">{{ t('common.loading') }}</h3>
-        <p class="text-xs text-neutral-400 max-w-xs mx-auto">
+        <h3 class="text-sm font-semibold text-neutral-800 dark:text-neutral-200">{{ t('common.loading') }}</h3>
+        <p class="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs mx-auto">
           {{ t('list.fetching_data', '正在努力加载内容...') }}
         </p>
       </div>
@@ -674,24 +674,24 @@ function toggleReverse() {
     <!-- 触底加载哨兵 & 状态 -->
     <div ref="sentinel" class="py-6 flex justify-center" v-show="displayItems.length > 0">
       <template v-if="showFooterStatus">
-        <div v-if="isLoading" class="flex items-center gap-2 text-xs text-neutral-400">
+        <div v-if="isLoading" class="flex items-center gap-2 text-xs text-neutral-400 dark:text-neutral-500">
           <Icon icon="eos-icons:loading" class="h-4 w-4" />
           <span>{{ t('common.loading') }}</span>
         </div>
-        <div v-else-if="!hasMore && items.length > 0" class="text-[10px] text-neutral-300 font-medium">
+        <div v-else-if="!hasMore && items.length > 0" class="text-[10px] text-neutral-300 dark:text-neutral-600 font-medium">
           —— {{ t('list.all_loaded', '已加载全部') }} ——
         </div>
       </template>
     </div>
 
     <!-- 空状态 -->
-    <div v-if="filteredItems.length === 0 && !isLoading" class="rounded-xl border border-neutral-200 bg-white p-12 text-center shadow-xs space-y-3">
-      <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-neutral-50 border border-neutral-100">
+    <div v-if="filteredItems.length === 0 && !isLoading" class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-12 text-center shadow-xs space-y-3">
+      <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700">
         <Icon icon="lucide:file" class="h-5 w-5 text-neutral-400" />
       </div>
       <div class="space-y-1">
-        <h3 class="text-sm font-semibold text-neutral-800">{{ emptyTitle || t('list.empty_title') }}</h3>
-        <p class="text-xs text-neutral-400 max-w-xs mx-auto">
+        <h3 class="text-sm font-semibold text-neutral-800 dark:text-neutral-200">{{ emptyTitle || t('list.empty_title') }}</h3>
+        <p class="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs mx-auto">
           {{ emptyDesc || t('list.empty_desc') }}
         </p>
       </div>

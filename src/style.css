@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "@ionic/vue/css/core.css";
 
+/* 启用 class-based 深色模式 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -11,6 +14,127 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.dark {
+  color: #e5e5e5;
+  background: #0a0a0a;
+  color-scheme: dark;
+}
+
+/* Ionic 组件深色模式覆盖 */
+.dark ion-content {
+  --background: #0a0a0a;
+  --color: #e5e5e5;
+}
+
+.dark ion-page {
+  background-color: #0a0a0a;
+}
+
+.dark ion-input,
+.dark ion-textarea,
+.dark ion-select {
+  --background: #1a1a1a;
+  --color: #e5e5e5;
+  --placeholder-color: #737373;
+}
+
+.dark ion-input.ios,
+.dark ion-textarea.ios,
+.dark ion-select.ios {
+  --background: #1a1a1a;
+}
+
+.dark ion-searchbar {
+  --background: #1a1a1a;
+  --color: #e5e5e5;
+  --placeholder-color: #737373;
+}
+
+.dark ion-modal {
+  --background: #171717;
+}
+
+.dark ion-popover {
+  --background: #1a1a1a;
+}
+
+.dark ion-toast {
+  --background: #262626;
+  --color: #e5e5e5;
+}
+
+.dark ion-refresher {
+  --ion-refresher-spinner-color: #a3a3a3;
+}
+
+.dark ion-infinite-scroll {
+  color: #a3a3a3;
+}
+
+.dark ion-refresher-content {
+  color: #a3a3a3;
+}
+
+.dark ion-slides {
+  background: #0a0a0a;
+}
+
+.dark ion-label {
+  color: #e5e5e5;
+}
+
+.dark ion-item {
+  --background: transparent;
+  --color: #e5e5e5;
+}
+
+.dark ion-item ion-label {
+  color: #e5e5e5;
+}
+
+.dark ion-segment {
+  --background: #1a1a1a;
+}
+
+.dark ion-segment-button {
+  --color: #a3a3a3;
+  --background: transparent;
+}
+
+.dark ion-segment-button.segment-button-checked {
+  --background: #262626;
+  --color: #e5e5e5;
+}
+
+/* 滚动条深色模式 */
+.dark ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #404040;
+  border-radius: 3px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #525252;
+}
+
+/* 通用深色模式辅助类 */
+.dark img[src=""] {
+  background-color: #262626;
+}
+
+/* 骨架屏动画深色模式 */
+.dark .animate-pulse {
+  background-color: #262626;
 }
 
 * {
