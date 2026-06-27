@@ -17,13 +17,39 @@ export function getImageNsfwLevel(image) {
 }
 
 export function usePrivacy() {
-  const parseJson = (key) => {
-    try { return JSON.parse(localStorage.getItem(key)) || {} } catch { return {} }
+  const defaultCardListSettings = {
+    sexual_vn: 1,
+    sexual_release: 1,
+    nsfw_cover_vn: 1,
+    nsfw_cover_release: 1
   }
 
-  const getCardListSettings = () => parseJson('vndb_privacy_card_list')
-  const getDetailSettings = () => parseJson('vndb_privacy_detail')
-  const getScreenshotSettings = () => parseJson('vndb_privacy_screenshots')
+  const defaultDetailSettings = {
+    sexual_vn: 1,
+    sexual_release: 1,
+    nsfw_cover_vn: 1,
+    nsfw_cover_release: 1
+  }
+
+  const defaultScreenshotSettings = {
+    sexual_screenshot: 1,
+    nsfw_screenshot: 1
+  }
+
+  const parseJson = (key, defaults) => {
+    try {
+      return {
+        ...defaults,
+        ...(JSON.parse(localStorage.getItem(key)) || {})
+      }
+    } catch {
+      return { ...defaults }
+    }
+  }
+
+  const getCardListSettings = () => parseJson('vndb_privacy_card_list', defaultCardListSettings)
+  const getDetailSettings = () => parseJson('vndb_privacy_detail', defaultDetailSettings)
+  const getScreenshotSettings = () => parseJson('vndb_privacy_screenshots', defaultScreenshotSettings)
 
   /**
    * 获取卡片列表的过滤动作

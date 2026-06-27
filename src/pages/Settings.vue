@@ -106,9 +106,39 @@ function savePriority() {
 }
 
 // ====== 隐私与内容过滤设置 ======
-const privacyCardList = ref(JSON.parse(localStorage.getItem('vndb_privacy_card_list') || '{"sexual_vn":0,"sexual_release":0,"nsfw_cover_vn":0,"nsfw_cover_release":0}'))
-const privacyDetail = ref(JSON.parse(localStorage.getItem('vndb_privacy_detail') || '{"sexual_vn":0,"sexual_release":0,"nsfw_cover_vn":0,"nsfw_cover_release":0}'))
-const privacyScreenshots = ref(JSON.parse(localStorage.getItem('vndb_privacy_screenshots') || '{"sexual_screenshot":0,"nsfw_screenshot":0}'))
+const defaultPrivacyCardList = {
+  sexual_vn: 1,
+  sexual_release: 1,
+  nsfw_cover_vn: 1,
+  nsfw_cover_release: 1
+}
+
+const defaultPrivacyDetail = {
+  sexual_vn: 1,
+  sexual_release: 1,
+  nsfw_cover_vn: 1,
+  nsfw_cover_release: 1
+}
+
+const defaultPrivacyScreenshots = {
+  sexual_screenshot: 1,
+  nsfw_screenshot: 1
+}
+
+function mergePrivacySettings(storageKey, defaults) {
+  try {
+    return {
+      ...defaults,
+      ...(JSON.parse(localStorage.getItem(storageKey) || 'null') || {})
+    }
+  } catch {
+    return { ...defaults }
+  }
+}
+
+const privacyCardList = ref(mergePrivacySettings('vndb_privacy_card_list', defaultPrivacyCardList))
+const privacyDetail = ref(mergePrivacySettings('vndb_privacy_detail', defaultPrivacyDetail))
+const privacyScreenshots = ref(mergePrivacySettings('vndb_privacy_screenshots', defaultPrivacyScreenshots))
 
 const cardListOptions = [
   { value: 0, label: 'settings.privacy.option_show_all' },
