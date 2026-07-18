@@ -2,7 +2,9 @@
  * VNDB API v2 (Kana) 客户端封装
  * 接口文档请参考 `docs/vndb-api-kana.md`
  */
-
+ 
+import { Capacitor, CapacitorHttp } from '@capacitor/core'
+ 
 const BASE_URL = 'https://api.vndb.org/kana'
 const SANDBOX_URL = 'https://beta.vndb.org/api/kana'
 
@@ -37,6 +39,18 @@ function getHeaders() {
   return headers
 }
 
+function normalizeCapacitorResponseBody(data) {
+  if (data == null || data === '') return {}
+  if (typeof data === 'string') {
+    try {
+      return JSON.parse(data)
+    } catch (_) {
+      return data
+    }
+  }
+  return data
+}
+
 /**
  * 通用请求发送函数
  */
@@ -52,30 +66,82 @@ export async function request(path, options = {}) {
     timer = setTimeout(() => controller.abort(), timeout)
   }
 
+  const method = fetchOptions.method || 'GET'
+  const headers = {
+    ...getHeaders(),
+    ...fetchOptions.headers,
+  }
+  const requestBody = typeof fetchOptions.body === 'string' ? fetchOptions.body : null
+  const isNative = Capacitor.isNativePlatform()
+
   try {
+    if (isNative) {
+      const nativeResponse = await CapacitorHttp.request({
+        url,
+        method,
+        headers,
+        data: requestBody ? JSON.parse(requestBody) : undefined,
+        connectTimeout: timeout,
+        readTimeout: timeout,
+      })
+
+      const normalizedData = normalizeCapacitorResponseBody(nativeResponse?.data)
+      if (nativeResponse.status < 200 || nativeResponse.status >= 300) {
+        const responseText = typeof nativeResponse?.data === 'string'
+          ? nativeResponse.data
+          : JSON.stringify(nativeResponse?.data ?? '')
+        const errorMsg = normalizedData?.message || responseText || `HTTP error! status: ${nativeResponse.status}`
+        const error = new Error(errorMsg)
+        error.name = 'VndbRequestError'
+        error.status = nativeResponse.status
+        error.statusText = ''
+        error.url = url
+        error.method = method
+        error.requestBody = requestBody
+        error.responseBody = responseText
+        error.responseData = normalizedData
+        throw error
+      }
+
+      if (normalizedData && typeof normalizedData === 'object' && !Array.isArray(normalizedData)) {
+        return { ...normalizedData, _status: nativeResponse.status }
+      }
+      return { data: normalizedData, _status: nativeResponse.status }
+    }
+
     const response = await fetch(url, {
       ...fetchOptions,
-      headers: {
-        ...getHeaders(),
-        ...fetchOptions.headers,
-      },
+      headers,
       ...(signal ? { signal } : {}),
     })
 
     if (!response.ok) {
       let errorMsg = `HTTP error! status: ${response.status}`
+      let errData = null
+      let responseText = ''
+
       try {
-        const errData = await response.json()
-        if (errData && errData.message) {
+        responseText = await response.text()
+        errData = responseText ? JSON.parse(responseText) : null
+        if (errData?.message) {
           errorMsg = errData.message
+        } else if (responseText) {
+          errorMsg = responseText
         }
       } catch (_) {}
+
       const error = new Error(errorMsg)
+      error.name = 'VndbRequestError'
       error.status = response.status
+      error.statusText = response.statusText
+      error.url = url
+      error.method = method
+      error.requestBody = requestBody
+      error.responseBody = responseText
+      error.responseData = errData
       throw error
     }
 
-    // 某些接口如 DELETE 或 PATCH 可能返回空，需要安全解析 JSON
     const text = await response.text()
     const data = text ? JSON.parse(text) : {}
     if (data && typeof data === 'object' && !Array.isArray(data)) {
@@ -83,28 +149,23 @@ export async function request(path, options = {}) {
     }
     return { data, _status: response.status }
   } catch (err) {
-    if (err.name === 'AbortError') {
-      throw new Error('请求超时，请检查网络后重试')
+    const isTimeoutError = err.name === 'AbortError' || err?.message?.toLowerCase?.().includes('timeout')
+    if (isTimeoutError) {
+      const timeoutError = new Error('请求超时，请检查网络后重试')
+      timeoutError.name = 'VndbTimeoutError'
+      timeoutError.url = url
+      timeoutError.method = method
+      timeoutError.requestBody = requestBody
+      throw timeoutError
     }
+
+    if (!err.url) err.url = url
+    if (!err.method) err.method = method
+    if (err.requestBody === undefined) err.requestBody = requestBody
     throw err
   } finally {
     if (timer) clearTimeout(timer)
   }
-
-  if (!response.ok) {
-    let errorMsg = `HTTP error! status: ${response.status}`
-    try {
-      const errData = await response.json()
-      if (errData && errData.message) {
-        errorMsg = errData.message
-      }
-    } catch (_) {}
-    throw new Error(errorMsg)
-  }
-
-  // 某些接口如 DELETE 或 PATCH 可能返回空，需要安全解析 JSON
-  const text = await response.text()
-  return text ? JSON.parse(text) : {}
 }
 
 /**

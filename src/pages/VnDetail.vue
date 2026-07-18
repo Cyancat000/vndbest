@@ -63,7 +63,7 @@ const lightboxImageIndex = ref(0) // 记录当前查看的图片索引
 const lightboxImagesList = ref([]) // 大图画廊的数据列表（可以是截图，也可以是封面等）
 const scrollContainer = ref(null) // 滚动容器的 DOM 引用
 const ionContentRef = ref(null) // ion-content 的 DOM 引用
-let ignoreNextLightboxPopState = false
+let ignoreNextOverlayPopState = false
 
 // 控制简介展开/收起
 const isDescriptionExpanded = ref(false)
@@ -222,12 +222,18 @@ const handleStatusChange = async (newLabelId) => {
   }
 
   statusLoading.value = true
+  let patchPayload = null
+  let requestMethod = 'PATCH'
+  let requestTargetId = collectionEntry.value?.id || vn.value?.id || null
+
   try {
     let updated = false
 
     if (!newLabelId) {
       // 选择"无" → 从列表移除
       if (collectionEntry.value) {
+        requestMethod = 'DELETE'
+        requestTargetId = collectionEntry.value.id
         await deleteVnListItem(collectionEntry.value.id)
         collectionEntry.value = null
         updated = true
@@ -243,12 +249,16 @@ const handleStatusChange = async (newLabelId) => {
         data.labels_set = [newLabelId]
       }
       if (Object.keys(data).length > 0) {
+        patchPayload = data
+        requestTargetId = collectionEntry.value.id
         const response = await patchVnListItem(collectionEntry.value.id, data)
         updated = response?._status === 204
       }
     } else {
       // 不在列表中 → 创建新条目
-      const response = await patchVnListItem(vn.value.id, { labels: [newLabelId] })
+      patchPayload = { labels: [newLabelId] }
+      requestTargetId = vn.value.id
+      const response = await patchVnListItem(vn.value.id, patchPayload)
       updated = response?._status === 204
     }
 
@@ -259,7 +269,26 @@ const handleStatusChange = async (newLabelId) => {
       showToast(newLabelId ? t('vn.status.update_success') : t('vn.status.remove_success'), 'success')
     }
   } catch (err) {
+    console.group('VNDetail Patch 请求失败')
     console.error('更新收藏状态失败:', err)
+    console.log('VN 上下文:', {
+      vnId: vn.value?.id,
+      collectionEntryId: collectionEntry.value?.id || null,
+      requestTargetId,
+      previousStatusLabelId: currentStatusLabel.value?.id || null,
+      currentLabelIds: currentLabelIds.value,
+      nextStatusLabelId: newLabelId,
+      patchPayload,
+      requestUrl: err?.url,
+      requestMethod: err?.method || requestMethod,
+      requestBody: err?.requestBody,
+      responseStatus: err?.status,
+      responseStatusText: err?.statusText,
+      responseData: err?.responseData,
+      responseBody: err?.responseBody,
+      errorMessage: err?.message,
+    })
+    console.groupEnd()
     const isUnauthorized = err?.status === 401 || err?.message?.includes('401')
     showToast(isUnauthorized ? t('vn.status.no_permission') : t(newLabelId ? 'vn.status.update_error' : 'vn.status.remove_error'), 'error')
   } finally {
@@ -334,15 +363,26 @@ const openEditModal = () => {
   }
   hoverVote.value = null
   resetEditFeedback()
+  window.history.pushState({ vnEditModal: true }, '')
   showEditModal.value = true
   document.body.style.overflow = 'hidden'
 }
 
 // 关闭编辑弹窗
-const closeEditModal = () => {
+const closeEditModal = (fromPopState = false) => {
+  if (!showEditModal.value) return
+
+  if (!fromPopState) {
+    ignoreNextOverlayPopState = true
+  }
+
   resetEditFeedback()
   showEditModal.value = false
-  document.body.style.overflow = ''
+  document.body.style.overflow = showImageLightbox.value ? 'hidden' : ''
+
+  if (!fromPopState) {
+    window.history.back()
+  }
 }
 
 // 保存编辑弹窗表单
@@ -671,7 +711,7 @@ const closeLightbox = (fromPopState = false) => {
   if (!showImageLightbox.value) return
 
   if (!fromPopState) {
-    ignoreNextLightboxPopState = true
+    ignoreNextOverlayPopState = true
   }
 
   showImageLightbox.value = false
@@ -693,8 +733,13 @@ const closeLightbox = (fromPopState = false) => {
 }
 
 const handlePopState = () => {
-  if (ignoreNextLightboxPopState) {
-    ignoreNextLightboxPopState = false
+  if (ignoreNextOverlayPopState) {
+    ignoreNextOverlayPopState = false
+    return
+  }
+
+  if (showEditModal.value) {
+    closeEditModal(true)
     return
   }
 
