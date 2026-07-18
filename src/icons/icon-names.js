@@ -31,6 +31,8 @@ export const APP_ICON_NAMES = {
     fileText: 'lucide:file-text',
     link: 'lucide:link',
     image: 'lucide:image',
+    imagePlus: 'lucide:image-plus',
+    trash2: 'lucide:trash-2',
     eye: 'lucide:eye',
     eyeOff: 'lucide:eye-off',
     star: 'lucide:star',

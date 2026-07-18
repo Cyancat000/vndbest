@@ -117,7 +117,19 @@
     "theme": "Appearance",
     "theme_follow_system": "System",
     "theme_light": "Light",
-    "theme_dark": "Dark"
+    "theme_dark": "Dark",
+    "background": {
+      "title": "Custom Background",
+      "description": "Set a global background image with opacity and blur",
+      "select": "Choose Image",
+      "change": "Change Image",
+      "clear": "Clear",
+      "opacity": "Background Opacity",
+      "blur": "Gaussian Blur",
+      "hint": "Works on web and mobile. Pick from gallery/files. Always covers the screen.",
+      "error_select": "Failed to select or process image. Please try again.",
+      "error_quota": "Image is too large to save. Please choose a smaller one."
+    }
   },
   "nav": {
     "home": "Home",

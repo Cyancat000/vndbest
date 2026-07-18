@@ -1343,7 +1343,7 @@ watch(
   <ion-content ref="ionContentRef">
   <div class="page-container space-y-4">
     <!-- 头部导航 -->
-    <div class="flex items-center justify-between py-3 sticky top-0 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100 dark:border-neutral-800">
+    <div class="flex items-center justify-between page-sticky-header">
       <button 
         @click="router.back()"
         class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 active:bg-neutral-100 dark:active:bg-neutral-600"
@@ -1377,11 +1377,7 @@ watch(
       <div class="flex flex-col items-center sm:flex-row sm:items-start gap-4 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800">
         <div
           class="relative flex-shrink-0 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm"
-          :class="[
-            vn.image?.dims && vn.image.dims[0] > vn.image.dims[1]
-              ? 'w-full max-w-[280px] aspect-[4/3]'
-              : 'w-full max-w-[180px] aspect-[3/4]'
-          ]"
+          :class="[ vn.image?.dims && vn.image.dims[0] > vn.image.dims[1] ? 'w-full max-w-[280px] aspect-[4/3]' : 'w-full max-w-[180px] aspect-[3/4]' ]"
         >
           <!-- 正常图片 -->
           <ion-img
@@ -1691,11 +1687,7 @@ watch(
             :key="tab.id"
             @click="activeTab = tab.id"
             class="whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-xs transition-colors"
-            :class="[
-              activeTab === tab.id
-                ? 'border-neutral-900 dark:border-neutral-100 text-neutral-900 dark:text-neutral-100 font-semibold'
-                : 'border-transparent text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-600'
-            ]"
+            :class="[ activeTab === tab.id ? 'border-neutral-900 dark:border-neutral-100 text-neutral-900 dark:text-neutral-100 font-semibold' : 'border-transparent text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-600' ]"
           >
             {{ tab.name }}
           </button>
@@ -1766,10 +1758,7 @@ watch(
                   :key="`cover-${idx}-${imageLoader.getRetryCount('cover-' + idx)}`"
                   :src="cover.url"
                   class="max-h-full max-w-full object-contain transition-opacity duration-500"
-                  :class="{
-                    'blur-md': shouldBlurCover(cover),
-                    'opacity-0': !imageLoader.isSuccess('cover-' + idx)
-                  }"
+                  :class="{ 'blur-md': shouldBlurCover(cover), 'opacity-0': !imageLoader.isSuccess('cover-' + idx) }"
                   @ionImgDidLoad="imageLoader.onLoad('cover-' + idx)"
                   @ionError="imageLoader.onError('cover-' + idx)"
                 />
@@ -1822,11 +1811,7 @@ watch(
                 :key="level.val"
                 @click="handleSelectTraitSpoiler(level.val)"
                 class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
-                :class="[
-                  traitSpoilerLevel === level.val
-                    ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold'
-                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
-                ]"
+                :class="[ traitSpoilerLevel === level.val ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200' ]"
               >
                 {{ level.label }}
               </button>
@@ -1841,22 +1826,14 @@ watch(
               <button
                 @click="showTraitSexual = false"
                 class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
-                :class="[
-                  !showTraitSexual
-                    ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold'
-                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
-                ]"
+                :class="[ !showTraitSexual ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200' ]"
               >
                 {{ t('vn.characters.trait_sexual_hide') }}
               </button>
               <button
                 @click="showTraitSexual = true"
                 class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
-                :class="[
-                  showTraitSexual
-                    ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold'
-                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
-                ]"
+                :class="[ showTraitSexual ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200' ]"
               >
                 {{ t('vn.characters.trait_sexual_show') }}
               </button>
@@ -1922,11 +1899,7 @@ watch(
                   </div>
                   <span
                     class="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0"
-                    :class="[
-                      char.vns?.find(v => v.id === vn?.id || v.id === vn?.id)?.role === 'main'
-                        ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800/50'
-                        : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400'
-                    ]"
+                    :class="[ char.vns?.find(v => v.id === vn?.id || v.id === vn?.id)?.role === 'main' ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800/50' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400' ]"
                   >
                     {{ translateCharRole(char.vns?.find(v => v.id === vn?.id || v.id === vn?.id)?.role || 'appears') }}
                   </span>
@@ -1975,11 +1948,7 @@ watch(
                             v-for="trait in traits"
                             :key="trait.name"
                             class="px-1.5 py-0.5 rounded text-[8px] font-medium transition-colors"
-                             :class="[
-                               trait.spoiler === 2 ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-800/50'
-                                 : trait.spoiler === 1 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-800/50'
-                                 : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400 border border-transparent'
-                             ]"
+                             :class="[ trait.spoiler === 2 ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-800/50' : trait.spoiler === 1 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-800/50' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400 border border-transparent' ]"
                           >
                             {{ translateTraitName(trait.name) }}
                           </span>
@@ -2122,11 +2091,7 @@ watch(
                 :key="level.val"
                 @click="handleSelectSpoiler(level.val)"
                 class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
-                :class="[
-                  spoilerLevel === level.val
-                    ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold'
-                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
-                ]"
+                :class="[ spoilerLevel === level.val ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200' ]"
               >
                 {{ level.label }}
               </button>
@@ -2146,11 +2111,7 @@ watch(
                 :key="cat.val"
                 @click="toggleTagCategory(cat.val)"
                 class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
-                :class="[
-                  activeTagCategories.includes(cat.val)
-                    ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold'
-                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
-                ]"
+                :class="[ activeTagCategories.includes(cat.val) ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200' ]"
               >
                 {{ cat.label }}
               </button>
@@ -2170,11 +2131,7 @@ watch(
                 :key="mode.val"
                 @click="tagSearchMode = mode.val"
                 class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
-                :class="[
-                  tagSearchMode === mode.val
-                    ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold'
-                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
-                ]"
+                :class="[ tagSearchMode === mode.val ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200' ]"
               >
                 {{ mode.label }}
               </button>
@@ -2190,13 +2147,7 @@ watch(
               :key="tag.id"
               @click="router.push(`/browse/vn?tag=${tag.id}`)"
               class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border cursor-pointer active:scale-[0.98] transition hover:border-neutral-400 dark:hover:border-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-              :class="[
-                tag.spoiler === 2
-                  ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800/50'
-                  : tag.spoiler === 1
-                  ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50'
-                  : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700'
-              ]"
+              :class="[ tag.spoiler === 2 ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800/50' : tag.spoiler === 1 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50' : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700' ]"
               :title="`评分: ${tag.rating.toFixed(1)} / 剧透: ${tag.spoiler}`"
             >
               <span>{{ translateTagName(tag.name) }}</span>
@@ -2531,10 +2482,7 @@ watch(
                 :key="`lb-${idx}-${imageLoader.getRetryCount('lb-' + idx)}`"
                 :src="img.url"
                 class="max-w-full max-h-[72vh] object-contain pointer-events-none transition-all duration-300 transition-opacity duration-500"
-                :class="{
-                  'blur-xl': getScreenshotAction(getImageNsfwLevel(img)) === 'blur' && !revealedItems.has(`lb-${idx}`),
-                  'opacity-0': !imageLoader.isSuccess('lb-' + idx)
-                }"
+                :class="{ 'blur-xl': getScreenshotAction(getImageNsfwLevel(img)) === 'blur' && !revealedItems.has(`lb-${idx}`), 'opacity-0': !imageLoader.isSuccess('lb-' + idx) }"
                 @ionImgDidLoad="imageLoader.onLoad('lb-' + idx)"
                 @ionError="imageLoader.onError('lb-' + idx)"
               />
@@ -2637,9 +2585,7 @@ watch(
                     <Icon
                       icon="solar:star-bold"
                       class="h-6 w-6 transition-colors"
-                      :class="(hoverVote !== null ? n <= hoverVote : n <= editForm.vote)
-                        ? 'text-amber-400'
-                        : 'text-neutral-200 dark:text-neutral-700'"
+                      :class="(hoverVote !== null ? n <= hoverVote : n <= editForm.vote) ? 'text-amber-400' : 'text-neutral-200 dark:text-neutral-700'"
                       :style="(hoverVote !== null ? n <= hoverVote : n <= editForm.vote)
                         ? { fill: '#fbbf24' }
                         : { fill: '#e5e5e5' }"
@@ -2708,9 +2654,7 @@ watch(
         <div
           v-if="toastVisible"
           class="toast-box fixed top-12 z-[300] flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg border text-xs font-medium pointer-events-none"
-          :class="toastType === 'success'
-            ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800/50 text-green-700 dark:text-green-400'
-            : 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-400'"
+          :class="toastType === 'success' ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800/50 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-400'"
         >
           <Icon
             :icon="toastType === 'success' ? 'lucide:check-circle' : 'lucide:x-circle'"

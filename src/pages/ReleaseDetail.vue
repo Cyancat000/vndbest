@@ -155,7 +155,7 @@ watch(
   <ion-content>
   <div class="page-container space-y-4">
     <!-- 头部导航 -->
-    <div class="flex items-center justify-between py-3 sticky top-0 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100 dark:border-neutral-800">
+    <div class="flex items-center justify-between page-sticky-header">
       <button
         @click="goBack"
         class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 active:bg-neutral-100 dark:bg-neutral-800 dark:border-neutral-700 dark:hover:bg-neutral-700 dark:active:bg-neutral-600 transition active:scale-95"

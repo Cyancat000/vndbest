@@ -5,8 +5,10 @@ import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { IonApp, IonRouterOutlet } from '@ionic/vue'
 import { useTheme } from '@/composables/useTheme'
+import { useBackground } from '@/composables/useBackground'
 
 useTheme()
+const { hasCustomBackground, backgroundLayerStyle } = useBackground()
 
 const route = useRoute()
 const router = useRouter()
@@ -29,7 +31,16 @@ function navigate(path) {
 
 <template>
   <ion-app class="font-sans antialiased">
-    <ion-router-outlet />
+    <!-- 全局自定义背景：始终 object-cover，可调透明度 + 高斯模糊 -->
+    <div
+      v-if="hasCustomBackground"
+      class="app-custom-bg"
+      aria-hidden="true"
+    >
+      <div class="app-custom-bg__image" :style="backgroundLayerStyle" />
+    </div>
+
+    <ion-router-outlet :animated="true" />
 
     <!-- 移动端优先的 Notion-Style 底部 TabBar -->
     <nav

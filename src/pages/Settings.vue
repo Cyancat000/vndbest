@@ -8,11 +8,49 @@ import { Icon } from '@iconify/vue'
 import BaseSelect from '@/components/BaseSelect.vue'
 import { IonPage, IonContent } from '@ionic/vue'
 import { useTheme } from '@/composables/useTheme'
+import { useBackground } from '@/composables/useBackground'
 import { SETTINGS_SECTION_ICONS, THEME_OPTION_ICONS } from '@/icons/icon-names'
 
 const router = useRouter()
 const { t, locale } = useI18n()
 const { themeMode } = useTheme()
+const {
+  backgroundImage,
+  backgroundOpacity,
+  backgroundBlur,
+  hasCustomBackground,
+  selectBackgroundImage,
+  clearBackgroundImage
+} = useBackground()
+
+const bgSelecting = ref(false)
+const bgError = ref('')
+
+async function handleSelectBackground() {
+  if (bgSelecting.value) return
+  bgSelecting.value = true
+  bgError.value = ''
+  try {
+    await selectBackgroundImage()
+  } catch (err) {
+    if (err?.message === 'cancelled') {
+      // 用户取消选择，不提示错误
+    } else if (err?.name === 'QuotaExceededError' || /quota|storage/i.test(String(err?.message || err))) {
+      bgError.value = t('settings.background.error_quota')
+      clearBackgroundImage()
+    } else {
+      console.error('选择背景图失败:', err)
+      bgError.value = t('settings.background.error_select')
+    }
+  } finally {
+    bgSelecting.value = false
+  }
+}
+
+function handleClearBackground() {
+  bgError.value = ''
+  clearBackgroundImage()
+}
 
 const username = ref(localStorage.getItem('vndb_username') || '')
 const useSandbox = ref(JSON.parse(localStorage.getItem('vndb_use_sandbox') || 'false'))
@@ -263,7 +301,7 @@ const themeOptions = [
   <ion-page>
     <ion-content>
       <div class="page-container pb-24 space-y-6">
-        <div class="flex items-center gap-3 py-3 sticky top-0 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100 dark:border-neutral-800">
+        <div class="flex items-center gap-3 page-sticky-header">
           <button
             v-if="activeSection !== 'root'"
             @click="goBackToRoot"
@@ -359,9 +397,7 @@ const themeOptions = [
                   :key="opt.value"
                   @click="themeMode = opt.value"
                   class="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-md text-xs font-medium transition-all duration-200 whitespace-nowrap"
-                  :class="themeMode === opt.value
-                    ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'"
+                  :class="themeMode === opt.value ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-sm' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'"
                 >
                   <Icon :icon="opt.icon" class="h-4 w-4" />
                   <span>{{ t(opt.labelKey) }}</span>
@@ -377,6 +413,107 @@ const themeOptions = [
               />
             </div>
 
+          </div>
+
+          <!-- 自定义背景 -->
+          <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 shadow-xs space-y-4">
+            <div class="border-b border-neutral-100 dark:border-neutral-700/50 pb-2">
+              <h2 class="text-sm font-semibold text-neutral-800 dark:text-neutral-200">{{ t('settings.background.title') }}</h2>
+              <p class="text-[10px] text-neutral-400 dark:text-neutral-500">{{ t('settings.background.description') }}</p>
+            </div>
+
+            <div class="flex items-stretch gap-3">
+              <div class="relative h-24 w-20 shrink-0 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800">
+                <div
+                  v-if="hasCustomBackground"
+                  class="absolute inset-0"
+                  :style="{
+                    backgroundImage: `url(${backgroundImage})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    opacity: backgroundOpacity / 100,
+                    filter: backgroundBlur > 0 ? `blur(${Math.min(backgroundBlur, 8)}px)` : 'none',
+                    transform: backgroundBlur > 0 ? 'scale(1.15)' : 'none'
+                  }"
+                />
+                <div v-else class="absolute inset-0 flex items-center justify-center">
+                  <Icon icon="lucide:image" class="h-6 w-6 text-neutral-300 dark:text-neutral-600" />
+                </div>
+              </div>
+
+              <div class="flex min-w-0 flex-1 flex-col justify-center gap-2">
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    @click="handleSelectBackground"
+                    :disabled="bgSelecting"
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3 py-2 text-xs font-medium text-neutral-800 dark:text-neutral-200 transition hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-50"
+                  >
+                    <Icon
+                      :icon="bgSelecting ? 'lucide:loader' : 'lucide:image-plus'"
+                      class="h-3.5 w-3.5"
+                      :class="{ 'animate-spin': bgSelecting }"
+                    />
+                    {{ hasCustomBackground ? t('settings.background.change') : t('settings.background.select') }}
+                  </button>
+                  <button
+                    v-if="hasCustomBackground"
+                    type="button"
+                    @click="handleClearBackground"
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 px-3 py-2 text-xs font-medium text-neutral-500 dark:text-neutral-400 transition hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-800/40"
+                  >
+                    <Icon icon="lucide:trash-2" class="h-3.5 w-3.5" />
+                    {{ t('settings.background.clear') }}
+                  </button>
+                </div>
+                <p class="text-[10px] text-neutral-400 dark:text-neutral-500 leading-relaxed">
+                  {{ t('settings.background.hint') }}
+                </p>
+                <p v-if="bgError" class="text-[10px] text-red-500 dark:text-red-400">
+                  {{ bgError }}
+                </p>
+              </div>
+            </div>
+
+            <div class="space-y-2 pt-1 border-t border-neutral-100 dark:border-neutral-700/50">
+              <div class="flex items-center justify-between gap-2">
+                <label class="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                  {{ t('settings.background.opacity') }}
+                </label>
+                <span class="text-[11px] tabular-nums text-neutral-500 dark:text-neutral-400">
+                  {{ backgroundOpacity }}%
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                v-model.number="backgroundOpacity"
+                :disabled="!hasCustomBackground"
+                class="w-full accent-neutral-900 dark:accent-neutral-100 disabled:opacity-40"
+              />
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <label class="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                  {{ t('settings.background.blur') }}
+                </label>
+                <span class="text-[11px] tabular-nums text-neutral-500 dark:text-neutral-400">
+                  {{ backgroundBlur }}px
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="40"
+                step="1"
+                v-model.number="backgroundBlur"
+                :disabled="!hasCustomBackground"
+                class="w-full accent-neutral-900 dark:accent-neutral-100 disabled:opacity-40"
+              />
+            </div>
           </div>
 
           <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 shadow-xs space-y-4">

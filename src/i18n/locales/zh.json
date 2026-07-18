@@ -117,7 +117,19 @@
     "theme": "外观主题",
     "theme_follow_system": "跟随系统",
     "theme_light": "浅色",
-    "theme_dark": "深色"
+    "theme_dark": "深色",
+    "background": {
+      "title": "自定义背景",
+      "description": "设置全局背景图片，支持透明度与高斯模糊",
+      "select": "选择图片",
+      "change": "更换图片",
+      "clear": "清除",
+      "opacity": "背景透明度",
+      "blur": "高斯模糊",
+      "hint": "网页端与手机端均可从相册/文件选择图片，始终以 Cover 模式铺满全屏。",
+      "error_select": "选择或处理图片失败，请重试",
+      "error_quota": "图片过大，无法保存。请换一张更小的图片"
+    }
   },
   "nav": {
     "home": "主页",

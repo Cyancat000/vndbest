@@ -117,7 +117,19 @@
     "theme": "外観",
     "theme_follow_system": "システムに従う",
     "theme_light": "ライト",
-    "theme_dark": "ダーク"
+    "theme_dark": "ダーク",
+    "background": {
+      "title": "カスタム背景",
+      "description": "全体背景画像を設定し、透明度とぼかしを調整できます",
+      "select": "画像を選択",
+      "change": "画像を変更",
+      "clear": "クリア",
+      "opacity": "背景の不透明度",
+      "blur": "ガウスぼかし",
+      "hint": "Web / モバイル両対応。ギャラリーまたはファイルから選択。常に Cover で全画面表示します。",
+      "error_select": "画像の選択または処理に失敗しました。再試行してください。",
+      "error_quota": "画像が大きすぎて保存できません。より小さい画像を選んでください。"
+    }
   },
   "nav": {
     "home": "ホーム",

@@ -364,7 +364,7 @@ watch(
   <ion-content>
   <div class="page-container space-y-6">
     <!-- Header/Back Navigation -->
-    <div class="flex items-center gap-4 py-4 sticky top-0 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100 dark:border-neutral-800">
+    <div class="flex items-center gap-4 page-sticky-header page-sticky-header--lg">
       <button
         @click="router.back()"
         class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs dark:bg-neutral-800 dark:border-neutral-700 active:scale-95 transition-transform cursor-pointer"
@@ -558,11 +558,7 @@ watch(
               :key="level.val"
               @click="handleSelectTraitSpoiler(level.val)"
               class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
-              :class="[
-                traitSpoilerLevel === level.val
-                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold'
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
-              ]"
+              :class="[ traitSpoilerLevel === level.val ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200' ]"
             >
               {{ level.label }}
             </button>
@@ -577,22 +573,14 @@ watch(
             <button
               @click="showTraitSexual = false"
               class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
-              :class="[
-                !showTraitSexual
-                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold'
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
-              ]"
+              :class="[ !showTraitSexual ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200' ]"
             >
               {{ t('vn.characters.trait_sexual_hide') }}
             </button>
             <button
               @click="showTraitSexual = true"
               class="rounded-md py-1.5 text-[11px] font-medium transition-all cursor-pointer"
-              :class="[
-                showTraitSexual
-                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold'
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
-              ]"
+              :class="[ showTraitSexual ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs font-semibold' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200' ]"
             >
               {{ t('vn.characters.trait_sexual_show') }}
             </button>
@@ -620,11 +608,7 @@ watch(
                 :key="trait.id || trait.name"
                 @click="router.push(`/browse/characters?trait=${trait.id}`)"
                 class="px-2.5 py-1 rounded-lg text-[11px] font-semibold shadow-xs transition-colors cursor-pointer active:scale-[0.98]"
-                :class="[
-                  trait.spoiler === 2 ? 'bg-red-50 text-red-700 border border-red-100 hover:border-red-300 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50 dark:hover:border-red-600'
-                    : trait.spoiler === 1 ? 'bg-amber-50 text-amber-700 border border-amber-100 hover:border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 dark:hover:border-amber-600'
-                    : 'bg-white text-neutral-700 border border-neutral-200 hover:border-neutral-400 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 dark:hover:border-neutral-500'
-                ]"
+                :class="[ trait.spoiler === 2 ? 'bg-red-50 text-red-700 border border-red-100 hover:border-red-300 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50 dark:hover:border-red-600' : trait.spoiler === 1 ? 'bg-amber-50 text-amber-700 border border-amber-100 hover:border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 dark:hover:border-amber-600' : 'bg-white text-neutral-700 border border-neutral-200 hover:border-neutral-400 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 dark:hover:border-neutral-500' ]"
               >
                 {{ translateTraitName(trait.name) }}
               </span>

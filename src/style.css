@@ -22,6 +22,50 @@
   color-scheme: dark;
 }
 
+/* 自定义背景启用时：页面内容区域透明，露出底层背景图 */
+html.has-custom-bg ion-content {
+  --background: transparent;
+}
+
+html.has-custom-bg ion-page {
+  background-color: transparent !important;
+}
+
+html.has-custom-bg.dark ion-content {
+  --background: transparent;
+}
+
+html.has-custom-bg.dark ion-page {
+  background-color: transparent !important;
+}
+
+/* 全局自定义背景层（固定全屏，Cover 模式）
+   z-index: -1，避免干扰 ion-router-outlet 布局
+   背景全屏铺满（含状态栏区域），与 Header 半透明叠加行为一致 */
+.app-custom-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.dark .app-custom-bg {
+  background-color: #0a0a0a;
+}
+
+.app-custom-bg__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  will-change: opacity, filter, transform;
+}
+
 /* Ionic 组件深色模式覆盖 */
 .dark ion-content {
   --background: #0a0a0a;
@@ -158,9 +202,11 @@ select {
   min-height: 100vh;
 }
 
-/* Ionic 全局覆盖：禁用过渡动画 */
+/* 注意：不要给 ion-router-outlet 额外加 position/z-index，
+   否则会破坏 Ionic 页面绝对定位布局，导致白屏 */
 ion-router-outlet {
-  --ion-router-outlet-transition-duration: 0ms;
+  /* 与 main.js 中自定义 navAnimation 时长保持一致 */
+  --ion-router-outlet-transition-duration: 220ms;
 }
 
 ion-app {
@@ -181,18 +227,24 @@ ion-content {
 }
 
 /* 覆盖 Ionic 的 ion-page-hidden：不用 display:none（会重置滚动位置）
-   改用 visibility:hidden + 绝对定位来保留滚动位置 */
+   改用 visibility/opacity 隐藏 + 绝对定位保留滚动位置
+   z-index 必须 !important，否则会被 Ionic 内联 z-index:100 压过
+   自定义透明背景时旧页必须彻底不可见，否则切换会穿帮 */
 ion-router-outlet > .ion-page-hidden,
-.ion-page-hidden {
+.ion-page-hidden,
+/* 过渡中的离场页：只用 class，不写内联 visibility（避免 APP 二次进入白屏） */
+ion-router-outlet > .app-page-leaving,
+.app-page-leaving {
   display: flex !important;
   visibility: hidden !important;
+  opacity: 0 !important;
   position: absolute !important;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: -1;
-  pointer-events: none;
+  z-index: -1 !important;
+  pointer-events: none !important;
 }
 
 /* 页面内容容器：max-width 居中 + 水平/顶部 padding */
@@ -203,4 +255,32 @@ ion-router-outlet > .ion-page-hidden,
   padding-left: 1rem;   /* px-4 */
   padding-right: 1rem;  /* px-4 */
   padding-top: 1.5rem;  /* pt-6 */
+}
+
+/* page sticky header: cover top padding + safe-area with same translucent style as header */
+.page-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  margin-top: -1.5rem;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: calc(1.5rem + 0.75rem + env(safe-area-inset-top, 0px));
+  padding-bottom: 0.75rem;
+  background-color: rgb(255 255 255 / 0.8);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgb(245 245 245);
+}
+
+.dark .page-sticky-header {
+  background-color: rgb(23 23 23 / 0.8);
+  border-bottom-color: rgb(38 38 38);
+}
+
+.page-sticky-header--lg {
+  padding-top: calc(1.5rem + 1rem + env(safe-area-inset-top, 0px));
+  padding-bottom: 1rem;
 }

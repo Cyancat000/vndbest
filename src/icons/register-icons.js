@@ -31,6 +31,8 @@ import file from '@iconify-icons/lucide/file'
 import fileText from '@iconify-icons/lucide/file-text'
 import link from '@iconify-icons/lucide/link'
 import image from '@iconify-icons/lucide/image'
+import imagePlus from '@iconify-icons/lucide/image-plus'
+import trash2 from '@iconify-icons/lucide/trash-2'
 import eye from '@iconify-icons/lucide/eye'
 import eyeOff from '@iconify-icons/lucide/eye-off'
 import star from '@iconify-icons/lucide/star'
@@ -127,6 +129,8 @@ const ICON_DATA = {
   [APP_ICON_NAMES.common.fileText]: fileText,
   [APP_ICON_NAMES.common.link]: link,
   [APP_ICON_NAMES.common.image]: image,
+  [APP_ICON_NAMES.common.imagePlus]: imagePlus,
+  [APP_ICON_NAMES.common.trash2]: trash2,
   [APP_ICON_NAMES.common.eye]: eye,
   [APP_ICON_NAMES.common.eyeOff]: eyeOff,
   [APP_ICON_NAMES.common.star]: star,

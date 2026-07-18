@@ -151,7 +151,7 @@ function goToLogin() {
   <ion-page>
   <ion-content>
   <div class="page-container pb-24 space-y-6">
-    <div class="flex items-center justify-between py-3 sticky top-0 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100 dark:border-neutral-800">
+    <div class="flex items-center justify-between page-sticky-header">
       <div class="flex items-center gap-3">
         <div class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs">
           <Icon icon="lucide:file-text" class="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
@@ -202,9 +202,7 @@ function goToLogin() {
           <button
             @click="activeLabelId = null"
             class="whitespace-nowrap pb-3 text-sm font-medium transition-all duration-200 border-b-2 shrink-0 flex items-center gap-1.5 focus:outline-none cursor-pointer"
-            :class="activeLabelId === null
-              ? 'border-neutral-900 dark:border-neutral-100 text-neutral-900 dark:text-neutral-100 font-semibold'
-              : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-300'"
+            :class="activeLabelId === null ? 'border-neutral-900 dark:border-neutral-100 text-neutral-900 dark:text-neutral-100 font-semibold' : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-300'"
           >
             {{ t('list.all') }}
           </button>
@@ -213,9 +211,7 @@ function goToLogin() {
             :key="lbl.id"
             @click="activeLabelId = lbl.id"
             class="whitespace-nowrap pb-3 text-sm font-medium transition-all duration-200 border-b-2 shrink-0 flex items-center gap-1.5 focus:outline-none cursor-pointer"
-            :class="activeLabelId === lbl.id
-              ? 'border-neutral-900 dark:border-neutral-100 text-neutral-900 dark:text-neutral-100 font-semibold'
-              : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-300'"
+            :class="activeLabelId === lbl.id ? 'border-neutral-900 dark:border-neutral-100 text-neutral-900 dark:text-neutral-100 font-semibold' : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-300'"
           >
             <span>{{ lbl.label }}</span>
             <span

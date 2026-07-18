@@ -77,7 +77,7 @@ function navigateTo(path) {
   <ion-page>
   <ion-content>
   <div class="page-container pb-24 space-y-6">
-    <div class="flex items-center gap-3 py-3 sticky top-0 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md z-30 -mx-4 px-4 border-b border-neutral-100 dark:border-neutral-800">
+    <div class="flex items-center gap-3 page-sticky-header">
       <div class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs">
         <Icon icon="lucide:library" class="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
       </div>
