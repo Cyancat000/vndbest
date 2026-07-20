@@ -257,7 +257,9 @@ ion-router-outlet > .app-page-leaving,
   padding-top: 1.5rem;  /* pt-6 */
 }
 
-/* page sticky header: cover top padding + safe-area with same translucent style as header */
+/* page sticky header: cover top padding + safe-area with same translucent style as header
+   margin-top 抵消 .page-container 的 padding-top，header 贴到内容区顶部；
+   顶部只需「内容间距 + 安全区」，不要再叠加 1.5rem，否则异形屏会多出一大块空白 */
 .page-sticky-header {
   position: sticky;
   top: 0;
@@ -267,7 +269,7 @@ ion-router-outlet > .app-page-leaving,
   margin-right: -1rem;
   padding-left: 1rem;
   padding-right: 1rem;
-  padding-top: calc(1.5rem + 0.75rem + env(safe-area-inset-top, 0px));
+  padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
   padding-bottom: 0.75rem;
   background-color: rgb(255 255 255 / 0.8);
   -webkit-backdrop-filter: blur(12px);
@@ -281,7 +283,7 @@ ion-router-outlet > .app-page-leaving,
 }
 
 .page-sticky-header--lg {
-  padding-top: calc(1.5rem + 1rem + env(safe-area-inset-top, 0px));
+  padding-top: calc(1rem + env(safe-area-inset-top, 0px));
   padding-bottom: 1rem;
 }
 

@@ -63,10 +63,10 @@ function navigate(path) {
       </Transition>
     </Teleport>
 
-    <!-- 移动端优先的 Notion-Style 底部 TabBar -->
+    <!-- 移动端优先的 Notion-Style 底部 TabBar；底部必须用 env(safe-area-inset-bottom) 避开手势条/Home Indicator -->
     <nav
       v-if="showTabBar"
-      class="fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-200 dark:border-neutral-700 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md pb-[safe-area-inset-bottom]"
+      class="app-tab-bar fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-200 dark:border-neutral-700 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md"
     >
       <div class="mx-auto max-w-2xl flex h-14 items-center justify-around px-2">
         <button
@@ -91,6 +91,11 @@ function navigate(path) {
 </template>
 
 <style>
+/* TabBar 底部安全区：避开 iOS Home Indicator / Android 手势导航条 */
+.app-tab-bar {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 .app-toast-box {
   left: 50%;
   transform: translateX(-50%);
