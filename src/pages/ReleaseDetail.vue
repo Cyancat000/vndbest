@@ -6,10 +6,14 @@ import { Icon } from '@iconify/vue'
 import { getReleaseDetail } from '@/api/vndb'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { useImageLoader } from '@/composables/useImageLoader'
+import { useClipboard } from '@/composables/useClipboard'
+import { useToast } from '@/composables/useToast'
 import { IonPage, IonContent, IonImg, IonSpinner } from '@ionic/vue'
 
 const { getDetailAction, getCardAction } = usePrivacy()
 const imageLoader = useImageLoader()
+const { copyText } = useClipboard()
+const { showToast } = useToast()
 
 const { t } = useI18n()
 const route = useRoute()
@@ -40,6 +44,14 @@ const fetchReleaseDetail = async () => {
 
 const goBack = () => {
   router.back()
+}
+
+// 点击 / 长按复制标题或原名
+const copyTitleText = async (text) => {
+  const value = String(text ?? '').trim()
+  if (!value) return
+  const ok = await copyText(value)
+  showToast(ok ? t('common.copied') : t('common.copy_failed'), ok ? 'success' : 'error')
 }
 
 const goToVn = (vnId) => {
@@ -237,8 +249,15 @@ watch(
 
         <div class="flex-1 space-y-3 w-full">
           <div>
-            <h1 class="text-lg font-bold tracking-tight text-neutral-900 dark:text-neutral-100 leading-snug">{{ release.title }}</h1>
-            <p v-if="release.alttitle" class="text-xs text-neutral-400 dark:text-neutral-500 font-medium mt-0.5">{{ release.alttitle }}</p>
+            <h1
+              class="text-lg font-bold tracking-tight text-neutral-900 dark:text-neutral-100 leading-snug copyable-title"
+              @click="copyTitleText(release.title)"
+            >{{ release.title }}</h1>
+            <p
+              v-if="release.alttitle"
+              class="text-xs text-neutral-400 dark:text-neutral-500 font-medium mt-0.5 copyable-title"
+              @click="copyTitleText(release.alttitle)"
+            >{{ release.alttitle }}</p>
           </div>
 
           <!-- 标签组 (模仿 VnDetail 里的那种信息) -->
@@ -443,7 +462,7 @@ watch(
           <Icon icon="lucide:sticky-note" class="h-3.5 w-3.5" />
           {{ t('release.notes') }}
         </h3>
-        <div class="border-l-3 border-neutral-300 bg-neutral-50 px-4 py-3 text-xs leading-relaxed text-neutral-600 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400 whitespace-pre-wrap rounded-lg">
+        <div class="border-l-3 border-neutral-300 bg-neutral-50 px-4 py-3 text-xs leading-relaxed text-neutral-600 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-400 whitespace-pre-wrap rounded-lg selectable-text">
           {{ release.notes }}
         </div>
       </div>

@@ -9,6 +9,8 @@ import BaseSelect from '@/components/BaseSelect.vue'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { useTranslation } from '@/composables/useTranslation'
 import { useImageLoader } from '@/composables/useImageLoader'
+import { useClipboard } from '@/composables/useClipboard'
+import { useToast } from '@/composables/useToast'
 import { IonPage, IonContent, IonImg, IonSpinner, IonToast } from '@ionic/vue'
 import { Capacitor, CapacitorHttp, registerPlugin } from '@capacitor/core'
 
@@ -16,6 +18,8 @@ const PhotoGallery = registerPlugin('PhotoGallery')
 
 const { getDetailAction, getScreenshotAction, getCardAction } = usePrivacy()
 const imageLoader = useImageLoader()
+const { copyText } = useClipboard()
+const { showToast: showGlobalToast } = useToast()
 
 const route = useRoute()
 const router = useRouter()
@@ -1214,15 +1218,23 @@ const loadQuotes = async (id) => {
 // 复制摘录内容
 const copiedQuoteId = ref(null)
 const copyQuote = async (quote) => {
-  try {
-    await navigator.clipboard.writeText(quote.quote)
+  const ok = await copyText(quote?.quote)
+  if (ok) {
     copiedQuoteId.value = quote.id
     setTimeout(() => {
       if (copiedQuoteId.value === quote.id) copiedQuoteId.value = null
     }, 2000)
-  } catch (err) {
-    console.error('复制失败:', err)
+  } else {
+    showToast(t('common.copy_failed'), 'error')
   }
+}
+
+// 点击 / 长按复制标题或原名
+const copyTitleText = async (text) => {
+  const value = String(text ?? '').trim()
+  if (!value) return
+  const ok = await copyText(value)
+  showGlobalToast(ok ? t('common.copied') : t('common.copy_failed'), ok ? 'success' : 'error')
 }
 
 // 统一标题处理逻辑 (与 VnList.vue 保持一致)
@@ -1424,8 +1436,15 @@ watch(
         <!-- 基本属性信息 -->
         <div class="flex-1 space-y-3 w-full">
           <div>
-            <h1 class="text-lg font-bold tracking-tight text-neutral-900 dark:text-neutral-100 leading-snug">{{ getTitle(vn) }}</h1>
-            <p v-if="getAltTitle(vn)" class="text-xs text-neutral-400 dark:text-neutral-500 font-medium mt-0.5">{{ getAltTitle(vn) }}</p>
+            <h1
+              class="text-lg font-bold tracking-tight text-neutral-900 dark:text-neutral-100 leading-snug copyable-title"
+              @click="copyTitleText(getTitle(vn))"
+            >{{ getTitle(vn) }}</h1>
+            <p
+              v-if="getAltTitle(vn)"
+              class="text-xs text-neutral-400 dark:text-neutral-500 font-medium mt-0.5 copyable-title"
+              @click="copyTitleText(getAltTitle(vn))"
+            >{{ getAltTitle(vn) }}</p>
           </div>
 
           <div class="grid grid-cols-[80px_1fr] items-start gap-y-1.5 text-xs text-neutral-600 dark:text-neutral-400">
@@ -1596,7 +1615,7 @@ watch(
         </div>
         <div class="relative">
           <div
-            class="relative border-l-3 border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 px-4 py-3 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap bbcode-container transition-all duration-300"
+            class="relative border-l-3 border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 px-4 py-3 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap bbcode-container selectable-text transition-all duration-300"
             :class="[isDescriptionExpanded ? 'rounded-lg' : 'max-h-32 overflow-hidden rounded-t-lg rounded-b-none']"
           >
             <div v-html="parseBBCode(vn.description)"></div>
@@ -1630,7 +1649,7 @@ watch(
             {{ translationError }}
           </div>
 
-          <p v-else class="text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
+          <p v-else class="text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap selectable-text">
             {{ translatedDescription }}
           </p>
         </div>
@@ -1927,7 +1946,7 @@ watch(
                   <div v-if="char.description || (char.traits && char.traits.length > 0)">
                     <p
                       v-if="char.description"
-                      class="text-[10px] leading-relaxed text-neutral-500 dark:text-neutral-400 pt-1 border-t border-neutral-100 dark:border-neutral-800 transition-all duration-300"
+                      class="text-[10px] leading-relaxed text-neutral-500 dark:text-neutral-400 pt-1 border-t border-neutral-100 dark:border-neutral-800 transition-all duration-300 selectable-text"
                       :class="[expandedCharIds.has(char.id) ? '' : 'line-clamp-2']"
                       v-html="parseBBCode(char.description)"
                     ></p>
@@ -2250,7 +2269,7 @@ watch(
                 <Icon icon="lucide:quote" class="absolute top-2 right-3 h-8 w-8 text-neutral-200 dark:text-neutral-700 pointer-events-none" />
                 
                 <!-- 摘录内容 -->
-                <p @click="copyQuote(q)" class="text-xs text-neutral-700 dark:text-neutral-300 italic leading-relaxed pr-6 whitespace-pre-wrap">
+                <p @click="copyQuote(q)" class="text-xs text-neutral-700 dark:text-neutral-300 italic leading-relaxed pr-6 whitespace-pre-wrap selectable-text">
                   "{{ q.quote }}"
                 </p>
 
@@ -2266,7 +2285,7 @@ watch(
                   <div v-else-if="quoteTranslations[q.id]?.error" class="text-xs leading-relaxed text-rose-500 dark:text-rose-400">
                     {{ quoteTranslations[q.id].error }}
                   </div>
-                  <p v-else class="text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
+                  <p v-else class="text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap selectable-text">
                     {{ quoteTranslations[q.id].translated }}
                   </p>
                 </div>

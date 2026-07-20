@@ -88,7 +88,7 @@ function cleanDescription(desc) {
 
           <!-- Description -->
           <div v-if="trait.description" class="px-4 pb-3 max-h-[200px] overflow-y-auto">
-            <p class="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-wrap">
+            <p class="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-wrap selectable-text">
               {{ cleanDescription(trait.description) }}
             </p>
           </div>

@@ -8,6 +8,8 @@ import { getCharacterDetail, getCharacterQuotes } from '@/api/vndb'
 import VnList from '@/components/VnList.vue'
 import { useTranslation } from '@/composables/useTranslation'
 import { useImageLoader } from '@/composables/useImageLoader'
+import { useClipboard } from '@/composables/useClipboard'
+import { useToast } from '@/composables/useToast'
 import { IonPage, IonContent, IonImg, IonSpinner } from '@ionic/vue'
 import { CapacitorHttp } from '@capacitor/core'
 
@@ -16,6 +18,8 @@ const router = useRouter()
 const { t, locale } = useI18n()
 const { translateTraitName } = useTranslation()
 const imageLoader = useImageLoader()
+const { copyText } = useClipboard()
+const { showToast } = useToast()
 const characterId = ref(route.params.id)
 
 const character = ref(null)
@@ -300,15 +304,21 @@ async function fetchQuotes() {
 // 复制台词内容
 const copiedQuoteId = ref(null)
 const copyQuote = async (quote) => {
-  try {
-    await navigator.clipboard.writeText(quote.quote)
+  const ok = await copyText(quote?.quote)
+  if (ok) {
     copiedQuoteId.value = quote.id
     setTimeout(() => {
       if (copiedQuoteId.value === quote.id) copiedQuoteId.value = null
     }, 2000)
-  } catch (err) {
-    console.error('复制失败:', err)
   }
+}
+
+// 点击 / 长按复制角色名或原名
+const copyTitleText = async (text) => {
+  const value = String(text ?? '').trim()
+  if (!value) return
+  const ok = await copyText(value)
+  showToast(ok ? t('common.copied') : t('common.copy_failed'), ok ? 'success' : 'error')
 }
 
 // 性别图标和颜色（sex 可能为数组、逗号分隔字符串或单字符）
@@ -442,7 +452,10 @@ watch(
         <div class="flex-1 min-w-0 w-full space-y-3">
           <div>
             <div class="flex items-center gap-2">
-              <h1 class="text-2xl font-black tracking-tight text-neutral-900 dark:text-neutral-100 leading-tight">{{ character.name }}</h1>
+              <h1
+                class="text-2xl font-black tracking-tight text-neutral-900 dark:text-neutral-100 leading-tight copyable-title"
+                @click="copyTitleText(character.name)"
+              >{{ character.name }}</h1>
               <div 
                 v-if="getSexIcon(character.sex)" 
                 class="shrink-0 inline-flex items-center rounded-lg px-2 py-1 border"
@@ -451,7 +464,11 @@ watch(
                 <Icon :icon="getSexIcon(character.sex)" class="h-3.5 w-3.5" />
               </div>
             </div>
-            <p v-if="character.original" class="text-sm text-neutral-500 dark:text-neutral-400 font-medium mt-0.5">{{ character.original }}</p>
+            <p
+              v-if="character.original"
+              class="text-sm text-neutral-500 dark:text-neutral-400 font-medium mt-0.5 copyable-title"
+              @click="copyTitleText(character.original)"
+            >{{ character.original }}</p>
           </div>
           
           <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-[11px]">
@@ -510,7 +527,7 @@ watch(
           </button>
         </div>
         <div
-          class="rounded-2xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800 px-5 py-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap bbcode-container shadow-xs"
+          class="rounded-2xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800 px-5 py-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap bbcode-container selectable-text shadow-xs"
           v-html="parseBBCode(character.description)"
         ></div>
         <div v-if="translatedDescription || translationError || translationLoading" class="rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-5 py-4 space-y-2 shadow-xs">
@@ -525,7 +542,7 @@ watch(
           <div v-else-if="translationError" class="text-sm leading-relaxed text-rose-500 dark:text-rose-400">
             {{ translationError }}
           </div>
-          <p v-else class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
+          <p v-else class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap selectable-text">
             {{ translatedDescription }}
           </p>
         </div>
@@ -681,7 +698,7 @@ watch(
             class="rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/50 p-4 space-y-2.5 cursor-pointer active:scale-[0.98] transition-transform"
           >
             <!-- 台词内容 -->
-            <p @click="copyQuote(quote)" class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 italic whitespace-pre-wrap">
+            <p @click="copyQuote(quote)" class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 italic whitespace-pre-wrap selectable-text">
               "{{ quote.quote }}"
             </p>
 
@@ -697,7 +714,7 @@ watch(
               <div v-else-if="quoteTranslations[quote.id]?.error" class="text-sm leading-relaxed text-rose-500 dark:text-rose-400">
                 {{ quoteTranslations[quote.id].error }}
               </div>
-              <p v-else class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
+              <p v-else class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap selectable-text">
                 {{ quoteTranslations[quote.id].translated }}
               </p>
             </div>

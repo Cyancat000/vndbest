@@ -6,9 +6,11 @@ import { Icon } from '@iconify/vue'
 import { IonApp, IonRouterOutlet } from '@ionic/vue'
 import { useTheme } from '@/composables/useTheme'
 import { useBackground } from '@/composables/useBackground'
+import { useToast } from '@/composables/useToast'
 
 useTheme()
 const { hasCustomBackground, backgroundLayerStyle } = useBackground()
+const { toastVisible, toastMessage, toastType } = useToast()
 
 const route = useRoute()
 const router = useRouter()
@@ -42,6 +44,25 @@ function navigate(path) {
 
     <ion-router-outlet :animated="true" />
 
+    <!-- 全局 Toast 提示（复制成功等） -->
+    <Teleport to="body">
+      <Transition name="app-toast">
+        <div
+          v-if="toastVisible"
+          class="app-toast-box fixed top-12 z-[9999] flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg border text-xs font-medium pointer-events-none"
+          :class="toastType === 'success'
+            ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800/50 text-green-700 dark:text-green-400'
+            : 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-400'"
+        >
+          <Icon
+            :icon="toastType === 'success' ? 'lucide:check-circle' : 'lucide:x-circle'"
+            class="h-4 w-4 flex-shrink-0"
+          />
+          {{ toastMessage }}
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- 移动端优先的 Notion-Style 底部 TabBar -->
     <nav
       v-if="showTabBar"
@@ -68,3 +89,26 @@ function navigate(path) {
     </nav>
   </ion-app>
 </template>
+
+<style>
+.app-toast-box {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.app-toast-enter-active {
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.app-toast-leave-active {
+  transition: opacity 0.2s ease-in, transform 0.2s ease-in;
+}
+.app-toast-enter-from {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-8px);
+}
+.app-toast-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-8px);
+}
+</style>

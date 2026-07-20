@@ -10,7 +10,9 @@
     "error": "错误",
     "sort_by": "排序方式",
     "go_back": "返回上一页",
-    "cancel": "取消"
+    "cancel": "取消",
+    "copied": "已复制",
+    "copy_failed": "复制失败"
   },
   "settings": {
     "title": "设置",

@@ -10,7 +10,9 @@
     "error": "Error",
     "sort_by": "Sort by",
     "go_back": "Go Back",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "copied": "Copied",
+    "copy_failed": "Copy failed"
   },
   "settings": {
     "title": "Settings",

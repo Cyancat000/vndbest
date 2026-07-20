@@ -159,7 +159,7 @@ async function translateDescription() {
           <div v-if="tag.description" class="px-4 pb-3 space-y-3">
             <div class="max-h-[200px] overflow-y-auto space-y-3">
               <div class="flex items-start justify-between gap-3">
-                <p class="flex-1 text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-wrap">
+                <p class="flex-1 text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-wrap selectable-text">
                   {{ cleanDescription(tag.description) }}
                 </p>
                 <button
@@ -185,7 +185,7 @@ async function translateDescription() {
                 <div v-else-if="translationError" class="text-xs leading-relaxed text-rose-500 dark:text-rose-400">
                   {{ translationError }}
                 </div>
-                <p v-else class="text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
+                <p v-else class="text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap selectable-text">
                   {{ translatedDescription }}
                 </p>
               </div>

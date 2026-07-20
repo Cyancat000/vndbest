@@ -284,3 +284,30 @@ ion-router-outlet > .app-page-leaving,
   padding-top: calc(1.5rem + 1rem + env(safe-area-inset-top, 0px));
   padding-bottom: 1rem;
 }
+
+/* 允许长按自由选择文本（简介 / tag / trait / 摘录等） */
+.selectable-text,
+.selectable-text * {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  -webkit-touch-callout: default !important;
+}
+
+/* 标题名 / 原名：点击或长按自动复制 */
+.copyable-title {
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  border-radius: 0.25rem;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.copyable-title:active {
+  opacity: 0.75;
+  background-color: rgb(0 0 0 / 0.04);
+}
+
+.dark .copyable-title:active {
+  background-color: rgb(255 255 255 / 0.06);
+}
