@@ -3,6 +3,7 @@ import { ref, watch, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import AppHeader from '@/components/AppHeader.vue'
 import { getVnDetail, getVnReleases, getVnCharacters, getVnQuotes, getVnListItem, patchVnListItem, deleteVnListItem } from '@/api/vndb'
 import VnList from '@/components/VnList.vue'
 import BaseSelect from '@/components/BaseSelect.vue'
@@ -1354,17 +1355,7 @@ watch(
   <ion-page>
   <ion-content ref="ionContentRef">
   <div class="page-container space-y-4">
-    <!-- 头部导航 -->
-    <div class="flex items-center justify-between page-sticky-header">
-      <button 
-        @click="router.back()"
-        class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 active:bg-neutral-100 dark:active:bg-neutral-600"
-      >
-        <Icon icon="lucide:chevron-left" class="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
-      </button>
-      <span class="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{{ t('vn.details') }}</span>
-      <div class="w-8"></div>
-    </div>
+    <AppHeader mode="center" :title="t('vn.details')" />
 
     <!-- 骨架屏 -->
     <div v-if="loading" class="animate-pulse space-y-4">

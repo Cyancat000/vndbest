@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import AppHeader from '@/components/AppHeader.vue'
 import { getStaffDetail, getVnListByStaff } from '@/api/vndb'
 import VnList from '@/components/VnList.vue'
 import { IonPage, IonContent } from '@ionic/vue'
@@ -114,21 +115,11 @@ const sortOptions = [
   <ion-page>
   <ion-content>
   <div class="page-container space-y-6">
-    <!-- Header/Back Navigation -->
-    <div class="flex items-center gap-4 page-sticky-header page-sticky-header--lg">
-      <button
-        @click="router.back()"
-        class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs active:scale-95 transition-transform cursor-pointer"
-      >
-        <Icon icon="lucide:chevron-left" class="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
-      </button>
-      <div class="flex-1 min-w-0">
-        <h1 class="text-lg font-bold text-neutral-900 dark:text-neutral-100 truncate">
-          {{ staff?.name || '人物详情' }}
-        </h1>
-        <p class="text-[10px] text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">{{ staffId }}</p>
-      </div>
-    </div>
+    <AppHeader
+      mode="detail"
+      :title="staff?.name || '人物详情'"
+      :subtitle="String(staffId)"
+    />
 
     <div v-if="isStaffLoading" class="flex justify-center py-20">
       <Icon icon="eos-icons:loading" class="h-8 w-8 text-neutral-300 dark:text-neutral-600" />

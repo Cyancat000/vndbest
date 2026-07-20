@@ -3,6 +3,7 @@ import { ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import AppHeader from '@/components/AppHeader.vue'
 import { SEX_ICONS } from '@/icons/icon-names'
 import { getCharacterDetail, getCharacterQuotes } from '@/api/vndb'
 import VnList from '@/components/VnList.vue'
@@ -373,21 +374,11 @@ watch(
   <ion-page>
   <ion-content>
   <div class="page-container space-y-6">
-    <!-- Header/Back Navigation -->
-    <div class="flex items-center gap-4 page-sticky-header page-sticky-header--lg">
-      <button
-        @click="router.back()"
-        class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white shadow-xs dark:bg-neutral-800 dark:border-neutral-700 active:scale-95 transition-transform cursor-pointer"
-      >
-        <Icon icon="lucide:chevron-left" class="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
-      </button>
-      <div class="flex-1 min-w-0">
-        <h1 class="text-lg font-bold text-neutral-900 dark:text-neutral-100 truncate">
-          {{ character?.name || t('vn.character_details') }}
-        </h1>
-        <p class="text-[10px] text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">{{ characterId }}</p>
-      </div>
-    </div>
+    <AppHeader
+      mode="detail"
+      :title="character?.name || t('vn.character_details')"
+      :subtitle="String(characterId)"
+    />
 
     <!-- 骨架屏 -->
     <div v-if="loading" class="animate-pulse space-y-6">

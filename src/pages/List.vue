@@ -5,6 +5,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import AppHeader from '@/components/AppHeader.vue'
 import { getUserList, getUserListLabels } from '@/api/vndb'
 import VnList from '@/components/VnList.vue'
 import { IonPage, IonContent } from '@ionic/vue'
@@ -151,28 +152,19 @@ function goToLogin() {
   <ion-page>
   <ion-content>
   <div class="page-container pb-24 space-y-6">
-    <div class="flex items-center justify-between page-sticky-header">
-      <div class="flex items-center gap-3">
-        <div class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs">
-          <Icon icon="lucide:file-text" class="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
-        </div>
-        <div>
-          <h1 class="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">{{ t('list.title') }}</h1>
-          <p class="text-xs text-neutral-500 dark:text-neutral-400">{{ t('list.description') }}</p>
-        </div>
-      </div>
-      
-      <!-- 刷新按钮 -->
-      <button
-        v-if="isLoggedIn"
-        @click="fetchList(true)"
-        :disabled="isLoading"
-        class="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 transition hover:bg-neutral-50 dark:hover:bg-neutral-700 active:bg-neutral-100 dark:active:bg-neutral-600 disabled:opacity-50"
-        :title="t('list.refresh')"
-      >
-        <Icon :icon="isLoading ? 'eos-icons:loading' : 'lucide:refresh-cw'" class="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
-      </button>
-    </div>
+    <AppHeader mode="page" icon="lucide:file-text" :title="t('list.title')" :subtitle="t('list.description')">
+      <template #actions>
+        <button
+          v-if="isLoggedIn"
+          @click="fetchList(true)"
+          :disabled="isLoading"
+          class="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 transition hover:bg-neutral-50 dark:hover:bg-neutral-700 active:bg-neutral-100 dark:active:bg-neutral-600 disabled:opacity-50"
+          :title="t('list.refresh')"
+        >
+          <Icon :icon="isLoading ? 'eos-icons:loading' : 'lucide:refresh-cw'" class="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+        </button>
+      </template>
+    </AppHeader>
 
     <!-- 未登录状态提示 -->
     <div v-if="!isLoggedIn" class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-8 text-center shadow-xs space-y-4">

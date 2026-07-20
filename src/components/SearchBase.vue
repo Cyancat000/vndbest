@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
-import { useRouter } from 'vue-router'
+import AppHeader from '@/components/AppHeader.vue'
 import SaveSearchDialog from './SaveSearchDialog.vue'
 import { useSavedSearches, SEARCH_TYPE_MAP } from '@/composables/useSavedSearches'
 
@@ -37,7 +37,6 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'search', 'clear', 'refresh'])
 
 const { t } = useI18n()
-const router = useRouter()
 const { getByType, add, isNameExists } = useSavedSearches()
 
 const localQuery = ref(props.modelValue)
@@ -90,8 +89,6 @@ const handleSaveCancel = () => {
   showSaveDialog.value = false
 }
 
-const goBack = () => router.back()
-
 // 暴露保存弹窗控制给父组件使用（通过 template ref）
 defineExpose({
   openSaveDialog: handleSaveClick
@@ -100,19 +97,7 @@ defineExpose({
 
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center gap-3 page-sticky-header">
-      <button
-        @click="goBack"
-        class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs active:scale-95 transition-transform cursor-pointer shrink-0"
-      >
-        <Icon icon="lucide:chevron-left" class="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
-      </button>
-      <div class="flex-1 min-w-0">
-        <h1 class="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">{{ title }}</h1>
-        <p class="text-xs text-neutral-500 dark:text-neutral-400">搜索 {{ title }} 相关信息</p>
-      </div>
-    </div>
+    <AppHeader mode="back" :title="title" :subtitle="`搜索 ${title} 相关信息`" />
 
     <!-- Search Input -->
     <div class="relative">

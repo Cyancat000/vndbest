@@ -5,6 +5,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import AppHeader from '@/components/AppHeader.vue'
 import { App } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
 import { PLACEHOLDER_ICONS } from '@/icons/icon-names'
@@ -590,15 +591,7 @@ function getFilterSummary(item) {
   <ion-page>
   <ion-content>
   <div class="page-container pb-24 space-y-6">
-    <div class="flex items-center gap-3 page-sticky-header">
-      <div class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs">
-        <Icon icon="lucide:home" class="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
-      </div>
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">{{ t('home.title') }}</h1>
-        <p class="text-xs text-neutral-500 dark:text-neutral-400">{{ t('home.subtitle') }}</p>
-      </div>
-    </div>
+    <AppHeader mode="page" icon="lucide:home" :title="t('home.title')" :subtitle="t('home.subtitle')" />
 
     <!-- 统计区块 (Notion Style Block) -->
     <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 shadow-xs">

@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import AppHeader from '@/components/AppHeader.vue'
 import { getAuthInfo } from '@/api/vndb'
 import { IonPage, IonContent } from '@ionic/vue'
 
@@ -87,19 +88,7 @@ function goBack() {
   <ion-page>
   <ion-content>
   <div class="page-container space-y-6">
-    <!-- 头部导航 -->
-    <div class="flex items-center gap-3 page-sticky-header">
-      <button
-        @click="goBack"
-        class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs transition active:bg-neutral-50 dark:active:bg-neutral-700"
-      >
-        <Icon icon="lucide:chevron-left" class="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
-      </button>
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">{{ t('login.title') }}</h1>
-        <p class="text-xs text-neutral-500 dark:text-neutral-400">{{ t('login.description') }}</p>
-      </div>
-    </div>
+    <AppHeader mode="back" :title="t('login.title')" :subtitle="t('login.description')" :on-back="goBack" />
 
     <!-- 状态面板: 未登录 -->
     <div v-if="!username" class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5 shadow-xs space-y-4">

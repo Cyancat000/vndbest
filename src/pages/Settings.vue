@@ -5,6 +5,7 @@ import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import AppHeader from '@/components/AppHeader.vue'
 import BaseSelect from '@/components/BaseSelect.vue'
 import { IonPage, IonContent } from '@ionic/vue'
 import { useTheme } from '@/composables/useTheme'
@@ -301,29 +302,13 @@ const themeOptions = [
   <ion-page>
     <ion-content>
       <div class="page-container pb-24 space-y-6">
-        <div class="flex items-center gap-3 page-sticky-header">
-          <button
-            v-if="activeSection !== 'root'"
-            @click="goBackToRoot"
-            class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs text-neutral-700 dark:text-neutral-300"
-          >
-            <Icon icon="lucide:chevron-left" class="h-5 w-5" />
-          </button>
-          <div
-            v-else
-            class="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs"
-          >
-            <Icon icon="lucide:settings" class="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
-          </div>
-          <div>
-            <h1 class="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-              {{ activeSectionMeta ? activeSectionMeta.title : t('settings.title') }}
-            </h1>
-            <p class="text-xs text-neutral-500 dark:text-neutral-400">
-              {{ activeSectionMeta ? activeSectionMeta.description : t('settings.description') }}
-            </p>
-          </div>
-        </div>
+        <AppHeader
+          :mode="activeSection !== 'root' ? 'back' : 'page'"
+          icon="lucide:settings"
+          :title="activeSectionMeta ? activeSectionMeta.title : t('settings.title')"
+          :subtitle="activeSectionMeta ? activeSectionMeta.description : t('settings.description')"
+          :on-back="goBackToRoot"
+        />
 
         <template v-if="activeSection === 'root'">
           <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 shadow-xs space-y-3">
