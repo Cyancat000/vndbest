@@ -774,7 +774,7 @@ function getFilterSummary(item) {
             <Icon icon="lucide:calendar-check" class="h-4 w-4 text-emerald-500" />
             {{ t('home.just_released') }}
           </h2>
-          <button @click="router.push('/search/release')" class="text-[10px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition">
+          <button @click="router.push('/browse/releases')" class="text-[10px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition">
             {{ t('home.view_all') }}
           </button>
         </div>
