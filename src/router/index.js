@@ -41,7 +41,25 @@ const routes = [
     path: '/settings',
     name: 'Settings',
     component: Settings,
-    meta: { showTabBar: true }
+    meta: { showTabBar: true, settingsSection: 'root' }
+  },
+  {
+    path: '/settings/appearance',
+    name: 'SettingsAppearance',
+    component: Settings,
+    meta: { showTabBar: false, settingsSection: 'appearance' }
+  },
+  {
+    path: '/settings/privacy',
+    name: 'SettingsPrivacy',
+    component: Settings,
+    meta: { showTabBar: false, settingsSection: 'privacy' }
+  },
+  {
+    path: '/settings/about',
+    name: 'SettingsAbout',
+    component: Settings,
+    meta: { showTabBar: false, settingsSection: 'about' }
   },
   {
     path: '/login',

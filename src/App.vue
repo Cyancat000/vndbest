@@ -24,9 +24,15 @@ const tabs = computed(() => [
 ])
 
 const showTabBar = computed(() => route.meta.showTabBar !== false)
-const activePath = computed(() => route.path)
+
+/** Tab 高亮：支持 /settings/* 等子路径 */
+function isTabActive(path) {
+  if (path === '/') return route.path === '/'
+  return route.path === path || route.path.startsWith(`${path}/`)
+}
 
 function navigate(path) {
+  if (route.path === path) return
   router.push(path)
 }
 </script>
@@ -74,14 +80,14 @@ function navigate(path) {
           :key="tab.path"
           @click="navigate(tab.path)"
           class="flex flex-col items-center justify-center gap-1 w-16 h-full transition relative group"
-          :class="activePath === tab.path ? 'text-neutral-950 dark:text-neutral-50 font-medium' : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300'"
+          :class="isTabActive(tab.path) ? 'text-neutral-950 dark:text-neutral-50 font-medium' : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300'"
         >
           <Icon :icon="tab.icon" class="h-5 w-5" />
           <span class="text-[10px] leading-none">{{ tab.name }}</span>
 
           <!-- 激活指示小条 -->
           <span
-            v-if="activePath === tab.path"
+            v-if="isTabActive(tab.path)"
             class="absolute bottom-1 w-5 h-0.5 rounded-full bg-neutral-900 dark:bg-neutral-100"
           ></span>
         </button>
