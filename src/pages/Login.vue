@@ -16,6 +16,19 @@ const isLoading = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
 
+/**
+ * 登录态变化后整页硬刷新客户端。
+ * Ionic ion-router-outlet 会缓存页面实例，仅改 localStorage / router.push
+ * 无法清掉 List、VnDetail 等页的旧状态，必须 reload 重建应用。
+ */
+function hardRefreshApp(path = '/settings') {
+  const targetPath = path.startsWith('/') ? path : `/${path}`
+  const { pathname, search } = window.location
+  window.location.replace(`${pathname}${search}#${targetPath}`)
+  // hash 变更本身不一定触发完整重载，显式 reload 清掉所有缓存页面状态
+  window.location.reload()
+}
+
 onMounted(async () => {
   // 如果有 token，尝试静默拉取/更新一下用户信息
   if (token.value && !username.value) {
@@ -27,13 +40,23 @@ onMounted(async () => {
       localStorage.setItem('vndb_username', info.username)
       localStorage.setItem('vndb_user_id', info.id)
     } catch (e) {
-      // 如果 token 失效，清除之
-      logout()
+      // 如果 token 失效，清除并硬刷新客户端
+      clearAuthStorage()
+      hardRefreshApp('/settings')
     } finally {
       isLoading.value = false
     }
   }
 })
+
+function clearAuthStorage() {
+  token.value = ''
+  username.value = ''
+  userId.value = ''
+  localStorage.removeItem('vndb_api_token')
+  localStorage.removeItem('vndb_username')
+  localStorage.removeItem('vndb_user_id')
+}
 
 async function handleLogin() {
   if (!token.value.trim()) {
@@ -49,34 +72,31 @@ async function handleLogin() {
     const info = await getAuthInfo(token.value)
     username.value = info.username
     userId.value = info.id
-    
+
     // 持久化登录状态
     localStorage.setItem('vndb_api_token', token.value.trim())
     localStorage.setItem('vndb_username', info.username)
     localStorage.setItem('vndb_user_id', info.id)
 
     successMsg.value = t('login.login_success')
+    // 短暂展示成功提示后硬刷新，重建所有页面状态
     setTimeout(() => {
-      router.push('/settings')
-    }, 1500)
+      hardRefreshApp('/settings')
+    }, 800)
   } catch (e) {
     errorMsg.value = t('login.login_failed', { error: e.message || 'Token 无效或网络错误' })
-  } finally {
     isLoading.value = false
   }
+  // 成功路径不在 finally 里关 loading：即将整页刷新，避免闪一下可点按钮
 }
 
 function logout() {
-  token.value = ''
-  username.value = ''
-  userId.value = ''
-  localStorage.removeItem('vndb_api_token')
-  localStorage.removeItem('vndb_username')
-  localStorage.removeItem('vndb_user_id')
+  clearAuthStorage()
   successMsg.value = t('login.logout_success')
+  // 退出后立即硬刷新，避免其他 tab 仍保留登录态 UI
   setTimeout(() => {
-    successMsg.value = ''
-  }, 2000)
+    hardRefreshApp('/settings')
+  }, 400)
 }
 
 function goBack() {
