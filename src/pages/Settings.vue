@@ -241,7 +241,7 @@ function goToLogin() {
 }
 
 // ====== 更新检查 ======
-const APP_VERSION = '1.0.0-beta.5'
+const APP_VERSION = '1.0.0'
 const updateState = ref('idle')
 const latestVersion = ref('')
 const latestReleaseUrl = ref('')
