@@ -374,8 +374,8 @@ onMounted(async () => {
   })
 
   // 2. 获取发布信息
-  // 刚刚发布: 时间倒序排行今天之前的 Release
-  getReleaseList(['released', '<', today], { sort: 'released', reverse: true, results: 5 })
+  // 刚刚发布: 时间倒序排行今天及之前的 Release
+  getReleaseList(['released', '<=', today], { sort: 'released', reverse: true, results: 5 })
     .then(res => {
       justReleased.value = res.results
       loadingSections.value.releases = false
