@@ -358,6 +358,15 @@ onMounted(() => {
       applyFilters(saved.filters)
     }
   }
+  
+  // 额外支持通过 query 传参直接筛选日期范围，例如 dateTo=today
+  if (route.query.dateFrom !== undefined) {
+    selectedDateFrom.value = route.query.dateFrom || ''
+  }
+  if (route.query.dateTo !== undefined) {
+    selectedDateTo.value = route.query.dateTo || ''
+  }
+
   fetchData()
 })
 </script>
