@@ -4,7 +4,8 @@
  */
  
 import { Capacitor, CapacitorHttp } from '@capacitor/core'
- 
+import { cacheManager, CACHE_TTL } from '@/utils/cacheManager'
+
 const BASE_URL = 'https://api.vndb.org/kana'
 const SANDBOX_URL = 'https://beta.vndb.org/api/kana'
 
@@ -52,120 +53,260 @@ function normalizeCapacitorResponseBody(data) {
 }
 
 /**
+ * 判断请求是否应该进行持久化缓存或内存缓存，并返回缓存策略
+ */
+function getCachePolicy(path, method, body, customCacheOptions = {}) {
+  // 如果显式禁用缓存
+  if (customCacheOptions.cache === false) {
+    return null
+  }
+
+  // 非 GET / POST 请求不缓存（例如 PATCH, DELETE 等变更类操作）
+  if (method !== 'GET' && method !== 'POST') {
+    return null
+  }
+
+  // 私人数据和认证类接口不进行持久化只读缓存（安全与隔离）
+  if (path.startsWith('/ulist') || path.startsWith('/authinfo')) {
+    return null
+  }
+
+  // 1. 详情类接口与元数据：写入 IndexedDB 持久化 + 1天 TTL (CACHE_TTL.LONG)
+  // 识别规则：
+  // - POST /vn 或 /release 或 /character 或 /producer 或 /staff 且 filters 包含 ['id', '=', '...']
+  // - 或者特定静态元数据 /tag, /trait
+  let isDetail = false
+  let isStaticMeta = false
+
+  let parsedBody = null
+  if (typeof body === 'string') {
+    try {
+      parsedBody = JSON.parse(body)
+    } catch (_) {}
+  } else if (body && typeof body === 'object') {
+    parsedBody = body
+  }
+
+  if (parsedBody && Array.isArray(parsedBody.filters)) {
+    const f = parsedBody.filters
+    // 形式如 ['id', '=', 'v17']
+    if (f.length === 3 && f[0] === 'id' && f[1] === '=') {
+      isDetail = true
+    }
+  }
+
+  // 如果请求路径是 /tag 或 /trait 并且是查列表/搜索，作为长效元数据
+  if (path === '/tag' || path === '/trait') {
+    isStaticMeta = true
+  }
+
+  // 允许外部通过 customCacheOptions 显式覆盖
+  const persistent = customCacheOptions.persistent !== undefined
+    ? customCacheOptions.persistent
+    : (isDetail || isStaticMeta)
+
+  const ttl = customCacheOptions.ttl !== undefined
+    ? customCacheOptions.ttl
+    : (persistent ? CACHE_TTL.LONG : CACHE_TTL.SHORT)
+
+  return {
+    persistent,
+    ttl,
+    forceReload: Boolean(customCacheOptions.forceReload)
+  }
+}
+
+/**
+ * 生成规范化的缓存键
+ */
+function generateCacheKey(path, method, body) {
+  let bodyStr = ''
+  if (typeof body === 'string') {
+    try {
+      // 规范化 JSON key 顺序以最大化命中率
+      const obj = JSON.parse(body)
+      bodyStr = JSON.stringify(obj)
+    } catch (_) {
+      bodyStr = body
+    }
+  } else if (body && typeof body === 'object') {
+    bodyStr = JSON.stringify(body)
+  }
+  return `${method}:${path}:${bodyStr}`
+}
+
+/**
  * 通用请求发送函数
  */
 export async function request(path, options = {}) {
   const url = `${getEndpoint()}${path}`
-  const { timeout, ...fetchOptions } = options
-
-  let signal
-  let timer
-  if (timeout) {
-    const controller = new AbortController()
-    signal = controller.signal
-    timer = setTimeout(() => controller.abort(), timeout)
-  }
+  const { timeout, cache: cacheOption, forceReload, ...fetchOptions } = options
 
   const method = fetchOptions.method || 'GET'
-  const headers = {
-    ...getHeaders(),
-    ...fetchOptions.headers,
-  }
   const requestBody = typeof fetchOptions.body === 'string' ? fetchOptions.body : null
-  const isNative = Capacitor.isNativePlatform()
 
-  try {
-    if (isNative) {
-      const nativeResponse = await CapacitorHttp.request({
-        url,
-        method,
-        headers,
-        data: requestBody ? JSON.parse(requestBody) : undefined,
-        connectTimeout: timeout,
-        readTimeout: timeout,
-      })
+  // 缓存策略判定
+  const cachePolicy = getCachePolicy(path, method, requestBody, {
+    ...(typeof cacheOption === 'object' ? cacheOption : {}),
+    cache: cacheOption !== false,
+    forceReload: forceReload || options.forceReload || (typeof cacheOption === 'object' && cacheOption?.forceReload),
+    persistent: typeof cacheOption === 'object' ? cacheOption.persistent : undefined,
+    ttl: typeof cacheOption === 'object' ? cacheOption.ttl : undefined,
+  })
 
-      const normalizedData = normalizeCapacitorResponseBody(nativeResponse?.data)
-      if (nativeResponse.status < 200 || nativeResponse.status >= 300) {
-        const responseText = typeof nativeResponse?.data === 'string'
-          ? nativeResponse.data
-          : JSON.stringify(nativeResponse?.data ?? '')
-        const errorMsg = normalizedData?.message || responseText || `HTTP error! status: ${nativeResponse.status}`
-        const error = new Error(errorMsg)
-        error.name = 'VndbRequestError'
-        error.status = nativeResponse.status
-        error.statusText = ''
-        error.url = url
-        error.method = method
-        error.requestBody = requestBody
-        error.responseBody = responseText
-        error.responseData = normalizedData
-        throw error
+  const cacheKey = cachePolicy ? generateCacheKey(path, method, requestBody) : null
+
+  // 1. 如果没有强制刷新且启用了缓存策略，尝试读取缓存
+  if (cachePolicy && !cachePolicy.forceReload && cacheKey) {
+    try {
+      const cached = await cacheManager.get(cacheKey, { persistent: cachePolicy.persistent })
+      if (cached !== null && cached !== undefined) {
+        return cached
       }
-
-      if (normalizedData && typeof normalizedData === 'object' && !Array.isArray(normalizedData)) {
-        return { ...normalizedData, _status: nativeResponse.status }
-      }
-      return { data: normalizedData, _status: nativeResponse.status }
+    } catch (e) {
+      console.warn('[VNDB API Cache] Read error:', e)
     }
-
-    const response = await fetch(url, {
-      ...fetchOptions,
-      headers,
-      ...(signal ? { signal } : {}),
-    })
-
-    if (!response.ok) {
-      let errorMsg = `HTTP error! status: ${response.status}`
-      let errData = null
-      let responseText = ''
-
-      try {
-        responseText = await response.text()
-        errData = responseText ? JSON.parse(responseText) : null
-        if (errData?.message) {
-          errorMsg = errData.message
-        } else if (responseText) {
-          errorMsg = responseText
-        }
-      } catch (_) {}
-
-      const error = new Error(errorMsg)
-      error.name = 'VndbRequestError'
-      error.status = response.status
-      error.statusText = response.statusText
-      error.url = url
-      error.method = method
-      error.requestBody = requestBody
-      error.responseBody = responseText
-      error.responseData = errData
-      throw error
-    }
-
-    const text = await response.text()
-    const data = text ? JSON.parse(text) : {}
-    if (data && typeof data === 'object' && !Array.isArray(data)) {
-      return { ...data, _status: response.status }
-    }
-    return { data, _status: response.status }
-  } catch (err) {
-    const isTimeoutError = err.name === 'AbortError' || err?.message?.toLowerCase?.().includes('timeout')
-    if (isTimeoutError) {
-      const timeoutError = new Error('请求超时，请检查网络后重试')
-      timeoutError.name = 'VndbTimeoutError'
-      timeoutError.url = url
-      timeoutError.method = method
-      timeoutError.requestBody = requestBody
-      throw timeoutError
-    }
-
-    if (!err.url) err.url = url
-    if (!err.method) err.method = method
-    if (err.requestBody === undefined) err.requestBody = requestBody
-    throw err
-  } finally {
-    if (timer) clearTimeout(timer)
   }
+
+  // 2. 处理并发相同的 In-Flight 请求（防击穿）
+  if (cacheKey && cacheManager.inFlightRequests.has(cacheKey)) {
+    return cacheManager.inFlightRequests.get(cacheKey)
+  }
+
+  const executeRequest = async () => {
+    let signal
+    let timer
+    if (timeout) {
+      const controller = new AbortController()
+      signal = controller.signal
+      timer = setTimeout(() => controller.abort(), timeout)
+    }
+
+    const headers = {
+      ...getHeaders(),
+      ...fetchOptions.headers,
+    }
+    const isNative = Capacitor.isNativePlatform()
+
+    try {
+      let result = null
+
+      if (isNative) {
+        const nativeResponse = await CapacitorHttp.request({
+          url,
+          method,
+          headers,
+          data: requestBody ? JSON.parse(requestBody) : undefined,
+          connectTimeout: timeout,
+          readTimeout: timeout,
+        })
+
+        const normalizedData = normalizeCapacitorResponseBody(nativeResponse?.data)
+        if (nativeResponse.status < 200 || nativeResponse.status >= 300) {
+          const responseText = typeof nativeResponse?.data === 'string'
+            ? nativeResponse.data
+            : JSON.stringify(nativeResponse?.data ?? '')
+          const errorMsg = normalizedData?.message || responseText || `HTTP error! status: ${nativeResponse.status}`
+          const error = new Error(errorMsg)
+          error.name = 'VndbRequestError'
+          error.status = nativeResponse.status
+          error.statusText = ''
+          error.url = url
+          error.method = method
+          error.requestBody = requestBody
+          error.responseBody = responseText
+          error.responseData = normalizedData
+          throw error
+        }
+
+        if (normalizedData && typeof normalizedData === 'object' && !Array.isArray(normalizedData)) {
+          result = { ...normalizedData, _status: nativeResponse.status }
+        } else {
+          result = { data: normalizedData, _status: nativeResponse.status }
+        }
+      } else {
+        const response = await fetch(url, {
+          ...fetchOptions,
+          headers,
+          ...(signal ? { signal } : {}),
+        })
+
+        if (!response.ok) {
+          let errorMsg = `HTTP error! status: ${response.status}`
+          let errData = null
+          let responseText = ''
+
+          try {
+            responseText = await response.text()
+            errData = responseText ? JSON.parse(responseText) : null
+            if (errData?.message) {
+              errorMsg = errData.message
+            } else if (responseText) {
+              errorMsg = responseText
+            }
+          } catch (_) {}
+
+          const error = new Error(errorMsg)
+          error.name = 'VndbRequestError'
+          error.status = response.status
+          error.statusText = response.statusText
+          error.url = url
+          error.method = method
+          error.requestBody = requestBody
+          error.responseBody = responseText
+          error.responseData = errData
+          throw error
+        }
+
+        const text = await response.text()
+        const data = text ? JSON.parse(text) : {}
+        if (data && typeof data === 'object' && !Array.isArray(data)) {
+          result = { ...data, _status: response.status }
+        } else {
+          result = { data, _status: response.status }
+        }
+      }
+
+      // 3. 请求成功，写入两级缓存
+      if (cachePolicy && cacheKey && result) {
+        cacheManager.set(cacheKey, result, {
+          ttl: cachePolicy.ttl,
+          persistent: cachePolicy.persistent,
+        }).catch((err) => {
+          console.warn('[VNDB API Cache] Set error:', err)
+        })
+      }
+
+      return result
+    } catch (err) {
+      const isTimeoutError = err.name === 'AbortError' || err?.message?.toLowerCase?.().includes('timeout')
+      if (isTimeoutError) {
+        const timeoutError = new Error('请求超时，请检查网络后重试')
+        timeoutError.name = 'VndbTimeoutError'
+        timeoutError.url = url
+        timeoutError.method = method
+        timeoutError.requestBody = requestBody
+        throw timeoutError
+      }
+
+      if (!err.url) err.url = url
+      if (!err.method) err.method = method
+      if (err.requestBody === undefined) err.requestBody = requestBody
+      throw err
+    } finally {
+      if (timer) clearTimeout(timer)
+    }
+  }
+
+  if (cacheKey) {
+    const promise = executeRequest().finally(() => {
+      cacheManager.inFlightRequests.delete(cacheKey)
+    })
+    cacheManager.inFlightRequests.set(cacheKey, promise)
+    return promise
+  }
+
+  return executeRequest()
 }
 
 /**

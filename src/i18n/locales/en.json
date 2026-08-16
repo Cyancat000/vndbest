@@ -42,6 +42,10 @@
         "title": "Privacy & Filters",
         "description": "Sensitive content display and screenshot filtering"
       },
+      "storage": {
+        "title": "Storage & Cache",
+        "description": "Manage local cached data and network storage"
+      },
       "about": {
         "title": "About App",
         "description": "Version info, update checks, and project links"
@@ -104,6 +108,20 @@
       "option_hide_card": "Hide Card",
       "option_blur_thumb": "Blur Thumbnail",
       "option_hide_screenshot": "Hide Screenshot"
+    },
+    "storage": {
+      "title": "Storage & Cache",
+      "description": "Manage local cached data and storage usage",
+      "cache_stats": "Cache Status",
+      "cache_stats_desc": "Includes persistent metadata (VN/Character details) and session memory cache",
+      "estimated_size": "Estimated Size",
+      "persistent_records": "Persistent Records",
+      "memory_records": "Session Memory Records",
+      "clear_cache": "Clear Cache",
+      "clearing": "Clearing...",
+      "clear_cache_desc": "Clear all API response cache and in-memory cache. Login credentials, theme, and custom preferences will not be affected.",
+      "clear_success": "Cache cleared successfully!",
+      "clear_failed": "Failed to clear cache, please try again"
     },
     "about": {
       "title": "About",

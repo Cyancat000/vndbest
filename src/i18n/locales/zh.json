@@ -42,6 +42,10 @@
         "title": "隐私与过滤",
         "description": "敏感内容显示与截图过滤规则"
       },
+      "storage": {
+        "title": "存储与缓存",
+        "description": "管理本地持久化数据与网络缓存"
+      },
       "about": {
         "title": "关于应用",
         "description": "版本信息、更新检查与项目链接"
@@ -104,6 +108,20 @@
       "option_hide_card": "完全屏蔽卡片",
       "option_blur_thumb": "规避缩略图",
       "option_hide_screenshot": "屏蔽截图"
+    },
+    "storage": {
+      "title": "存储与缓存",
+      "description": "管理本地缓存数据与存储占用",
+      "cache_stats": "缓存占用状态",
+      "cache_stats_desc": "包含作品/角色详情等持久化数据与会话列表缓存",
+      "estimated_size": "预估占用大小",
+      "persistent_records": "持久化缓存条目",
+      "memory_records": "会话内存条目",
+      "clear_cache": "清除缓存",
+      "clearing": "清除中...",
+      "clear_cache_desc": "清空所有接口响应缓存与内存数据。不会影响登录信息、个性化配置与主题偏好。",
+      "clear_success": "缓存已成功清空！",
+      "clear_failed": "清除缓存失败，请重试"
     },
     "about": {
       "title": "关于",

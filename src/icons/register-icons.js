@@ -85,6 +85,8 @@ import weight from '@iconify-icons/lucide/weight'
 import circle from '@iconify-icons/lucide/circle'
 import heart from '@iconify-icons/lucide/heart'
 import droplets from '@iconify-icons/lucide/droplets'
+import database from '@iconify-icons/lucide/database'
+import hardDrive from '@iconify-icons/lucide/hard-drive'
 
 import eosLoading from '@iconify-icons/eos-icons/loading'
 
@@ -185,6 +187,8 @@ const ICON_DATA = {
   [APP_ICON_NAMES.common.venus]: circle,
   [APP_ICON_NAMES.common.mars]: circleDot,
   [APP_ICON_NAMES.common.venusMars]: badge,
+  [APP_ICON_NAMES.common.database]: database,
+  [APP_ICON_NAMES.common.hardDrive]: hardDrive,
   [APP_ICON_NAMES.loaders.eosLoading]: eosLoading,
   [APP_ICON_NAMES.solar.starBroken]: star,
   [APP_ICON_NAMES.solar.starBold]: star,

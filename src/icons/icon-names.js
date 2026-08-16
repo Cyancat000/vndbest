@@ -87,7 +87,9 @@ export const APP_ICON_NAMES = {
     droplets: 'lucide:droplets',
     venus: 'lucide:circle',
     mars: 'lucide:circle-dot',
-    venusMars: 'lucide:badge'
+    venusMars: 'lucide:badge',
+    database: 'lucide:database',
+    hardDrive: 'lucide:hard-drive'
   },
   loaders: {
     eosLoading: 'eos-icons:loading'
@@ -126,6 +128,7 @@ export const SEX_ICONS = {
 export const SETTINGS_SECTION_ICONS = {
   appearance: APP_ICON_NAMES.common.palette,
   privacy: APP_ICON_NAMES.common.shield,
+  storage: APP_ICON_NAMES.common.database,
   about: APP_ICON_NAMES.common.info
 }
 

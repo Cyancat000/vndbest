@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import AppHeader from '@/components/AppHeader.vue'
 import { getAuthInfo } from '@/api/vndb'
+import { cacheManager } from '@/utils/cacheManager'
 import { IonPage, IonContent } from '@ionic/vue'
 
 const router = useRouter()
@@ -56,6 +57,8 @@ function clearAuthStorage() {
   localStorage.removeItem('vndb_api_token')
   localStorage.removeItem('vndb_username')
   localStorage.removeItem('vndb_user_id')
+  // 登出/失效时清理内存与持久化缓存，确保用户隔离
+  cacheManager.clear().catch(() => {})
 }
 
 async function handleLogin() {

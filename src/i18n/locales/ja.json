@@ -42,6 +42,10 @@
         "title": "プライバシーとフィルター",
         "description": "センシティブな内容の表示とスクリーンショットのフィルター"
       },
+      "storage": {
+        "title": "ストレージとキャッシュ",
+        "description": "ローカル保存データとキャッシュの管理"
+      },
       "about": {
         "title": "アプリについて",
         "description": "バージョン情報、更新確認、プロジェクトリンク"
@@ -104,6 +108,20 @@
       "option_hide_card": "カードを非表示",
       "option_blur_thumb": "サムネイルをぼかす",
       "option_hide_screenshot": "スクリーンショットを非表示"
+    },
+    "storage": {
+      "title": "ストレージとキャッシュ",
+      "description": "ローカルキャッシュと使用量の管理",
+      "cache_stats": "キャッシュ状況",
+      "cache_stats_desc": "作品・キャラクター詳細の永続化データおよびセッションメモリキャッシュ",
+      "estimated_size": "推定使用容量",
+      "persistent_records": "永続化キャッシュ件数",
+      "memory_records": "セッションメモリ件数",
+      "clear_cache": "キャッシュをクリア",
+      "clearing": "クリア中...",
+      "clear_cache_desc": "すべての API 応答キャッシュとメモリデータを消去します。ログイン情報、テーマ、個人設定には影響しません。",
+      "clear_success": "キャッシュを正常にクリアしました！",
+      "clear_failed": "キャッシュのクリアに失敗しました。もう一度お試しください"
     },
     "about": {
       "title": "概要",

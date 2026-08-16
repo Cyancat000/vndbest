@@ -56,6 +56,12 @@ const routes = [
     meta: { showTabBar: false, settingsSection: 'privacy' }
   },
   {
+    path: '/settings/storage',
+    name: 'SettingsStorage',
+    component: Settings,
+    meta: { showTabBar: false, settingsSection: 'storage' }
+  },
+  {
     path: '/settings/about',
     name: 'SettingsAbout',
     component: Settings,

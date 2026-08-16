@@ -11,11 +11,14 @@ import { IonPage, IonContent } from '@ionic/vue'
 import { useTheme } from '@/composables/useTheme'
 import { useBackground } from '@/composables/useBackground'
 import { SETTINGS_SECTION_ICONS, THEME_OPTION_ICONS } from '@/icons/icon-names'
+import { cacheManager } from '@/utils/cacheManager'
+import { useToast } from '@/composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
 const { t, locale } = useI18n()
 const { themeMode } = useTheme()
+const { showToast } = useToast()
 const {
   backgroundImage,
   backgroundOpacity,
@@ -75,6 +78,12 @@ const settingsSections = computed(() => ([
     icon: SETTINGS_SECTION_ICONS.privacy
   },
   {
+    key: 'storage',
+    title: t('settings.sections.storage.title'),
+    description: t('settings.sections.storage.description'),
+    icon: SETTINGS_SECTION_ICONS.storage
+  },
+  {
     key: 'about',
     title: t('settings.sections.about.title'),
     description: t('settings.sections.about.description'),
@@ -107,8 +116,59 @@ const availableTitleLangOptions = computed(() => {
   }))
 })
 
+// ====== 存储与缓存管理 ======
+const storageInfo = ref({
+  memoryCount: 0,
+  idbCount: 0,
+  usageBytes: 0,
+  formattedUsage: '0 B'
+})
+const isClearingCache = ref(false)
+const isLoadingStorage = ref(false)
+
+async function loadStorageInfo() {
+  isLoadingStorage.value = true
+  try {
+    const info = await cacheManager.getStorageInfo()
+    storageInfo.value = info
+  } catch (e) {
+    console.warn('获取存储信息失败:', e)
+  } finally {
+    isLoadingStorage.value = false
+  }
+}
+
+async function handleClearCache() {
+  if (isClearingCache.value) return
+  isClearingCache.value = true
+  try {
+    await cacheManager.clear()
+    storageInfo.value = {
+      memoryCount: 0,
+      idbCount: 0,
+      usageBytes: 0,
+      formattedUsage: '0 B'
+    }
+    showToast(t('settings.storage.clear_success'), 'success')
+  } catch (err) {
+    console.error('清空缓存失败:', err)
+    showToast(t('settings.storage.clear_failed'), 'error')
+  } finally {
+    isClearingCache.value = false
+  }
+}
+
+watch(activeSection, (newSection) => {
+  if (newSection === 'storage') {
+    loadStorageInfo()
+  }
+}, { immediate: true })
+
 onMounted(() => {
   username.value = localStorage.getItem('vndb_username') || ''
+  if (activeSection.value === 'storage') {
+    loadStorageInfo()
+  }
 })
 
 function openSection(sectionKey) {
@@ -627,6 +687,68 @@ const themeOptions = [
                   />
                 </div>
               </div>
+            </div>
+          </div>
+        </template>
+
+        <template v-else-if="activeSection === 'storage'">
+          <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 shadow-xs space-y-4">
+            <div class="border-b border-neutral-100 dark:border-neutral-700/50 pb-2">
+              <h2 class="text-sm font-semibold text-neutral-800 dark:text-neutral-200">{{ t('settings.storage.title') }}</h2>
+              <p class="text-[10px] text-neutral-400 dark:text-neutral-500">{{ t('settings.storage.description') }}</p>
+            </div>
+
+            <!-- 缓存统计概览卡片 -->
+            <div class="space-y-3 pt-2">
+              <div class="space-y-0.5">
+                <h3 class="text-sm font-semibold text-neutral-800 dark:text-neutral-200">{{ t('settings.storage.cache_stats') }}</h3>
+                <p class="text-[10px] text-neutral-400 dark:text-neutral-500">{{ t('settings.storage.cache_stats_desc') }}</p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div class="rounded-lg border border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/50 p-3 flex flex-col justify-between">
+                  <span class="text-xs text-neutral-500 dark:text-neutral-400">{{ t('settings.storage.estimated_size') }}</span>
+                  <span class="text-lg font-bold text-neutral-900 dark:text-neutral-100 mt-1 tabular-nums">
+                    {{ isLoadingStorage ? '...' : storageInfo.formattedUsage }}
+                  </span>
+                </div>
+                <div class="rounded-lg border border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/50 p-3 flex flex-col justify-between">
+                  <span class="text-xs text-neutral-500 dark:text-neutral-400">{{ t('settings.storage.persistent_records') }}</span>
+                  <span class="text-lg font-bold text-neutral-900 dark:text-neutral-100 mt-1 tabular-nums">
+                    {{ isLoadingStorage ? '...' : storageInfo.idbCount }}
+                  </span>
+                </div>
+                <div class="rounded-lg border border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/50 p-3 flex flex-col justify-between">
+                  <span class="text-xs text-neutral-500 dark:text-neutral-400">{{ t('settings.storage.memory_records') }}</span>
+                  <span class="text-lg font-bold text-neutral-900 dark:text-neutral-100 mt-1 tabular-nums">
+                    {{ isLoadingStorage ? '...' : storageInfo.memoryCount }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 清除缓存操作区 -->
+            <div class="pt-4 border-t border-neutral-100 dark:border-neutral-700/50 space-y-3">
+              <div class="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed bg-neutral-50/70 dark:bg-neutral-800/70 p-3 rounded-lg border border-neutral-100 dark:border-neutral-800">
+                <div class="flex items-start gap-2">
+                  <Icon icon="lucide:info" class="h-4 w-4 text-neutral-400 dark:text-neutral-500 shrink-0 mt-0.5" />
+                  <span>{{ t('settings.storage.clear_cache_desc') }}</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                @click="handleClearCache"
+                :disabled="isClearingCache"
+                class="w-full flex items-center justify-center gap-2 rounded-lg border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/30 py-2.5 px-4 text-xs font-semibold text-red-600 dark:text-red-400 transition hover:bg-red-100 dark:hover:bg-red-900/40 active:bg-red-200 dark:active:bg-red-900/60 disabled:opacity-50"
+              >
+                <Icon
+                  :icon="isClearingCache ? 'lucide:loader' : 'lucide:trash-2'"
+                  class="h-4 w-4"
+                  :class="{ 'animate-spin': isClearingCache }"
+                />
+                <span>{{ isClearingCache ? t('settings.storage.clearing') : t('settings.storage.clear_cache') }}</span>
+              </button>
             </div>
           </div>
         </template>
