@@ -225,7 +225,7 @@ function goToLogin() {
 }
 
 // ====== 更新检查 ======
-const APP_VERSION = '1.0.1'
+const APP_VERSION = '1.0.2'
 const updateState = ref('idle')
 const latestVersion = ref('')
 const latestReleaseUrl = ref('')
