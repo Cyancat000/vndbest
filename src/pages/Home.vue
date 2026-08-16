@@ -14,12 +14,28 @@ import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { useSavedSearches, SEARCH_TYPE_MAP } from '@/composables/useSavedSearches'
 import { IonPage, IonContent, IonImg, IonSpinner } from '@ionic/vue'
 import { useImageLoader } from '@/composables/useImageLoader'
+import { useToast } from '@/composables/useToast'
+import { useAppUpdate } from '@/composables/useAppUpdate'
+import UpdateDialog from '@/components/UpdateDialog.vue'
 
 const router = useRouter()
 const { t } = useI18n()
+const { showToast } = useToast()
 const { getCardAction } = usePrivacy()
 const { list: savedSearches, remove: removeSavedSearch } = useSavedSearches()
 const imageLoader = useImageLoader()
+const {
+  updateState,
+  latestVersion,
+  latestReleaseDate,
+  latestReleaseBody,
+  latestDownloadUrl,
+  ignoredVersion,
+  setIgnoredVersion,
+  checkForUpdate
+} = useAppUpdate()
+
+const showUpdateModal = ref(false)
 
 const stats = ref(null)
 const justReleased = ref([])
@@ -411,6 +427,15 @@ onMounted(async () => {
   // 3. 获取已保存搜索的结果预览
   fetchSavedSearchResults()
 
+  // 4. 检查版本更新（静默检查）
+  checkForUpdate().then((res) => {
+    if (res?.hasUpdate && res.version && res.version !== ignoredVersion.value) {
+      showUpdateModal.value = true
+    }
+  }).catch((err) => {
+    console.error('自动检查更新异常:', err)
+  })
+
   loadingSections.value.random = false
   loading.value = false
 })
@@ -554,6 +579,23 @@ function confirmDelete() {
     delete savedSearchResults.value[search.id]
   }
   closeDeleteConfirm()
+}
+
+// 确认更新
+function handleUpdateConfirm(options) {
+  if (options?.ignore && latestVersion.value) {
+    setIgnoredVersion(latestVersion.value)
+  }
+  showUpdateModal.value = false
+}
+
+// 取消更新
+function handleUpdateCancel(options) {
+  if (options?.ignore && latestVersion.value) {
+    setIgnoredVersion(latestVersion.value)
+  }
+  showUpdateModal.value = false
+  showToast(t('update.manual_check_tip'), 'info', 3000)
 }
 
 // 已保存搜索：最多显示前 5 个
@@ -1104,6 +1146,17 @@ function getFilterSummary(item) {
       </div>
     </Transition>
   </Teleport>
+
+  <!-- 更新提醒弹窗 -->
+  <UpdateDialog
+    :show="showUpdateModal"
+    :version="latestVersion"
+    :release-date="latestReleaseDate"
+    :release-body="latestReleaseBody"
+    :download-url="latestDownloadUrl"
+    @confirm="handleUpdateConfirm"
+    @cancel="handleUpdateCancel"
+  />
 
   </ion-content>
   </ion-page>

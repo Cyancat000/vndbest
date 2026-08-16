@@ -134,6 +134,14 @@
       "check_failed": "Check Failed",
       "download_update": "Download Latest Version"
     },
+    "update": {
+      "new_version_available": "New Version Available",
+      "no_changelog": "No changelog provided",
+      "dont_remind_this_version": "Don't remind me for this version",
+      "later": "Later",
+      "update_now": "Update Now",
+      "manual_check_tip": "You can manually check for updates in Settings - About~"
+    },
     "theme": "Appearance",
     "theme_follow_system": "System",
     "theme_light": "Light",

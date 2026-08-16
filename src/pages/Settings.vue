@@ -13,12 +13,21 @@ import { useBackground } from '@/composables/useBackground'
 import { SETTINGS_SECTION_ICONS, THEME_OPTION_ICONS } from '@/icons/icon-names'
 import { cacheManager } from '@/utils/cacheManager'
 import { useToast } from '@/composables/useToast'
+import { useAppUpdate } from '@/composables/useAppUpdate'
 
 const route = useRoute()
 const router = useRouter()
 const { t, locale } = useI18n()
 const { themeMode } = useTheme()
 const { showToast } = useToast()
+const {
+  appVersion: APP_VERSION,
+  updateState,
+  latestVersion,
+  latestReleaseUrl,
+  latestReleaseDate,
+  checkForUpdate
+} = useAppUpdate()
 const {
   backgroundImage,
   backgroundOpacity,
@@ -282,56 +291,6 @@ watch(currentLang, (newLang) => {
 
 function goToLogin() {
   router.push('/login')
-}
-
-// ====== 更新检查 ======
-const APP_VERSION = '1.0.2'
-const updateState = ref('idle')
-const latestVersion = ref('')
-const latestReleaseUrl = ref('')
-const latestReleaseDate = ref('')
-
-function parseVersion(v) {
-  const cleaned = v.replace(/^v/i, '')
-  const [main, pre] = cleaned.split('-', 2)
-  const segments = main.split('.').map(Number)
-  return {
-    major: segments[0] || 0,
-    minor: segments[1] || 0,
-    patch: segments[2] || 0,
-    pre: pre || ''
-  }
-}
-
-function isNewer(a, b) {
-  const va = parseVersion(a)
-  const vb = parseVersion(b)
-  if (va.major !== vb.major) return va.major > vb.major
-  if (va.minor !== vb.minor) return va.minor > vb.minor
-  if (va.patch !== vb.patch) return va.patch > vb.patch
-  if (va.pre && !vb.pre) return false
-  if (!va.pre && vb.pre) return true
-  return false
-}
-
-async function checkForUpdate() {
-  updateState.value = 'checking'
-  try {
-    const res = await fetch('https://api.github.com/repos/Cyancat000/vndbest/releases/latest')
-    if (res.status === 404) {
-      updateState.value = 'up-to-date'
-      return
-    }
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = await res.json()
-    latestVersion.value = data.tag_name
-    latestReleaseUrl.value = data.html_url
-    latestReleaseDate.value = new Date(data.published_at).toLocaleDateString()
-    updateState.value = isNewer(data.tag_name, APP_VERSION) ? 'available' : 'up-to-date'
-  } catch (e) {
-    console.error('检查更新失败:', e)
-    updateState.value = 'error'
-  }
 }
 
 // ====== 主题选项 ======
