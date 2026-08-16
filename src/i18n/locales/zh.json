@@ -422,7 +422,10 @@
       "no_notes": "暂无笔记",
       "save_success": "修改成功",
       "save_error": "修改失败，请重试",
-      "no_permission": "无权限"
+      "no_permission": "无权限",
+      "confirm": "确定",
+      "manage_labels": "管理标签",
+      "labels_description": "可多选标签分配到当前作品"
     }
   },
   "release": {

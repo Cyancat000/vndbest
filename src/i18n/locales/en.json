@@ -423,7 +423,10 @@
       "no_notes": "No notes yet",
       "save_success": "Updated successfully",
       "save_error": "Failed to update, please try again",
-      "no_permission": "No permission"
+      "no_permission": "No permission",
+      "confirm": "Confirm",
+      "manage_labels": "Manage Labels",
+      "labels_description": "Select multiple labels to assign"
     }
   },
   "release": {

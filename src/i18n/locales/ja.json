@@ -423,7 +423,10 @@
       "no_notes": "まだメモはありません",
       "save_success": "更新しました",
       "save_error": "更新に失敗しました。再試行してください",
-      "no_permission": "権限がありません"
+      "no_permission": "権限がありません",
+      "confirm": "確定",
+      "manage_labels": "ラベル管理",
+      "labels_description": "複数のラベルを選択して割り当てることができます"
     }
   },
   "release": {

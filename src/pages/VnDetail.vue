@@ -4,9 +4,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import AppHeader from '@/components/AppHeader.vue'
-import { getVnDetail, getVnReleases, getVnCharacters, getVnQuotes, getVnListItem, patchVnListItem, deleteVnListItem } from '@/api/vndb'
+import { getVnDetail, getVnReleases, getVnCharacters, getVnQuotes, getVnListItem, patchVnListItem, deleteVnListItem, getUserListLabels } from '@/api/vndb'
 import VnList from '@/components/VnList.vue'
-import BaseSelect from '@/components/BaseSelect.vue'
+import ActionSheet from '@/components/ActionSheet.vue'
 import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { useTranslation } from '@/composables/useTranslation'
 import { useImageLoader } from '@/composables/useImageLoader'
@@ -144,49 +144,148 @@ const LABEL_NAMES = {
   6: 'Backlog'
 }
 
+// 预定义标签的多语言 i18n 映射
+const getLabelI18n = (id, fallback) => {
+  const map = {
+    1: 'vn.status.playing',
+    2: 'vn.status.finished',
+    3: 'vn.status.stalled',
+    4: 'vn.status.dropped',
+    5: 'vn.status.wishlisted',
+    6: 'vn.status.backward'
+  }
+  if (map[id]) {
+    return t(map[id])
+  }
+  return fallback || LABEL_NAMES[id] || `Label ${id}`
+}
+
+// 用户所有的标签列表（包括系统预定义与自定义）
+const userLabels = ref([])
+const userLabelsLoading = ref(false)
+
+// 加载用户的全部标签
+const loadUserLabels = async () => {
+  const token = localStorage.getItem('vndb_api_token')
+  if (!token) {
+    userLabels.value = []
+    return
+  }
+  userLabelsLoading.value = true
+  try {
+    const data = await getUserListLabels()
+    if (data && data.labels) {
+      userLabels.value = data.labels
+    }
+  } catch (err) {
+    console.error('获取用户全部标签失败:', err)
+  } finally {
+    userLabelsLoading.value = false
+  }
+}
+
 // 当前 VN 的状态标签 ID 数组
 const currentLabelIds = computed(() => {
   if (!collectionEntry.value?.labels) return []
   return collectionEntry.value.labels.map(l => l.id)
 })
 
-// 获取当前主要状态（取最高优先级的标签）
-const currentStatusLabel = computed(() => {
-  if (currentLabelIds.value.length === 0) return null
-  // 按优先级排序：Playing > Finished > Stalled > Dropped > Wishlisted > Backlog
-  const priority = [1, 2, 3, 4, 5, 6]
-  for (const id of priority) {
-    if (currentLabelIds.value.includes(id)) {
-      // 优先使用 API 返回的 name，否则用预定义名
-      const apiLabel = collectionEntry.value.labels.find(l => l.id === id)
-      const name = apiLabel?.name || LABEL_NAMES[id] || `Label ${id}`
-      return { id, name }
-    }
-  }
-  return null
+// 获取当前所有选中的标签展示信息列表
+const currentSelectedLabels = computed(() => {
+  if (currentLabelIds.value.length === 0) return []
+  return currentLabelIds.value.map(id => {
+    const userLbl = userLabels.value.find(l => l.id === id)
+    const entryLbl = collectionEntry.value?.labels?.find(l => l.id === id)
+    const rawName = userLbl?.label || entryLbl?.label || entryLbl?.name || LABEL_NAMES[id] || `Label ${id}`
+    const name = id <= 6 ? getLabelI18n(id, rawName) : rawName
+    const isSystem = id <= 6
+    return { id, name, isSystem }
+  })
 })
 
-// 状态选项列表（供 BaseSelect 使用）
-const statusOptions = computed(() => {
-  // 从 API 返回的标签构建选项（支持自定义标签）
-  if (collectionEntry.value?.labels && collectionEntry.value.labels.length > 0) {
-    const options = collectionEntry.value.labels
-      .filter(l => l.id >= 1 && l.id <= 6)
-      .map(l => ({ value: l.id, label: l.name || LABEL_NAMES[l.id] || `Label ${l.id}` }))
-    // 确保所有预定义标签都在选项中
-    const existingIds = new Set(options.map(o => o.value))
-    for (const [id, name] of Object.entries(LABEL_NAMES)) {
-      if (!existingIds.has(Number(id))) {
-        options.push({ value: Number(id), label: name })
+// 获取当前主要状态（展示在详情页主按钮文字）
+const currentStatusLabel = computed(() => {
+  if (currentSelectedLabels.value.length === 0) return null
+  // 如果有多个标签，拼接显示或显示主要标签
+  if (currentSelectedLabels.value.length === 1) {
+    return currentSelectedLabels.value[0]
+  }
+  // 多个标签时，优先找优先级最高的主标签，并附带计数，例如 "Playing (+2)"
+  const priority = [1, 2, 3, 4, 5, 6]
+  for (const id of priority) {
+    const found = currentSelectedLabels.value.find(l => l.id === id)
+    if (found) {
+      return {
+        id: found.id,
+        name: `${found.name} (+${currentSelectedLabels.value.length - 1})`
       }
+    }
+  }
+  const first = currentSelectedLabels.value[0]
+  return {
+    id: first.id,
+    name: `${first.name} (+${currentSelectedLabels.value.length - 1})`
+  }
+})
+
+// 控制 ActionSheet 状态选择器的展示
+const showStatusActionSheet = ref(false)
+
+// 状态选项列表（供 ActionSheet / 弹窗使用）
+const statusOptions = computed(() => {
+  const options = []
+  
+  // 1. "从列表移除 / 无" 选项
+  options.push({
+    value: 0,
+    label: t('vn.status.none'),
+    icon: 'lucide:trash-2',
+    destructive: true
+  })
+
+  // 如果成功拉取到了用户的全部标签（包含自定义标签）
+  if (userLabels.value && userLabels.value.length > 0) {
+    for (const lbl of userLabels.value) {
+      const isSystem = lbl.id >= 1 && lbl.id <= 6
+      const labelText = isSystem ? getLabelI18n(lbl.id, lbl.label) : lbl.label
+      options.push({
+        value: lbl.id,
+        label: labelText,
+        count: lbl.count,
+        icon: isSystem ? 'solar:bookmark-bold' : 'lucide:tag',
+        description: lbl.private ? 'Private' : ''
+      })
     }
     return options
   }
-  // 无 API 数据时使用预定义标签
-  return Object.entries(LABEL_NAMES).map(([id, name]) => ({
-    value: Number(id),
-    label: name
-  }))
+
+  // 兜底：如果还未加载完用户标签列表，但条目本身带有标签，或者默认提供 1~6
+  const existingSet = new Set()
+  if (collectionEntry.value?.labels) {
+    for (const l of collectionEntry.value.labels) {
+      const isSystem = l.id >= 1 && l.id <= 6
+      const labelText = isSystem ? getLabelI18n(l.id, l.label || l.name) : (l.label || l.name || `Label ${l.id}`)
+      options.push({
+        value: l.id,
+        label: labelText,
+        icon: isSystem ? 'solar:bookmark-bold' : 'lucide:tag'
+      })
+      existingSet.add(l.id)
+    }
+  }
+
+  for (const [idStr, defaultName] of Object.entries(LABEL_NAMES)) {
+    const id = Number(idStr)
+    if (!existingSet.has(id)) {
+      options.push({
+        value: id,
+        label: getLabelI18n(id, defaultName),
+        icon: 'solar:bookmark-bold'
+      })
+    }
+  }
+
+  return options
 })
 
 // 当前选中的值（0 表示"无"）
@@ -216,8 +315,8 @@ const loadCollectionStatus = async (vnId) => {
   }
 }
 
-// 处理状态变更（通过 BaseSelect）
-const handleStatusChange = async (newLabelId) => {
+// 处理状态标签多选变更（通过 ActionSheet 多选确认）
+const handleMultipleLabelsChange = async (selectedLabelIds) => {
   if (!vn.value?.id) return
 
   const token = localStorage.getItem('vndb_api_token')
@@ -233,9 +332,10 @@ const handleStatusChange = async (newLabelId) => {
 
   try {
     let updated = false
+    const validSelectedIds = (selectedLabelIds || []).filter(id => id && id > 0)
 
-    if (!newLabelId) {
-      // 选择"无" → 从列表移除
+    if (validSelectedIds.length === 0) {
+      // 没有任何选中的标签 → 从收藏列表移除
       if (collectionEntry.value) {
         requestMethod = 'DELETE'
         requestTargetId = collectionEntry.value.id
@@ -244,58 +344,50 @@ const handleStatusChange = async (newLabelId) => {
         updated = true
       }
     } else if (collectionEntry.value) {
-      // 已在列表中 → 先移除旧的状态标签，再设置新的
-      const oldLabelIds = currentLabelIds.value.filter(id => id >= 1 && id <= 6)
+      // 已在列表中：全量覆写标签或根据差集更新
+      const oldLabelIds = currentLabelIds.value
+      const toUnset = oldLabelIds.filter(id => !validSelectedIds.includes(id))
+      const toSet = validSelectedIds.filter(id => !oldLabelIds.includes(id))
+
       const data = {}
-      if (oldLabelIds.length > 0) {
-        data.labels_unset = oldLabelIds
+      if (toUnset.length > 0) {
+        data.labels_unset = toUnset
       }
-      if (!oldLabelIds.includes(newLabelId)) {
-        data.labels_set = [newLabelId]
+      if (toSet.length > 0) {
+        data.labels_set = toSet
       }
+
       if (Object.keys(data).length > 0) {
         patchPayload = data
         requestTargetId = collectionEntry.value.id
         const response = await patchVnListItem(collectionEntry.value.id, data)
         updated = response?._status === 204
+      } else {
+        updated = true
       }
     } else {
-      // 不在列表中 → 创建新条目
-      patchPayload = { labels: [newLabelId] }
+      // 不在列表中 → 创建新条目并标记多标签
+      patchPayload = { labels: validSelectedIds }
       requestTargetId = vn.value.id
       const response = await patchVnListItem(vn.value.id, patchPayload)
       updated = response?._status === 204
     }
 
-    // 重新加载状态
-    await loadCollectionStatus(vn.value.id)
+    // 重新加载状态和标签计数
+    await Promise.all([
+      loadCollectionStatus(vn.value.id),
+      loadUserLabels()
+    ])
 
     if (updated) {
-      showToast(newLabelId ? t('vn.status.update_success') : t('vn.status.remove_success'), 'success')
+      showToast(validSelectedIds.length > 0 ? t('vn.status.update_success') : t('vn.status.remove_success'), 'success')
     }
   } catch (err) {
-    console.group('VNDetail Patch 请求失败')
-    console.error('更新收藏状态失败:', err)
-    console.log('VN 上下文:', {
-      vnId: vn.value?.id,
-      collectionEntryId: collectionEntry.value?.id || null,
-      requestTargetId,
-      previousStatusLabelId: currentStatusLabel.value?.id || null,
-      currentLabelIds: currentLabelIds.value,
-      nextStatusLabelId: newLabelId,
-      patchPayload,
-      requestUrl: err?.url,
-      requestMethod: err?.method || requestMethod,
-      requestBody: err?.requestBody,
-      responseStatus: err?.status,
-      responseStatusText: err?.statusText,
-      responseData: err?.responseData,
-      responseBody: err?.responseBody,
-      errorMessage: err?.message,
-    })
+    console.group('VNDetail Multiple Labels Patch 请求失败')
+    console.error('更新多标签状态失败:', err)
     console.groupEnd()
     const isUnauthorized = err?.status === 401 || err?.message?.includes('401')
-    showToast(isUnauthorized ? t('vn.status.no_permission') : t(newLabelId ? 'vn.status.update_error' : 'vn.status.remove_error'), 'error')
+    showToast(isUnauthorized ? t('vn.status.no_permission') : t('vn.status.update_error'), 'error')
   } finally {
     statusLoading.value = false
   }
@@ -313,7 +405,7 @@ let editSuccessTimer = null
 
 // 弹窗表单数据
 const editForm = ref({
-  statusLabelId: 0,    // 状态标签 ID（0 = 无）
+  selectedLabelIds: [], // 状态标签 ID 列表
   vote: '',            // 评分 1-10，空字符串表示未评分
   notes: '',           // 笔记
   started: '',         // 开始日期 YYYY-MM-DD
@@ -338,6 +430,22 @@ const clearVote = () => {
   editForm.value.vote = ''
 }
 
+// 切换编辑弹窗内的标签勾选状态
+const toggleEditModalLabel = (opt) => {
+  if (opt.value === 0 || opt.destructive) {
+    editForm.value.selectedLabelIds = []
+    return
+  }
+  const current = [...editForm.value.selectedLabelIds]
+  const idx = current.indexOf(opt.value)
+  if (idx >= 0) {
+    current.splice(idx, 1)
+  } else {
+    current.push(opt.value)
+  }
+  editForm.value.selectedLabelIds = current
+}
+
 // 格式化评分显示
 const formattedVote = computed(() => {
   const vote = collectionEntry.value?.vote
@@ -360,7 +468,7 @@ const resetEditFeedback = () => {
 const openEditModal = () => {
   const rawVote = collectionEntry.value?.vote
   editForm.value = {
-    statusLabelId: currentStatusLabel.value?.id || 0,
+    selectedLabelIds: [...currentLabelIds.value],
     vote: rawVote ? Math.round(rawVote / 10) : '',
     notes: collectionEntry.value?.notes || '',
     started: collectionEntry.value?.started || '',
@@ -407,14 +515,14 @@ const saveEditForm = async () => {
     let patchResponse = null
 
     // 处理状态标签变更
-    const newLabelId = form.statusLabelId || 0
-    const oldLabelIds = currentLabelIds.value.filter(id => id >= 1 && id <= 6)
+    const newSelectedLabelIds = (form.selectedLabelIds || []).filter(id => id && id > 0)
+    const oldLabelIds = currentLabelIds.value
 
     if (!collectionEntry.value) {
       // 不在列表中 → 创建新条目
       const patchData = {}
-      if (newLabelId > 0) {
-        patchData.labels = [newLabelId]
+      if (newSelectedLabelIds.length > 0) {
+        patchData.labels = newSelectedLabelIds
       }
       if (form.vote !== '') {
         patchData.vote = Math.round(Number(form.vote) * 10)
@@ -437,16 +545,13 @@ const saveEditForm = async () => {
       const patchData = {}
 
       // 状态标签变更
-      if (newLabelId === 0 && oldLabelIds.length > 0) {
-        patchData.labels_unset = oldLabelIds
-      } else if (newLabelId > 0) {
-        const labelsToUnset = oldLabelIds.filter(id => id !== newLabelId)
-        if (labelsToUnset.length > 0) {
-          patchData.labels_unset = labelsToUnset
-        }
-        if (!oldLabelIds.includes(newLabelId)) {
-          patchData.labels_set = [newLabelId]
-        }
+      const labelsToUnset = oldLabelIds.filter(id => !newSelectedLabelIds.includes(id))
+      const labelsToSet = newSelectedLabelIds.filter(id => !oldLabelIds.includes(id))
+      if (labelsToUnset.length > 0) {
+        patchData.labels_unset = labelsToUnset
+      }
+      if (labelsToSet.length > 0) {
+        patchData.labels_set = labelsToSet
       }
 
       // 评分变更（仅在实际变更时发送）
@@ -488,7 +593,10 @@ const saveEditForm = async () => {
         message: t('vn.status.save_success')
       }
       showToast(t('vn.status.save_success'), 'success')
-      await loadCollectionStatus(vn.value.id)
+      await Promise.all([
+        loadCollectionStatus(vn.value.id),
+        loadUserLabels()
+      ])
       editSuccessTimer = setTimeout(() => {
         closeEditModal()
       }, 1200)
@@ -1153,6 +1261,7 @@ const loadVnDetail = async (id) => {
       loadCharacters(id)
       loadQuotes(id)
       loadCollectionStatus(id)
+      loadUserLabels()
     } else {
       vn.value = null
       error.value = t('vn.not_found')
@@ -1523,17 +1632,39 @@ watch(
               <!-- 已加载 -->
               <template v-else>
                 <span class="text-neutral-400 dark:text-neutral-500">{{ t('vn.status.title') }}</span>
-                <div class="flex items-center gap-2">
-                  <BaseSelect
-                    :modelValue="currentStatusValue"
-                    @update:modelValue="handleStatusChange"
-                    :options="[{ value: 0, label: t('vn.status.none') }, ...statusOptions]"
-                  />
-                  <Icon
-                    v-if="statusLoading"
-                    icon="lucide:loader-2"
-                    class="h-4 w-4 animate-spin text-neutral-400 dark:text-neutral-500 flex-shrink-0"
-                  />
+                <div class="flex flex-col gap-1.5">
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      @click="showStatusActionSheet = true"
+                      :disabled="statusLoading"
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-xs font-medium text-neutral-800 dark:text-neutral-200 hover:border-neutral-300 dark:hover:border-neutral-600 transition cursor-pointer max-w-[220px]"
+                    >
+                      <Icon
+                        :icon="currentSelectedLabels.length === 0 ? 'lucide:bookmark-plus' : 'solar:bookmark-bold'"
+                        class="h-3.5 w-3.5 shrink-0"
+                        :class="currentSelectedLabels.length === 0 ? 'text-neutral-400 dark:text-neutral-500' : 'text-amber-500 dark:text-amber-400'"
+                      />
+                      <span class="truncate">{{ currentStatusLabel?.name || t('vn.status.none') }}</span>
+                      <Icon icon="lucide:chevron-down" class="h-3 w-3 text-neutral-400 dark:text-neutral-500 shrink-0 ml-0.5" />
+                    </button>
+                    <Icon
+                      v-if="statusLoading"
+                      icon="lucide:loader-2"
+                      class="h-4 w-4 animate-spin text-neutral-400 dark:text-neutral-500 flex-shrink-0"
+                    />
+                  </div>
+                  <!-- 多标签 Chips 展示 -->
+                  <div v-if="currentSelectedLabels.length > 1" class="flex flex-wrap gap-1 mt-0.5">
+                    <span
+                      v-for="lbl in currentSelectedLabels"
+                      :key="lbl.id"
+                      class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-neutral-200/60 dark:border-neutral-700/60 font-medium"
+                    >
+                      <Icon :icon="lbl.isSystem ? 'solar:bookmark-bold' : 'lucide:tag'" class="h-2.5 w-2.5" />
+                      {{ lbl.name }}
+                    </span>
+                  </div>
                 </div>
 
                 <!-- 我的评分 -->
@@ -2556,13 +2687,44 @@ watch(
 
             <!-- 表单内容 -->
             <div class="px-4 pb-4 space-y-4 overflow-y-auto flex-1">
-              <!-- 状态选择 -->
+              <!-- 状态选择（多选标签） -->
               <div class="space-y-2.5">
-                <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">{{ t('vn.status.title') }}</label>
-                <BaseSelect
-                  v-model="editForm.statusLabelId"
-                  :options="[{ value: 0, label: t('vn.status.none') }, ...statusOptions]"
-                />
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">{{ t('vn.status.title') }}</label>
+                  <span class="text-[10px] text-neutral-400 dark:text-neutral-500">{{ t('vn.status.labels_description') }}</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <button
+                    v-for="opt in statusOptions"
+                    :key="opt.value"
+                    type="button"
+                    @click="toggleEditModalLabel(opt)"
+                    class="flex items-center gap-2 p-2.5 rounded-xl border text-left transition cursor-pointer"
+                    :class="[
+                      (opt.value === 0 ? editForm.selectedLabelIds.length === 0 : editForm.selectedLabelIds.includes(opt.value))
+                        ? 'border-neutral-900 dark:border-neutral-100 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 font-semibold shadow-xs'
+                        : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 text-neutral-700 dark:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-600'
+                    ]"
+                  >
+                    <Icon
+                      v-if="opt.icon"
+                      :icon="opt.icon"
+                      class="h-4 w-4 shrink-0"
+                      :class="[
+                        (opt.value === 0 ? editForm.selectedLabelIds.length === 0 : editForm.selectedLabelIds.includes(opt.value))
+                          ? 'text-white dark:text-neutral-900'
+                          : (opt.destructive ? 'text-red-400' : 'text-neutral-400 dark:text-neutral-500')
+                      ]"
+                    />
+                    <span class="text-xs truncate flex-1">{{ opt.label }}</span>
+                    <Icon
+                      v-if="opt.value === 0 ? editForm.selectedLabelIds.length === 0 : editForm.selectedLabelIds.includes(opt.value)"
+                      icon="lucide:check"
+                      class="h-3.5 w-3.5 shrink-0"
+                      :class="(opt.value === 0 ? editForm.selectedLabelIds.length === 0 : editForm.selectedLabelIds.includes(opt.value)) ? 'text-white dark:text-neutral-900' : ''"
+                    />
+                  </button>
+                </div>
               </div>
 
               <!-- 评分 -->
@@ -2657,6 +2819,17 @@ watch(
         </div>
       </Transition>
     </Teleport>
+
+    <!-- 收藏状态多选 ActionSheet -->
+    <ActionSheet
+      v-model:show="showStatusActionSheet"
+      :title="t('vn.status.title')"
+      :description="t('vn.status.labels_description')"
+      :multiple="true"
+      :modelValue="currentLabelIds"
+      :options="statusOptions"
+      @confirm="handleMultipleLabelsChange"
+    />
 
     <!-- Toast 提示 -->
     <Teleport to="body">
