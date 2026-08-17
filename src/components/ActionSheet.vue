@@ -46,15 +46,41 @@ const { t } = useI18n()
 // 临时多选状态，多选模式下在弹层内勾选，点击“确定”或切换时提交
 const localMultipleValue = ref([])
 
+// 锁定/恢复背景滚动（兼容普通页面与 Ionic 容器）
+function setBodyScrollLock(locked) {
+  if (locked) {
+    document.body.style.overflow = 'hidden'
+    // 兼容 Ionic 的 ion-content 滚动容器
+    const ionContents = document.querySelectorAll('ion-content')
+    ionContents.forEach((ionContent) => {
+      ionContent.style.setProperty('--overflow', 'hidden')
+      const scrollEl = ionContent.querySelector?.('.inner-scroll, ion-scroll, [class*="scroll"]')
+      if (scrollEl) {
+        scrollEl.style.overflow = 'hidden'
+      }
+    })
+  } else {
+    document.body.style.overflow = ''
+    const ionContents = document.querySelectorAll('ion-content')
+    ionContents.forEach((ionContent) => {
+      ionContent.style.removeProperty('--overflow')
+      const scrollEl = ionContent.querySelector?.('.inner-scroll, ion-scroll, [class*="scroll"]')
+      if (scrollEl) {
+        scrollEl.style.overflow = ''
+      }
+    })
+  }
+}
+
 watch(() => props.show, (newVal) => {
   if (newVal) {
     if (props.multiple) {
       localMultipleValue.value = Array.isArray(props.modelValue) ? [...props.modelValue] : []
     }
     window.history.pushState({ actionSheetOpen: true }, '')
-    document.body.style.overflow = 'hidden'
+    setBodyScrollLock(true)
   } else {
-    document.body.style.overflow = ''
+    setBodyScrollLock(false)
   }
 })
 
@@ -127,7 +153,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('popstate', onPopState)
-  document.body.style.overflow = ''
+  setBodyScrollLock(false)
 })
 </script>
 
