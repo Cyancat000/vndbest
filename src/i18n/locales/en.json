@@ -644,6 +644,11 @@
       "vita": "PlayStation Vita",
       "bdp": "Blu-ray",
       "web": "Web Browser",
+      "n3d": "Nintendo 3DS",
+      "xbo": "Xbox One",
+      "vnd": "VNDS",
+      "xxs": "Xbox Series X|S",
+      "dvd": "DVD",
       "otc": "Other"
     }
   },
