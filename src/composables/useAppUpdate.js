@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 
-export const APP_VERSION = '1.0.2'
+export const APP_VERSION = '1.0.3'
 const IGNORED_UPDATE_VERSION_KEY = 'vndb_ignored_update_version'
 
 const updateState = ref('idle') // 'idle' | 'checking' | 'available' | 'up-to-date' | 'error'
