@@ -11,6 +11,7 @@ import { useTranslation } from '@/composables/useTranslation'
 import { useImageLoader } from '@/composables/useImageLoader'
 import { useClipboard } from '@/composables/useClipboard'
 import { useToast } from '@/composables/useToast'
+import { useFavorites } from '@/composables/useFavorites'
 import { IonPage, IonContent, IonImg, IonSpinner } from '@ionic/vue'
 import { CapacitorHttp } from '@capacitor/core'
 
@@ -43,6 +44,28 @@ const translatedDescription = ref('')
 const translationLoading = ref(false)
 const translationError = ref('')
 const translationSourceText = ref('')
+
+const { isFavorite, toggleFavorite } = useFavorites()
+
+const isCurrentCharFavorite = computed(() => {
+  return isFavorite(character.value?.id)
+})
+
+function handleToggleCharFavorite() {
+  if (!character.value?.id) return
+  const isFav = toggleFavorite({
+    id: character.value.id,
+    type: 'character',
+    title: character.value.name || '',
+    subtitle: character.value.original || character.value.id,
+    image: character.value.image?.thumbnail || character.value.image?.url || '',
+    extra: {
+      sex: character.value.sex,
+      blood_type: character.value.blood_type
+    }
+  })
+  showToast(isFav ? t('common.favorite_added') : t('common.favorite_removed'), isFav ? 'success' : 'info')
+}
 
 // 翻译角色性别（sex 可能为数组 ["f","f"] 或字符串 "f,f"）
 const translateGender = (sex) => {
@@ -378,7 +401,23 @@ watch(
       mode="detail"
       :title="character?.name || t('vn.character_details')"
       :subtitle="String(characterId)"
-    />
+    >
+      <template #actions>
+        <button
+          v-if="character"
+          type="button"
+          @click="handleToggleCharFavorite"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs hover:bg-neutral-50 dark:hover:bg-neutral-700 active:scale-95 transition cursor-pointer"
+          :title="isCurrentCharFavorite ? t('favorites.remove') : t('favorites.title')"
+        >
+          <Icon
+            :icon="isCurrentCharFavorite ? 'lucide:heart' : 'lucide:heart'"
+            class="h-4 w-4 transition"
+            :class="isCurrentCharFavorite ? 'fill-red-500 text-red-500' : 'text-neutral-500 dark:text-neutral-400'"
+          />
+        </button>
+      </template>
+    </AppHeader>
 
     <!-- 骨架屏 -->
     <div v-if="loading" class="animate-pulse space-y-6">

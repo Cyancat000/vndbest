@@ -9,6 +9,7 @@ import { usePrivacy, getImageNsfwLevel } from '@/composables/usePrivacy'
 import { useImageLoader } from '@/composables/useImageLoader'
 import { useClipboard } from '@/composables/useClipboard'
 import { useToast } from '@/composables/useToast'
+import { useFavorites } from '@/composables/useFavorites'
 import { IonPage, IonContent, IonImg, IonSpinner } from '@ionic/vue'
 
 const { getDetailAction, getCardAction } = usePrivacy()
@@ -89,6 +90,27 @@ function getAltTitle(v) {
   return ''
 }
 
+const { isFavorite, toggleFavorite } = useFavorites()
+
+const isCurrentReleaseFavorite = computed(() => {
+  return isFavorite(release.value?.id)
+})
+
+function handleToggleReleaseFavorite() {
+  if (!release.value?.id) return
+  const isFav = toggleFavorite({
+    id: release.value.id,
+    type: 'release',
+    title: getTitle(release.value),
+    subtitle: getAltTitle(release.value) || release.value.id,
+    image: release.value.images?.[0]?.thumbnail || release.value.images?.[0]?.url || '',
+    extra: {
+      released: release.value.released
+    }
+  })
+  showToast(isFav ? t('common.favorite_added') : t('common.favorite_removed'), isFav ? 'success' : 'info')
+}
+
 // 隐私过滤：已揭示的内容
 const revealedItems = ref(new Set())
 
@@ -167,7 +189,23 @@ watch(
   <ion-page>
   <ion-content>
   <div class="page-container space-y-4">
-    <AppHeader mode="center" :title="t('release.title')" :on-back="goBack" />
+    <AppHeader mode="center" :title="t('release.title')" :on-back="goBack">
+      <template #actions>
+        <button
+          v-if="release"
+          type="button"
+          @click="handleToggleReleaseFavorite"
+          class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 active:bg-neutral-100 dark:active:bg-neutral-600 transition active:scale-95 cursor-pointer"
+          :title="isCurrentReleaseFavorite ? t('favorites.remove') : t('favorites.title')"
+        >
+          <Icon
+            :icon="isCurrentReleaseFavorite ? 'lucide:heart' : 'lucide:heart'"
+            class="h-4 w-4 transition"
+            :class="isCurrentReleaseFavorite ? 'fill-red-500 text-red-500' : 'text-neutral-500 dark:text-neutral-400'"
+          />
+        </button>
+      </template>
+    </AppHeader>
 
     <!-- 骨架屏 (参考 VnDetail) -->
     <div v-if="loading" class="animate-pulse space-y-4">

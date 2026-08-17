@@ -12,7 +12,9 @@
     "go_back": "返回上一页",
     "cancel": "取消",
     "copied": "已复制",
-    "copy_failed": "复制失败"
+    "copy_failed": "复制失败",
+    "favorite_added": "已添加到本地收藏",
+    "favorite_removed": "已取消本地收藏"
   },
   "settings": {
     "title": "设置",
@@ -42,6 +44,10 @@
         "title": "隐私与过滤",
         "description": "敏感内容显示与截图过滤规则"
       },
+      "favorites": {
+        "title": "本地收藏",
+        "description": "查看与管理保存在本设备的收藏内容"
+      },
       "storage": {
         "title": "存储与缓存",
         "description": "管理本地持久化数据与网络缓存"
@@ -49,6 +55,26 @@
       "about": {
         "title": "关于应用",
         "description": "版本信息、更新检查与项目链接"
+      }
+    },
+    "favorites": {
+      "title": "本地收藏",
+      "description": "管理在本地收藏的作品、版本、人物、角色和会社",
+      "notice": "数据保存在本地，更换设备/卸载后会丢失",
+      "all": "全部",
+      "empty": "暂无收藏内容",
+      "empty_hint": "在作品、版本、人物、角色或会社详情页点击收藏按钮即可添加到此处",
+      "clear_all": "清空收藏",
+      "clear_confirm_title": "清空本地收藏",
+      "clear_confirm_message": "确定要清空所有本地收藏数据吗？此操作无法撤销。",
+      "remove": "取消收藏",
+      "saved_at": "收藏于",
+      "item_types": {
+        "vn": "作品",
+        "release": "版本",
+        "character": "角色",
+        "staff": "人物",
+        "producer": "会社"
       }
     },
     "lang_names": {
@@ -622,6 +648,26 @@
       "bdp": "蓝光",
       "web": "网页浏览器",
       "otc": "其他"
+    }
+  },
+  "favorites": {
+    "title": "本地收藏",
+    "description": "管理在本地收藏的作品、版本、人物、角色和会社",
+    "notice": "数据保存在本地，更换设备/卸载后会丢失",
+    "all": "全部",
+    "empty": "暂无收藏内容",
+    "empty_hint": "在作品、版本、人物、角色或会社详情页点击收藏按钮即可添加到此处",
+    "clear_all": "清空收藏",
+    "clear_confirm_title": "清空本地收藏",
+    "clear_confirm_message": "确定要清空所有本地收藏数据吗？此操作无法撤销。",
+    "remove": "取消收藏",
+    "saved_at": "收藏于",
+    "item_types": {
+      "vn": "作品",
+      "release": "版本",
+      "character": "角色",
+      "staff": "人物",
+      "producer": "会社"
     }
   }
 }

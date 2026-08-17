@@ -12,7 +12,9 @@
     "go_back": "Go Back",
     "cancel": "Cancel",
     "copied": "Copied",
-    "copy_failed": "Copy failed"
+    "copy_failed": "Copy failed",
+    "favorite_added": "Added to local favorites",
+    "favorite_removed": "Removed from local favorites"
   },
   "settings": {
     "title": "Settings",
@@ -42,6 +44,10 @@
         "title": "Privacy & Filters",
         "description": "Sensitive content display and screenshot filtering"
       },
+      "favorites": {
+        "title": "Local Favorites",
+        "description": "View and manage favorites stored on this device"
+      },
       "storage": {
         "title": "Storage & Cache",
         "description": "Manage local cached data and network storage"
@@ -49,6 +55,26 @@
       "about": {
         "title": "About App",
         "description": "Version info, update checks, and project links"
+      }
+    },
+    "favorites": {
+      "title": "Local Favorites",
+      "description": "Manage locally favorited VNs, releases, staff, characters, and producers",
+      "notice": "Data is stored locally on this device and will be lost upon uninstall or device change",
+      "all": "All",
+      "empty": "No favorites yet",
+      "empty_hint": "Tap the favorite button on any VN, release, staff, character, or producer page to add it here",
+      "clear_all": "Clear Favorites",
+      "clear_confirm_title": "Clear Local Favorites",
+      "clear_confirm_message": "Are you sure you want to clear all local favorites? This action cannot be undone.",
+      "remove": "Remove Favorite",
+      "saved_at": "Favorited at",
+      "item_types": {
+        "vn": "VN",
+        "release": "Release",
+        "character": "Character",
+        "staff": "Staff",
+        "producer": "Producer"
       }
     },
     "lang_names": {
@@ -619,6 +645,26 @@
       "bdp": "Blu-ray",
       "web": "Web Browser",
       "otc": "Other"
+    }
+  },
+  "favorites": {
+    "title": "Local Favorites",
+    "description": "Manage locally favorited VNs, releases, staff, characters, and producers",
+    "notice": "Data is stored locally on this device and will be lost upon uninstall or device change",
+    "all": "All",
+    "empty": "No favorites yet",
+    "empty_hint": "Tap the favorite button on any VN, release, staff, character, or producer page to add it here",
+    "clear_all": "Clear Favorites",
+    "clear_confirm_title": "Clear Local Favorites",
+    "clear_confirm_message": "Are you sure you want to clear all local favorites? This action cannot be undone.",
+    "remove": "Remove Favorite",
+    "saved_at": "Favorited at",
+    "item_types": {
+      "vn": "VN",
+      "release": "Release",
+      "character": "Character",
+      "staff": "Staff",
+      "producer": "Producer"
     }
   }
 }

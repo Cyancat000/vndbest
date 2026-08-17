@@ -14,6 +14,7 @@ import { SETTINGS_SECTION_ICONS, THEME_OPTION_ICONS } from '@/icons/icon-names'
 import { cacheManager } from '@/utils/cacheManager'
 import { useToast } from '@/composables/useToast'
 import { useAppUpdate } from '@/composables/useAppUpdate'
+import { useFavorites } from '@/composables/useFavorites'
 
 const route = useRoute()
 const router = useRouter()
@@ -85,6 +86,12 @@ const settingsSections = computed(() => ([
     title: t('settings.sections.privacy.title'),
     description: t('settings.sections.privacy.description'),
     icon: SETTINGS_SECTION_ICONS.privacy
+  },
+  {
+    key: 'favorites',
+    title: t('settings.sections.favorites.title'),
+    description: t('settings.sections.favorites.description'),
+    icon: SETTINGS_SECTION_ICONS.favorites
   },
   {
     key: 'storage',
@@ -291,6 +298,45 @@ watch(currentLang, (newLang) => {
 
 function goToLogin() {
   router.push('/login')
+}
+
+// ====== 本地收藏管理 ======
+const { favorites: favList, counts: favCounts, removeFavorite: removeFav, clearFavorites: clearFavs } = useFavorites()
+const favActiveType = ref('all')
+const favFilterTypes = computed(() => [
+  { key: 'all', label: `${t('favorites.all')} (${favCounts.value.all})` },
+  { key: 'vn', label: `${t('favorites.item_types.vn')} (${favCounts.value.vn})` },
+  { key: 'release', label: `${t('favorites.item_types.release')} (${favCounts.value.release})` },
+  { key: 'character', label: `${t('favorites.item_types.character')} (${favCounts.value.character})` },
+  { key: 'staff', label: `${t('favorites.item_types.staff')} (${favCounts.value.staff})` },
+  { key: 'producer', label: `${t('favorites.item_types.producer')} (${favCounts.value.producer})` }
+])
+
+const filteredFavorites = computed(() => {
+  if (favActiveType.value === 'all') return favList.value
+  return favList.value.filter(item => item.type === favActiveType.value)
+})
+
+function handleNavigateFavorite(item) {
+  if (!item || !item.id) return
+  if (item.type === 'vn') router.push(`/vn/${item.id}`)
+  else if (item.type === 'release') router.push(`/release/${item.id}`)
+  else if (item.type === 'character') router.push(`/character/${item.id}`)
+  else if (item.type === 'staff') router.push(`/staff/${item.id}`)
+  else if (item.type === 'producer') router.push(`/producer/${item.id}`)
+}
+
+function handleRemoveFavorite(id, event) {
+  event?.stopPropagation?.()
+  removeFav(id)
+  showToast(t('common.favorite_removed'), 'info')
+}
+
+function handleClearAllFavorites() {
+  if (confirm(t('favorites.clear_confirm_message'))) {
+    clearFavs('all')
+    showToast(t('favorites.empty'), 'info')
+  }
 }
 
 // ====== 主题选项 ======
@@ -645,6 +691,123 @@ const themeOptions = [
                     :label-renderer="(l) => t(l)"
                   />
                 </div>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <template v-else-if="activeSection === 'favorites'">
+          <div class="space-y-4">
+            <!-- 提示小字 -->
+            <div class="flex items-start gap-2 rounded-xl border border-amber-200/60 dark:border-amber-900/40 bg-amber-50/60 dark:bg-amber-950/20 p-3.5 text-xs text-amber-800 dark:text-amber-300">
+              <Icon icon="lucide:info" class="h-4 w-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+              <div class="leading-relaxed">
+                <span>{{ t('favorites.notice') }}</span>
+              </div>
+            </div>
+
+            <!-- 分类筛选器与清空按钮 -->
+            <div class="flex items-center justify-between gap-2 overflow-x-auto pb-1 no-scrollbar">
+              <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                <button
+                  v-for="fType in favFilterTypes"
+                  :key="fType.key"
+                  type="button"
+                  @click="favActiveType = fType.key"
+                  class="rounded-full px-3 py-1 text-xs font-medium transition cursor-pointer whitespace-nowrap shrink-0"
+                  :class="favActiveType === fType.key
+                    ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
+                    : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700'"
+                >
+                  {{ fType.label }}
+                </button>
+              </div>
+
+              <button
+                v-if="favList.length > 0"
+                type="button"
+                @click="handleClearAllFavorites"
+                class="inline-flex items-center gap-1 text-xs text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 shrink-0 px-2 py-1 transition cursor-pointer"
+              >
+                <Icon icon="lucide:trash-2" class="h-3.5 w-3.5" />
+                <span>{{ t('favorites.clear_all') }}</span>
+              </button>
+            </div>
+
+            <!-- 空状态 -->
+            <div
+              v-if="filteredFavorites.length === 0"
+              class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-10 text-center shadow-xs space-y-3"
+            >
+              <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-neutral-100 dark:bg-neutral-800">
+                <Icon icon="lucide:heart" class="h-6 w-6 text-neutral-400 dark:text-neutral-500" />
+              </div>
+              <div class="space-y-1">
+                <h3 class="text-sm font-semibold text-neutral-800 dark:text-neutral-200">{{ t('favorites.empty') }}</h3>
+                <p class="text-xs text-neutral-400 dark:text-neutral-500 max-w-sm mx-auto leading-relaxed">
+                  {{ t('favorites.empty_hint') }}
+                </p>
+              </div>
+            </div>
+
+            <!-- 收藏列表 -->
+            <div v-else class="space-y-2.5">
+              <div
+                v-for="item in filteredFavorites"
+                :key="item.id"
+                @click="handleNavigateFavorite(item)"
+                class="group flex items-center justify-between gap-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-3 shadow-xs transition hover:border-neutral-300 dark:hover:border-neutral-600 hover:shadow-sm cursor-pointer"
+              >
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <!-- 缩略图 / 图标 -->
+                  <div class="relative h-14 w-11 shrink-0 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800">
+                    <img
+                      v-if="item.image"
+                      :src="item.image"
+                      :alt="item.title"
+                      class="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                    <div v-else class="flex h-full w-full items-center justify-center">
+                      <Icon
+                        :icon="
+                          item.type === 'vn' ? 'lucide:gamepad-2' :
+                          item.type === 'release' ? 'lucide:package' :
+                          item.type === 'character' ? 'lucide:user-circle' :
+                          item.type === 'staff' ? 'lucide:users' :
+                          item.type === 'producer' ? 'lucide:building-2' : 'lucide:bookmark'
+                        "
+                        class="h-5 w-5 text-neutral-400 dark:text-neutral-500"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- 文本信息 -->
+                  <div class="min-w-0 flex-1 space-y-1">
+                    <div class="flex items-center gap-1.5">
+                      <span class="inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-neutral-200/80 dark:border-neutral-700/80">
+                        {{ t(`favorites.item_types.${item.type}`) }}
+                      </span>
+                      <span class="text-[10px] font-mono text-neutral-400 dark:text-neutral-500">{{ item.id }}</span>
+                    </div>
+                    <h3 class="text-sm font-semibold text-neutral-800 dark:text-neutral-100 truncate group-hover:text-primary transition">
+                      {{ item.title }}
+                    </h3>
+                    <p v-if="item.subtitle" class="text-xs text-neutral-400 dark:text-neutral-500 truncate">
+                      {{ item.subtitle }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 取消收藏按钮 -->
+                <button
+                  type="button"
+                  @click="handleRemoveFavorite(item.id, $event)"
+                  class="p-2 rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition shrink-0 cursor-pointer"
+                  :title="t('favorites.remove')"
+                >
+                  <Icon icon="lucide:heart" class="h-4 w-4 fill-red-500 text-red-500" />
+                </button>
               </div>
             </div>
           </div>

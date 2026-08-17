@@ -128,6 +128,7 @@ export const SEX_ICONS = {
 export const SETTINGS_SECTION_ICONS = {
   appearance: APP_ICON_NAMES.common.palette,
   privacy: APP_ICON_NAMES.common.shield,
+  favorites: APP_ICON_NAMES.common.heart,
   storage: APP_ICON_NAMES.common.database,
   about: APP_ICON_NAMES.common.info
 }

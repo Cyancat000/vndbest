@@ -12,6 +12,7 @@ import { useTranslation } from '@/composables/useTranslation'
 import { useImageLoader } from '@/composables/useImageLoader'
 import { useClipboard } from '@/composables/useClipboard'
 import { useToast } from '@/composables/useToast'
+import { useFavorites } from '@/composables/useFavorites'
 import { IonPage, IonContent, IonImg, IonSpinner, IonToast } from '@ionic/vue'
 import { Capacitor, CapacitorHttp, registerPlugin } from '@capacitor/core'
 
@@ -37,6 +38,28 @@ const charactersLoading = ref(true)
 const quotesLoading = ref(true)
 const error = ref(null)
 const quoteTranslations = ref({})
+
+const { isFavorite, toggleFavorite } = useFavorites()
+
+const isCurrentVnFavorite = computed(() => {
+  return isFavorite(vn.value?.id)
+})
+
+function handleToggleVnFavorite() {
+  if (!vn.value?.id) return
+  const isFav = toggleFavorite({
+    id: vn.value.id,
+    type: 'vn',
+    title: getTitle(vn.value),
+    subtitle: getAltTitle(vn.value) || vn.value.id,
+    image: vn.value.image?.thumbnail || vn.value.image?.url || '',
+    extra: {
+      rating: vn.value.rating,
+      released: vn.value.released
+    }
+  })
+  showGlobalToast(isFav ? t('common.favorite_added') : t('common.favorite_removed'), isFav ? 'success' : 'info')
+}
 
 // 详情页中的 Tab 切换选项，默认设置为 'releases' (版本发行)
 const activeTab = ref('releases')
@@ -1464,7 +1487,23 @@ watch(
   <ion-page>
   <ion-content ref="ionContentRef">
   <div class="page-container space-y-4">
-    <AppHeader mode="center" :title="t('vn.details')" />
+    <AppHeader mode="center" :title="t('vn.details')">
+      <template #actions>
+        <button
+          v-if="vn"
+          type="button"
+          @click="handleToggleVnFavorite"
+          class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 active:bg-neutral-100 dark:active:bg-neutral-600 transition active:scale-95 cursor-pointer"
+          :title="isCurrentVnFavorite ? t('favorites.remove') : t('favorites.title')"
+        >
+          <Icon
+            :icon="isCurrentVnFavorite ? 'lucide:heart' : 'lucide:heart'"
+            class="h-4 w-4 transition"
+            :class="isCurrentVnFavorite ? 'fill-red-500 text-red-500' : 'text-neutral-500 dark:text-neutral-400'"
+          />
+        </button>
+      </template>
+    </AppHeader>
 
     <!-- 骨架屏 -->
     <div v-if="loading" class="animate-pulse space-y-4">
