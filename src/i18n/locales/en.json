@@ -437,7 +437,7 @@
       "stalled": "Stalled",
       "dropped": "Dropped",
       "wishlisted": "Wishlisted",
-      "backward": "Backlog",
+      "blacklist": "Blacklist",
       "updating": "Updating",
       "none": "None",
       "login_required": "Please login to manage your collection",

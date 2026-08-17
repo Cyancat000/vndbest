@@ -436,7 +436,7 @@
       "stalled": "搁置中",
       "dropped": "已弃坑",
       "wishlisted": "想玩",
-      "backward": "待定",
+      "blacklist": "黑名单",
       "updating": "更新中",
       "none": "无",
       "login_required": "请先登录以管理收藏",

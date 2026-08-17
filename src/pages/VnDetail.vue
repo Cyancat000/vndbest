@@ -164,7 +164,7 @@ const LABEL_NAMES = {
   3: 'Stalled',
   4: 'Dropped',
   5: 'Wishlisted',
-  6: 'Backlog'
+  6: 'Blacklist'
 }
 
 // 预定义标签的多语言 i18n 映射
@@ -175,7 +175,7 @@ const getLabelI18n = (id, fallback) => {
     3: 'vn.status.stalled',
     4: 'vn.status.dropped',
     5: 'vn.status.wishlisted',
-    6: 'vn.status.backward'
+    6: 'vn.status.blacklist'
   }
   if (map[id]) {
     return t(map[id])
