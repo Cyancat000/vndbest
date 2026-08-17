@@ -637,7 +637,25 @@
       "vnd": "VNDS",
       "xxs": "Xbox Series X|S",
       "dvd": "DVD",
-      "otc": "その他"
+      "drc": "Sega Dreamcast",
+      "dos": "DOS",
+      "fmt": "FM Towns",
+      "p88": "PC-88",
+      "p98": "PC-98",
+      "pcf": "PC-FX",
+      "sat": "Sega Saturn",
+      "fm7": "FM-7",
+      "fm8": "FM-8",
+      "msx": "MSX",
+      "sw2": "Nintendo Switch 2",
+      "wiu": "Nintendo WiiU",
+      "x68": "Sharp X68000",
+      "pce": "PC Engine",
+      "scd": "Sega Mega-CD",
+      "smd": "Sega Mega Drive",
+      "x1s": "Sharp X1",
+      "mob": "その他(モバイル)",
+      "oth": "その他"
     }
   },
   "producer_type": {
