@@ -1,10 +1,10 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { searchTraits, getTraitList } from '@/api/vndb'
 import { useTranslation } from '@/composables/useTranslation'
 
-const { translateTraitName } = useTranslation()
+const { translateTraitName, reverseLookupTraitName, searchTraitsByZh } = useTranslation()
 
 const props = defineProps({
   show: {
@@ -31,19 +31,32 @@ const localSelected = ref([...props.selectedTraits])
 // 热门特征
 const popularTraits = ref([])
 
+// i18n 本地翻译匹配结果
+const i18nResults = ref([])
+const loadingI18nKey = ref(null) // 当前正在回查 id 的 i18n 项的 key
+
+// 去重：排除已在 API 结果中出现的英文名
+const filteredI18nResults = computed(() => {
+  const apiNames = new Set(results.value.map(r => r.name))
+  return i18nResults.value.filter(item => !apiNames.has(item.en))
+})
+
 async function fetchTraits(q = '', reset = true) {
   if (isLoading.value && !reset) return
 
   if (reset) {
     page.value = 1
     results.value = []
+    i18nResults.value = []
   }
 
   isLoading.value = true
   try {
     let res
     if (q && q.trim() !== '') {
-      res = await searchTraits(q, {
+      // 将中文搜索词转换为英文原文（如果匹配到翻译）
+      const searchQuery = reverseLookupTraitName(q.trim())
+      res = await searchTraits(searchQuery, {
         page: page.value,
         results: resultsPerPage
       })
@@ -69,6 +82,36 @@ async function fetchTraits(q = '', reset = true) {
     console.error('获取特征列表失败:', err)
   } finally {
     isLoading.value = false
+
+    // API 搜索完成后，同步执行 i18n 本地搜索
+    if (reset && q && q.trim() !== '') {
+      try {
+        i18nResults.value = searchTraitsByZh(q.trim())
+      } catch (err) {
+        console.error('i18n 特征搜索失败:', err)
+      }
+    }
+  }
+}
+
+/**
+ * 点击 i18n 翻译结果：通过英文名搜索获取 trait 后选中
+ */
+async function selectI18nResult(item) {
+  const key = item.en
+  loadingI18nKey.value = key
+  try {
+    const res = await searchTraits(item.en, { results: 5 })
+    if (res && res.results && res.results.length > 0) {
+      // 精确匹配英文名
+      const exact = res.results.find(r => r.name === item.en)
+      const trait = exact || res.results[0]
+      toggleTrait(trait)
+    }
+  } catch (err) {
+    console.error('查找特征失败:', err)
+  } finally {
+    loadingI18nKey.value = null
   }
 }
 
@@ -114,6 +157,7 @@ function cleanDescription(desc) {
 watch(() => props.show, (val) => {
   if (val) {
     searchQuery.value = ''
+    i18nResults.value = []
     localSelected.value = [...props.selectedTraits]
     fetchPopularTraits()
   }
@@ -287,13 +331,53 @@ async function fetchPopularTraits() {
               </div>
             </div>
 
+            <!-- i18n 翻译匹配结果 -->
+            <div v-if="searchQuery && filteredI18nResults.length > 0" class="mt-3">
+              <div class="flex items-center gap-2 mb-2 px-1">
+                <Icon icon="lucide:languages" class="h-3 w-3 text-violet-400" />
+                <span class="text-[10px] text-violet-400 font-bold uppercase tracking-widest">翻译匹配</span>
+              </div>
+              <div class="space-y-1">
+                <button
+                  v-for="item in filteredI18nResults"
+                  :key="'i18n-' + item.en"
+                  @click="selectI18nResult(item)"
+                  class="w-full flex items-center gap-3 p-2.5 rounded-xl border border-dashed transition-all cursor-pointer text-left"
+                  :class="loadingI18nKey === item.en
+                    ? 'border-violet-400 bg-violet-100/80 dark:bg-violet-900/40 scale-[0.98] opacity-80'
+                    : 'border-violet-200 dark:border-violet-800/50 bg-violet-50/50 dark:bg-violet-900/20 hover:border-violet-300 dark:hover:border-violet-700'"
+                >
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                      <span class="font-medium text-sm text-violet-800 dark:text-violet-300 truncate">{{ item.zh }}</span>
+                      <span class="shrink-0 inline-flex items-center rounded-md px-1 py-0.5 text-[9px] font-bold bg-violet-100 dark:bg-violet-800/50 text-violet-500 dark:text-violet-400 border border-violet-200 dark:border-violet-700">
+                        翻译
+                      </span>
+                    </div>
+                    <p class="text-[11px] text-violet-400 dark:text-violet-500 mt-0.5 truncate">{{ item.en }}</p>
+                  </div>
+                  <div class="shrink-0 flex items-center gap-1">
+                    <template v-if="loadingI18nKey === item.en">
+                      <Icon icon="eos-icons:loading" class="h-4 w-4 text-violet-500 animate-spin" />
+                    </template>
+                    <template v-else>
+                      <Icon
+                        icon="lucide:check"
+                        class="h-4 w-4 text-violet-600 dark:text-violet-400"
+                      />
+                    </template>
+                  </div>
+                </button>
+              </div>
+            </div>
+
             <!-- 加载状态 -->
             <div v-if="isLoading && results.length === 0 && !popularTraits.length" class="py-8 flex justify-center">
               <Icon icon="eos-icons:loading" class="h-6 w-6 text-neutral-300 dark:text-neutral-600" />
             </div>
 
             <!-- 空状态 -->
-            <div v-if="!isLoading && searchQuery && results.length === 0" class="py-8 text-center">
+            <div v-if="!isLoading && searchQuery && results.length === 0 && filteredI18nResults.length === 0" class="py-8 text-center">
               <Icon icon="lucide:scan-search" class="h-8 w-8 text-neutral-300 dark:text-neutral-600 mx-auto mb-2" />
               <p class="text-xs text-neutral-400 dark:text-neutral-500">没有找到匹配的特征</p>
             </div>
